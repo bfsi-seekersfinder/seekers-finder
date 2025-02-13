@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
     location: { type: String, },
@@ -7,13 +7,13 @@ const userSchema = new mongoose.Schema({
     product: { type: String, },
     experience: { type: String, },
     currentCTC: { type: String, },
-    noticePeriod: { type: String, },
+    noticePeriod:{ type: String, },
     FullName: { type: String, },
-    phoneNumber: { type: Number,  },
+    phoneNumber: { type: Number,},
     email: { type: String, },
     gender: { type: String }
 });
 
-const User = mongoose.model('USERDATA', userSchema, 'USERDATA');
+const User = mongoose.model('candidates', userSchema);
 
 export default User

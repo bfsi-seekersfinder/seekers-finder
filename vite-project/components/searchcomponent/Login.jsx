@@ -29,8 +29,9 @@ export default function AdminLogin() {
             setLoading(false)
             alert('wrong credentials!')
         }
-    }, 2000);
+    }, 500);
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
