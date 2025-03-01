@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function AdminLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -24,7 +25,7 @@ export default function AdminLogin() {
         if(formData.email === 'admin@gmail.com' && formData.password === 'admin'){
             setLoading(false);
             alert('login successfull')
-            window.location.href = '/findcandidate'
+            window.location.href = '/admin-dashboard'
         }else{
             setLoading(false)
             alert('wrong credentials!')
@@ -34,6 +35,12 @@ export default function AdminLogin() {
   
 
   return (
+  <>
+  <nav className="w-full py-4"> 
+    <Link to="/findcandidate">
+    <button className="rounded-xl px-2 py-0.5 border border-gray-100">Go to Finder</button>
+    </Link>
+  </nav>
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center text-blue-600">Admin Login</h2>
@@ -76,10 +83,9 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <p className="mt-4 text-sm text-gray-500 text-center">
-          Forgot Password? <a href="#" className="text-blue-500">Reset here</a>
-        </p>
+        
       </div>
     </div>
+    </>
   );
 }

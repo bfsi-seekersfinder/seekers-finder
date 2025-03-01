@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const CreateCondidate = () => {
+const CreateCandidate = () => {
     const [formData, setFormData] = useState({
         username:"",
         designation: "",
@@ -121,4 +121,4 @@ const CreateCondidate = () => {
     );
 }
 
-export default CreateCondidate;
+export default CreateCandidate;

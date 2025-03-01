@@ -14,6 +14,6 @@ const userSchema = new mongoose.Schema({
     gender: { type: String }
 });
 
-const User = mongoose.model('candidates', userSchema);
+const User = mongoose.model('newtesting2', userSchema);
 
-export default User
+export default User;

@@ -1,17 +1,21 @@
 import React, { useEffect, useState, useRef } from "react";
-import axios from 'axios'
+import axios from 'axios';
 import ProfileCard from "./ProfileCard";
-import {PuffLoader} from 'react-spinners'
-import {debounce } from 'lodash'
-import Sidebar from "../searchcomponent/ProfileDetails";
+import {PuffLoader} from 'react-spinners';
+import  India  from "../../Generators/IndianCityName";
+import isEmpty from "../../Generators/isEmptyObject";
+import Navbar from "../searchcomponent/Nav";
+import InternetStatus from "../../Generators/InterNet";
+
 
 const FilteredProfiles = () => {
+  const isOnline = InternetStatus()
     const url = import.meta.env.VITE_API_URI;
     const [Candidate, setCandidate] = useState([])
     const [candidateLenght, setCandidatelength] = useState(0)
     const [remainingData, setRemainingData] = useState()
-    const [page, setPage] = useState(1);  // Current page number
-    const [limit] = useState(20)
+    const [page, setPage] = useState(1); 
+    const [limit, setLimit] = useState(20)
     const [navClose, setNavClose] = useState(true)
     const [ShowHistory, setShowHistory] = useState(true)
     const [SerchHistory, setSerchHistory] = useState([])
@@ -19,22 +23,37 @@ const FilteredProfiles = () => {
     const [failedMessage, setFailedMessage] = useState("");
     const [PopupSave, setPopupSave] = useState(true)
     const [HistoryName, setHistoryName] = useState("")
+    const [savedHistory, setsavedHistory] = useState()
     const timeoutRef = useRef(null);
     const wrapperRef = useRef(null);
-    const sidebarRef = useRef(null)
+    const buttonRef = useRef(null);
+    const sidebarRef = useRef(null);
     const [Loader, setLoader] = useState(false)
-    
-const experienceOptions = Array.from({ length: 20 }, (_, i) => i + 1);
+    const [IsSearchQuery, setIsSearchQuery] = useState(false)
+    const [isFilterComplete, setisFilterComplete] = useState(false)
+    const [selectedCountry, setSelectedCountry] = useState("India");
+    const [states, setStates] = useState([]);
+    const [cities, setCities] = useState([]);
+    const [Product, setProduct] = useState([])
+    const [FunctionalArea, setFunctionalArea] = useState([])
+    const experienceOptions = Array.from({ length: 30 }, (_, i) => i + 1);
+    const [UG, setUG] = useState([])
+    const [PG, setPG] = useState([])
+
+const handleSearch = () =>{
+  if(allEmpty) {
+    setFailedMessage('no search found')
+    setTimeout(()=>setFailedMessage(""), 3000)
+    return;
+  }
+  
+  setIsSearchQuery(true)
+  setLoader(true)
+  fetchCandidates();
+}
     
 const isPopUp = () =>{
   setPopupSave(prev => !prev)
-}
-const handleHistoryName = (e) =>{
-  const values = e.target.value
-  clearTimeout(timeoutRef.current);
-  timeoutRef.current = setTimeout(() => {
-    setHistoryName(values);
-}, 500); 
 }
 
 const handleNav = () =>{
@@ -50,17 +69,15 @@ const handlePreviousPage = () => {
 };
 
 const handleNextPage = () => {
-  if(remainingData<0) setPage(1)
+  if(remainingData<0){ 
+    setSuccessMessage("no more data...")
+    setTimeout(()=>setSuccessMessage(""), 3000)
+    return;}
   if(remainingData>0) setPage(page+1)
 };
 
-
 const handleNavigateButtons = (e) =>{
-  setPage(Number(e.target.value))
-}
-
-const resetSearch = () =>{
-  setFilterData(initialData)
+    setPage(Number(e.target.value))    
 }
 
 const keywordsInput = [
@@ -69,10 +86,34 @@ const keywordsInput = [
   { key: "excludekeywords", placeholder: "Exclude Keywords" },
 ];
 
+const handleKeyDown = (e, key) => {
+  if (e.key === "Enter" || e.key === ",") {
+    e.preventDefault();
+    const inputValue = e.target.value.trim();
+
+    if (inputValue) {
+      const values = inputValue.split(",").map((val) => val.trim()).filter(Boolean); 
+
+      setFilterData((prevState) => ({
+        ...prevState,
+        [key]: [...new Set([...(prevState[key] || []), ...values])],
+      }));
+
+      e.target.value = ""; // Clear input field after adding
+    }
+  }
+};
+
+const removeTag = (key, value) => {
+  setFilterData((prev) => ({
+    ...prev,
+    [key]: prev[key].filter((v) => v !== value),
+  }));
+};
+
 const componyInput =[
-  {key: "currentCompony", placeholder: "Compony Name"},
-  {key: "currentProduct", placeholder: "Product"},
-  {key: "degination", placeholder: "Degination"},
+  {key: "currentCompony", placeholder: "Company Name"},
+  {key: "designation", placeholder: "Designation"},
 ]
 
 const initialData = {
@@ -80,192 +121,210 @@ const initialData = {
         keywords:[],
         excludekeywords:[],
         currentCompony:[],
-        currentProduct:[],
-        degination:[],
-        noticePeriod:[],
+        currentProduct:"",
+        designation:[],
+        FunctionalArea:"",
+        noticePeriod:"",
         experience:{
           minExperience:"",
           maxExperience:"",
         },
-        location:[],
+        location:{
+          country:"",
+          state:"",
+          city:"",
+        },
         profileName:"",
         salary: {
           min:"",
           max:"",
               },
         datePosted: [],
-        education:[],
+        education:{
+          ug:"",
+          pg:""
+        },
         gender:[]
 }   
 
 const savedFilters = localStorage.getItem('filters');
 const [FilterData, setFilterData] = useState(savedFilters ? JSON.parse(savedFilters) : initialData);
+
 useEffect(() => {
   localStorage.setItem('filters', JSON.stringify(FilterData));
 }, [FilterData]);
 
-const filterParams = {
+const filterParam = {
   jobProfile: FilterData.jobProfile,
-  keywords: FilterData.keywords,
-  excludekeys:FilterData.excludekeywords,
-  compony:FilterData.currentCompony || "",
-  product:FilterData.currentProduct || "",
-  designation:FilterData.degination || "",
-  noticePeriod:FilterData.noticePeriod || "",
-  minExperience: FilterData.experience.minExperience || "",
-  maxExperience: FilterData.experience.maxExperience ||"",
-  location:FilterData.location,
+  keywords:FilterData.keywords,
+  excludekeywords:FilterData.excludekeywords,
+  Compony:FilterData.currentCompony,
+  Product:FilterData.currentProduct,
+  functionalArea:FilterData.FunctionalArea,
+  designation:FilterData.designation,
+  noticePeriod:FilterData.noticePeriod,
+  minExperience:FilterData.experience.minExperience,
+  maxExperience:FilterData.experience.maxExperience,
+  state:FilterData.location.state,
+  city:FilterData.location.city,
   profileName:FilterData.profileName,
-  minSalary: FilterData.salary.min || "",
-  maxSalary: FilterData.salary.max || "",
+  minSalary:FilterData.salary.min,
+  maxSalary:FilterData.salary.max,
   datePosted: FilterData.datePosted,
-  education:FilterData.education,
-  gender:FilterData.gender,
-};
-
-const handleLocationKeyDown = (e) => {
-  if (e.key === "Enter" || e.key === ",") {
-    e.preventDefault();
-    const trimmedValue = e.target.value.trim();
-
-    if (trimmedValue !== "" && !FilterData.location?.includes(trimmedValue)) {
-      setFilterData((prev) => ({
-        ...prev,
-        location: [...prev.location, trimmedValue], // Add new location
-      }));
-    }
-    e.target.value = ""; // Clear input field after adding
-  }
-};
-
-const handleNoticeKeyDown = (e) => {
-  if (e.key === "Enter" || e.key === ",") {
-    e.preventDefault();
-    const trimmedValue = e.target.value.trim();
-
-    if (trimmedValue !== "" && !FilterData.noticePeriod?.includes(trimmedValue)) {
-      setFilterData((prev) => ({
-        ...prev,
-        noticePeriod: [...(prev.noticePeriod || []), trimmedValue], // Ensure it's always an array
-      }));
-    }
-    e.target.value = ""; // Clear input field after adding
-  }
-};
-
-
-const handleEducationInput = (e) =>{
-if(e.key === "Enter" || e.key ===","){
-  e.preventDefault()
-  const inputValue = e.target.value.trim()
-  if(inputValue !== '' && !FilterData.education?.includes(inputValue)){
-    setFilterData((prev)=>({
-      ...prev, education: [...prev.education, inputValue]
-    }))
-  }
-  e.target.value = "";
-}
+  ug:FilterData.education.ug,
+  pg:FilterData.education.pg,
+  gender:FilterData.gender
 }
 
-const handleRemoveLocation = (loc) => {
-  setFilterData((prev) => ({
-    ...prev,
-    location: prev.location.filter((l) => l !== loc), 
-  }));
-};
+const allEmpty = isEmpty(FilterData)
 
-const handleRemoveNotice = (notice) => {
-  setFilterData((prev) => ({
-    ...prev,
-    noticePeriod: Array.isArray(prev.noticePeriod)
-      ? prev.noticePeriod.filter((l) => l !== notice)
-      : [],
-  }));
-};
+useEffect(() => {
+  if (selectedCountry === "India") {
+   setStates(Object.keys(India))
+  } else {
+    setStates([]); 
+  }
+}, []);
 
-const handleRemoveEducation = (edu) => {
-  setFilterData((prev) => ({
-    ...prev,
-    education: prev.education.filter((l) => l !== edu), 
-  }));
-};
+useEffect(() => {
+  if (FilterData.location?.state) {
+    setCities(India[FilterData.location.state] || []);
+  } else {
+    setCities([]);
+  }
+}, [FilterData.location.state]);
 
- const handleSubmit=(e)=>{
+const noticePeriodOptions = [
+  "Immediate Joiner",
+  "15 Days",
+  "30 Days",
+  "45 Days",
+  "60 Days",
+  "90 Days",
+];
+
+const handleSubmit=(e)=>{
   e.preventDefault();
  }
 
+const resetSearch = () =>{
+  setCandidate("")
+  if(allEmpty){
+    setSuccessMessage('search already clear')
+    setTimeout(()=>setSuccessMessage(''), 3000)
+    return;
+  }
+  setFilterData(initialData)
+  setIsSearchQuery(false)
+  setSuccessMessage("all search clear")
+  setTimeout(()=>setSuccessMessage(''), 3000)
+}
+//<<---------------------< (fetching filterCandidates)) >--------------->>
+const fetchCandidates = async () => {
+  try {
+
+    const skip = (page - 1) * limit;
+    const { data } = await axios.get(`${url}/api/user`, {
+      params: {
+        limit,
+        skip,
+        ...filterParam,  
+      },
+    });
+    setCandidate(data.newData);
+    setCandidatelength(data.totalDocument)
+    setRemainingData(
+    data.totalDocument > 20 ? data.totalDocument - (page * 20) : 0
+    );
+  } catch (err) {
+    setFailedMessage("Server err, Try next time !");
+    setTimeout(() => setFailedMessage(""), 3500);
+  } finally {
+    setLoader(false);
+    setisFilterComplete(true)
+  }
+
+};
+
+//<<---------------------< fetchng (Product & Education List) >--------------->>
+const productData = async () => {      
+  try {
+    const res = await axios.get(`${url}/api/product`);
+    
+    if (Array.isArray(res.data.products)) setProduct(res.data.products);
+    if (Array.isArray(res.data.funcArea)) setFunctionalArea(res.data.funcArea);
+    if (Array.isArray(res.data.ug)) setUG(res.data.ug);
+    if (Array.isArray(res.data.pg)) setPG(res.data.pg);
+          } catch (error) {
+  }
+};
+
 useEffect(() => {
-  setLoader(true);
+  productData();
+}, []);
 
-  const fetchCandidates = async () => {
-    try {
-      const skip = (page - 1) * limit;
-      const { data } = await axios.get(`${url}/api/user`, {
-        params: {
-          limit,
-          skip,
-          ...filterParams,  
-        },
-      });
+//<< -----------< get history from server >--------------->>
+const handleShowHistorySearch = async (e) =>{
+  e.stopPropagation();
+  setShowHistory((prev) => !prev);
+  try {
+    const id = sessionStorage.getItem("recruiterID")
+    const response = await axios.get(`${url}/api/recruiter/gethistory`,{
+    params:{id}
+    })
+    const getHistory = response.data.searchHistory
+    setSerchHistory(getHistory)
+  } catch (error) {
+    setFailedMessage(error)
+    setTimeout(()=>setFailedMessage(''), 3000)
+  }
+ 
+}
 
-      setCandidate(data.newData);
-      setCandidatelength(data.totalDocument);
-      setRemainingData(
-        data.totalDocument > 20 ? data.totalDocument - (page * 20) : 0
-      );
-    } catch (err) {
-      console.error("Error fetching user data:", err);
-    } finally {
-      setLoader(false);
-    }
+const saveSearchHistory = async () => {
+  if (allEmpty) {
+    setFailedMessage("No Searches Found");
+    setTimeout(() => setFailedMessage(""), 3500);
+    return;
+  }
+
+  const cleanFilteredData = JSON.parse(JSON.stringify(FilterData));
+  const recruiterId = sessionStorage.getItem("recruiterID");
+
+  const newSearch = {
+    recruiterId, 
+    header: HistoryName,
+    filters: cleanFilteredData
   };
 
-  const delayFetch = setTimeout(fetchCandidates, 700);  
+  try {
+    const response = await axios.post(`${url}/api/recruiter/save-history`, newSearch, {
+      headers: { "Content-Type": "application/json" }
+    });
 
-  return () => clearTimeout(delayFetch);  
-}, [FilterData, page, candidateLenght]);  
-
-
-const handleShowHistorySearch = () =>{
-  const getHistory = JSON.parse(localStorage.getItem("searchHistory", )) || []
-  setSerchHistory(getHistory)
-
-  if(ShowHistory ===true){
-    setShowHistory(false)
-  }else{
-    setShowHistory(true)
-  }
-}
-
-const saveSearchHistory = () => {
-  const randomNum = Math.floor(Math.random() * 1000 )
-  const history = JSON.parse(localStorage.getItem('searchHistory')) || []
-  const cleanFilteredData = JSON.parse(JSON.stringify(FilterData));
-  const newSearch = {
-      id: randomNum,
-      header:HistoryName,
-      filters: cleanFilteredData
+    if (response.data.success) {
+      setSuccessMessage("Filters Saved Successfully!");
+      setTimeout(() => setSuccessMessage(""), 1000);
     }
-  if (history.length >= 10) history.shift();
-  history.push(newSearch)
-  localStorage.setItem("searchHistory", JSON.stringify(history))
-  setSuccessMessage('Filters Saved Successfully !')
-  setTimeout(()=>setSuccessMessage(""), 1000)
-}
+  } catch (error) {
+    setFailedMessage("Failed to save history");
+    setTimeout(() => setFailedMessage(""), 3500);
+  }
+};
 
 const handleApplyHistory = (e) => {
-  const historyItemId = e.currentTarget.dataset.id;   
+  const historyItemId = e.currentTarget.dataset.id;
   if (!historyItemId) {
-    console.error("Error: historyItem is undefined.");
+    setFailedMessage("cannot get history");
+    setTimeout(() => setFailedMessage(""), 3500);    
     return;
   }
+  const savedHistory = Array.isArray(SerchHistory) ? SerchHistory.map((item) => item.filters) : [];
+  const selectedIndexOfItem = Number(historyItemId);
 
-  const savedHistory = JSON.parse(localStorage.getItem("searchHistory")) || [];
-  const selectedHistory = savedHistory.find(item => String(item?.id) === historyItemId);
-  const {filters} = selectedHistory
-  if (!selectedHistory) {
-    console.warn("No matching history found!");
-    return;
+  let filters = {}
+  if(selectedIndexOfItem >= 0 && selectedIndexOfItem<savedHistory.length){
+  filters = savedHistory[selectedIndexOfItem]
   }
 
   const newFilterData =  {
@@ -273,24 +332,31 @@ const handleApplyHistory = (e) => {
     keywords:[],
     excludekeywords:[],
     currentCompony:[],
-    currentProduct:[],
-    degination:[],
-    noticePeriod:[],
+    currentProduct:"",
+    designation:[],
+    functionalArea:"",
+    noticePeriod:"",
     experience: {
       minExperience:'',
       maxExperience:'',
     },
-    location:[],
-    profileName:"",
+    location:{
+      country:"",
+      state:"",
+      city:""
+    },
     salary: {
       min:"",
       max:"",
           },
+    education:{
+      ug:"",
+      pg:""
+    },
+    profileName:"",
+    gender:[],
     datePosted: [],
-    education:[],
-    gender:[]
-};
-
+  };
 
   if (Array.isArray(filters.jobProfile) && filters.jobProfile.length) {
     newFilterData.jobProfile = filters.jobProfile;
@@ -304,45 +370,47 @@ const handleApplyHistory = (e) => {
   if (Array.isArray(filters.currentCompony) && filters.currentCompony.length) {
     newFilterData.currentCompony = filters.currentCompony;
   }
-  if (Array.isArray(filters.currentProduct) && filters.currentProduct.length) {
+  if (filters.currentProduct) {
     newFilterData.currentProduct = filters.currentProduct;
   }
-  if (Array.isArray(filters.degination) && filters.degination.length) {
-    newFilterData.degination = filters.degination;
+  if (Array.isArray(filters.designation) && filters.designation.length) {
+    newFilterData.designation = filters.designation;
   }
-  if (Array.isArray(filters.noticePeriod) && filters.noticePeriod.length) {
+  if (filters.FunctionalArea && filters.FunctionalArea.length > 0) {
+    newFilterData.functionalArea = filters.FunctionalArea;
+}
+
+  if (filters.noticePeriod) {
     newFilterData.noticePeriod = filters.noticePeriod;
   }
-  if (Array.isArray(filters.location) && filters.location.length) {
-    newFilterData.location = filters.location;
+  if (filters.location && typeof filters.location === 'object' &&  (filters.location.country || filters.location.state || filters.location.city)){
+      newFilterData.location = {
+      state: filters.location.state,
+      city: filters.location.city,
+    };
   }
   if (Array.isArray(filters.profileName) && filters.profileName.length) {
     newFilterData.profileName = filters.profileName;
   }
-  if ( filters.length) {
-    newFilterData.education = filters.education;
+  if ( filters.education && typeof filters.education === "object" && (filters.education.ug || filters.education.pg) ) {
+      newFilterData.education = {
+      ug: filters.education.ug,
+      pg: filters.education.pg
+    }
   }
+
   if (Array.isArray(filters.gender) && filters.gender.length) {
     newFilterData.gender = filters.gender;
   }
 
-  if (
-    filters.salary &&
-    typeof filters.salary === "object" && 
-    ("min" in filters.salary || "max" in filters.salary)
-  ) {
+  if (filters.salary && typeof filters.salary === "object" && ("min" in filters.salary || "max" in filters.salary)) {
     newFilterData.salary = {
       min: filters.salary.min || "", 
       max: filters.salary.max || ""
     };
   }
 
-
-  if (
-    filters.experience &&
-    typeof filters.experience === "object" && 
-    (filters.experience.minExperience || filters.experience.maxExperience)
-  ) {
+  if ( filters.experience && typeof filters.experience === "object" &&  (filters.experience.minExperience || filters.experience.maxExperience)) {
     newFilterData.experience = {
       minExperience: filters.experience.minExperience || "", 
       maxExperience: filters.experience.maxExperience || ""
@@ -352,9 +420,8 @@ const handleApplyHistory = (e) => {
   if (Array.isArray(filters.datePosted) && filters.datePosted.length) {
     newFilterData.datePosted = filters.datePosted;
   }
-
   setFilterData(newFilterData);
-  setSuccessMessage("Filter Aplied Succesfully !")
+  setSuccessMessage("Filter Aplied !")
   setTimeout(()=>setSuccessMessage(""), 2000)
   setShowHistory(prev => !prev)
 };
@@ -385,7 +452,10 @@ const removeSingleHistory = (e) =>{
 }
 
 const handleClickOutside = (event) => {
-  if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+  if (
+    wrapperRef.current && !wrapperRef.current.contains(event.target) &&
+    buttonRef.current && !buttonRef.current.contains(event.target)
+) {
     setShowHistory(true)
   }
 };
@@ -420,410 +490,505 @@ return () => {
 }
 }, [navClose])
 
+useEffect(()=>{
+  setPage(1)
+}, [FilterData])
+
+useEffect(()=>{
+  if(allEmpty){
+    setIsSearchQuery(false)
+    setCandidate('')
+    return;
+  }
+
+}, [FilterData])
+
+useEffect(()=>{
+  if(allEmpty){
+    setCandidate('')
+    setIsSearchQuery(false)
+    return;
+  }
+  setIsSearchQuery(true)
+
+}, [])
+
+useEffect(() => {
+  if (allEmpty) return;
+  
+  const fetchData = async () => {
+    try {
+      setLoader(true);
+      await fetchCandidates();
+    } finally {
+      setLoader(false);
+    }
+  };
+
+  fetchData();
+}, [page]);
+
+
 
   return (
-    <div className="w-full pt-16 px-1.5 flex max-md:flex-col">
-      <div className="hidden max-sm:flex justify-center items-center max-sm:pt-28 text-orange-400">PC me dekh Bhai...! ,</div>
-      <div className="px-2  max-lg:block hidden max-lg:fixed top-1 left-0 max-lg:z-1000  rounded-r-xl max-sm:hidden">
+    <>
+    <Navbar  />
+    <div className="w-full pt-16 px-1.5  flex max-md:flex-col ">
+      <div className="hidden max-sm:flex  justify-center items-center max-sm:pt-28 text-orange-400">This website is not support in mobile layout !</div>
+      <div className="px-2  max-lg:block hidden max-lg:fixed top-1 left-0 max-lg:z-100  rounded-r-xl max-sm:hidden">
         <span className={`text-[30px] ${navClose ? '' : 'hidden'} duration-500`} onClick={handleNav}><i className="ri-menu-line"></i></span>
       </div>
 
-      {/* <--------------------------------------------------- Filter search page card is here -----------------------------> */}
-        <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[320px]`} style={{scrollbarWidth:"none"}}>
+{/* <---------------------------------------------------< Filter search page card is here >-----------------------------> */}
+        <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border shadow-lg max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[400px]`} style={{scrollbarWidth:"none", scrollBehavior:"smooth"}}>
             <div className={` transition-all duration-700 max-lg:bg-white  flex flex-col gap-4 bg-gray-10 px-1.5 py-2 rounded-2xl borde  border-gray-200 border-t-0`}>
 
-            <div className="select-none border border-slate-300 relative flex gap-3 max-lg:justify-end items-center justify-between max-lg:bg-slate-100 max-lg:shadow-none bg-white rounded-full px-4 py-3 shadow-md">
-              <button onClick={resetSearch} className="border border-gray-100 py-0.5 px-2 text-[11px] font-semibold tracking-wider rounded-xl active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-gray-100 text-slate-500 shadow-md" ><i className="ri-refresh-line"></i> <span>Reset Filter</span> </button>
-              <button  onClick={handleShowHistorySearch} className="border border-gray-100 py-0.5 px-2 text-[11px] font-semibold tracking-wider rounded-xl active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-gray-100 text-slate-500 shadow-md"><i className="ri-history-line"></i> Recent Filters </button>
-              <button onClick={isPopUp} disabled={!initialData}  className="border border-gray-100 py-0.5 px-4 text-[11px] font-semibold tracking-wider rounded-xl active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-gray-100 text-slate-500 shadow-md"><i className="ri-bookmark-fill"></i>Save</button>
-              <button className={`${successMessage.length? " z-50 fixed bottom-[5%] left-[5%]  py-0.5 px-2 text-[14px] font-semibold tracking-wider rounded-xl active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-green-300 text-slate-700 shadow-md" : "hidden"}`}>{successMessage}</button>
-              <button className={`${failedMessage.length? " z-50 fixed bottom-[5%] left-[5%]  py-0.5 px-2 text-[14px] font-semibold tracking-wider rounded-xl active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-orange-300 text-red-500 border border-orange-400 shadow-md" : "hidden"}`}><i className="ri-alert-line"></i>{failedMessage}</button>
+            <div className="select-no flex gap-4 px-1 items-center bg-white">
+              <button ref={buttonRef}  onClick={handleShowHistorySearch} className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded "><i className="ri-history-line"></i> Recent Searches </button>
+              <button onClick={isPopUp} disabled={!initialData}  className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded "><i className="ri-bookmark-fill"></i>Save Search</button>
+              
              
-      {/*<<---------------- show history data form local Storage -------------------------->> */}
-              <div ref={wrapperRef} 
-              className={` ${SerchHistory.length>0? "border bg-zinc-400 border-slate-300": ""} absolute top-14 left-0 select-none text-[12px]  rounded px-2 py-1 flex flex-col gap-1 transition-all duration-300 ease-in-out ${!ShowHistory ? "w-full opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-[-100%] overflow-hidden"}`}>
-                {SerchHistory.length > 0 ?
-                  SerchHistory.map((item)=>(
-                    <div key={item.id}
-                    data-id={item.id} 
-                    className="shadow flex justify-between items-center cursor-pointer pl-4  rounded bg-gray-400  border border-slate-300 text-white">
-                    <span onClick={handleApplyHistory} data-id={item.id} className=" w-full text-sm"><i className="ri-time-line"></i> {item.header} </span>
-                     <button onClick={removeSingleHistory} data-id={item.id} className="cursor-pointer bg-slate-700 py-0.5">
-                        <i className="ri-close-line text-[12px] px-4"></i>
-                      </button> 
-                    </div>
-                  )) :(
-                    <p className="m-auto  bg-slate-700 text-gray-200 w-full py-2 text-center rounded-full">No Search is Here</p>
-                  )
-                }
+{/*<<------------------------------------< show history data form server Storage >-------------------------->> */}
+              <div ref={wrapperRef}
+              style={{scrollbarWidth:"thin"}} 
+              className={` ${SerchHistory.length>0? "border-r  border-slate-300": ""} overflow-y-auto overflow-x-hidden absolute top-18 max-lg:top-14 left-0 select-none text-[12px] w-[300px] h-[88vh] max-lg:fixed bg-white  px-2 py-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${!ShowHistory ? "w-[400px] border-r border-slate-300 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-[-100%] overflow-hidden"}`}>
+              <div className="flex items-center justify-between pr-2">
+              <h1 className="text-xl text-slate-600 font-semibold">Recent Searches</h1>
+              <p className="text-slate-600"> saved searches {SerchHistory.length}</p>
+              </div>
+              <p className="text-gray-400 font-semibold mt-[-10px]">only last 25 searches will be show</p>
+              {SerchHistory.length > 0 ?
+              SerchHistory.map((item, i)=>(
+              <div key={i}
+              data-id={i}
+              className="shadow flex justify-between items-center cursor-pointer pl-4 rounded bg-gray-500  border border-slate-300 text-white">
+              <span onClick={handleApplyHistory} data-id={i} className=" w-full py-1 text-sm"><i className="ri-time-line"></i> {item.header} </span>
+              <button onClick={removeSingleHistory} data-id={i} className="cursor-pointer h-full bg-slate-700 py-0.5">
+              {/* <i className="ri-close-line "></i> */}
+              <i class="ri-delete-bin-line text-[14px] px-4 text-gray-200"></i>
+              </button> 
+              </div>
+              )):(
+              <p className="  bg-slate-600 text-gray-200 w-full py-2 text-center rounded font-semibold tracking-widest">No Search is Here</p>
+              )
+              }
 
-                <div className={` ${SerchHistory.length > 0 ? "flex" : "hidden"} w-full flex justify-end mt-1`}><span onClick={clearHistory} className=" shadow border border-slate-300 bg-slate-700 text-gray-200 rounded-2xl px-2 py-0.5 text-[12px] cursor-pointer">Clear All</span></div>
+              <div className={` ${SerchHistory.length > 0 ? "flex" : "hidden"} w-full flex justify-end mt-1`}><span onClick={clearHistory} className=" shadow border border-slate-300 bg-slate-200 text-gray-600 rounded-2xl px-4 py-0 text-[12px] cursor-pointer">clear</span></div>
               </div>
               </div>
+{/*<<-----------------------------------------< history name input >---------------------------------------->> */}
               <div className={`${PopupSave? "hidden" : "border w-full border-gray-300 py-1 px-2 text-[14px] font-semibold tracking-wider rounded-full active:bg-gray-200 cursor-pointer flex items-center justify-between gap-1  bg-gray-100 text-slate-500 shadow-md"}`}>
-                <input type="text" placeholder="Enter Search Name..." onChange={handleHistoryName} className="focus:outline-none w-full pl-1" />
+                <input type="text" placeholder="Enter Search Name..." value={HistoryName} onChange={(e)=> setHistoryName(e.target.value)} className="focus:outline-none w-full pl-1" />
                 <button onClick={() => {
-                  if(HistoryName.length) {
-                      saveSearchHistory();
-                      setHistoryName("")
-                      isPopUp();
-                    } else {
-                        setFailedMessage("Failed to save, enter history name");
-                        setTimeout(() => setFailedMessage(""), 2000);
-                      }
-                  }}
-                  className="rounded-xl bg-slate-500 text-white px-2 py-0.5 cursor-pointer flex items-center justify-center">save</button>
+                if(HistoryName.length) {
+                saveSearchHistory();
+                setHistoryName("")
+                isPopUp();
+                } else {
+                setFailedMessage("Failed to save, enter history name");
+                setTimeout(() => setFailedMessage(""), 2000);
+                }
+                }}
+                className="rounded-xl bg-slate-500 text-white px-2 py-0.5 cursor-pointer flex items-center justify-center">save</button>
+              </div>
+{/* <<----------------------------------------< KeyWords input >------------------------------------------->> */}
+            <div>
+                <div className="flex items-center w-full px-2  mb-2">
+                <p className="text-center tracking-wider font-bold text-slate-700">Add Keywords</p>
               </div>
 
-                <div className="shadow-md flex flex-col py-3 px-4 gap-3 rounded-xl border border-slate-300 bg-white max-md:relative">
-                  <div className="flex items-center max-md:justify-between max-md:bg-gray-200  w-full max-md:px-6 max-md:shadow ">
-                      <p className="text-center tracking-wider font-bold text-orange-500">Find Condidates</p>
-                  </div>
-                  <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    {keywordsInput.map(({ key, placeholder }, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          name={key}
-                          placeholder={placeholder}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              const inputValue = e.target.value.trim();
-                              
-                              if (inputValue) {
-                                setFilterData(prevState => ({
-                                  ...prevState,
-                                  [key]: prevState[key] && Array.isArray(prevState[key])
-                                    ? [...new Set([...prevState[key], inputValue])] 
-                                    : [inputValue]  
-                                }));
-                                e.target.value = "";  
-                              }
-                            }
-                          }}
-                          className="border w-full border-slate-300 bg-gray-100 pl-1.5 rounded focus:outline-none h-8 text-slate-600"
-                        />
-                      </div>
-                    ))}
-                   <div className="mt-2 flex flex-col gap-4">
-                        <div>
-                          <h3 className="font-semibold text-gray-600">Keywords</h3>
-                          <div className="flex gap-1 flex-wrap">
-                            {keywordsInput
-                              .filter(input => FilterData[input.key]?.length > 0)  
-                              .map(input =>
-                                FilterData[input.key].map((value, index) => (
-                                  <p
-                                    key={`${input.key}-${index}`}
-                                    onClick={() =>
-                                      setFilterData(prev => ({
-                                        ...prev,
-                                        [input.key]: prev[input.key].filter(v => v !== value),  
-                                      }))
-                                    }
-                                    className="text-sm border rounded-2xl px-2 bg-slate-200 border-slate-300 cursor-pointer"
-                                  >
-                                    {value}
-                                  </p>
-                                ))
-                              )}
-                          </div>
-                        </div>
-                        </div>
-                  </form>
-
-              </div>
-
-              <div className="min-w-full gap-4 flex flex-col bg-white border border-slate-300 rounded-xl px-2 shadow-md py-3">
-                <h2 className=" font-semibold tracking-wider ">Serch by Profile</h2>
-                <input type="text" placeholder="Candidate Name"
-                value={FilterData.profileName}
-                onChange={(e)=> setFilterData({...FilterData ,profileName: e.target.value})}
-                className="border w-full border-slate-300 bg-gray-100 pl-1.5 rounded focus:outline-none h-8"/>
-      
-                 <div className="flex flex-col gap-2">
-                          <input
-                            type="text"
-                            placeholder="Add locations..."
-                            onKeyDown={handleLocationKeyDown}
-                            className="border w-full border-gray-300 bg-gray-100 pl-2 rounded focus:outline-none h-8 text-gray-600"
-                          />
-
-                          <input
-                            type="text"
-                            placeholder="Notice Period..."
-                            onKeyDown={handleNoticeKeyDown}
-                            className="border w-full border-gray-300 bg-gray-100 pl-2 rounded focus:outline-none h-8 text-gray-600"
-                          />
-
-
-
-                          {/* Render Added Locations */}
-                          <div className="flex flex-wrap gap-2">
-                            {Array.isArray(FilterData.noticePeriod) && FilterData.noticePeriod.length >0 && (FilterData.noticePeriod.map((notice, index) => (
-                              <span
-                                key={index}
-                                onClick={()=> handleRemoveNotice(notice)}
-                                className="text-sm border rounded-2xl px-2 bg-slate-200 border-slate-300 cursor-pointer"
-                                >
-                                {notice}
-                              </span>
-                            )))}
-                          </div>
-
-
-                          <div className="flex flex-wrap gap-2">
-                            {Array.isArray(FilterData.location) && FilterData.location.length >0 && (FilterData.location.map((loc, index) => (
-                              <span
-                                key={index}
-                                onClick={() => handleRemoveLocation(loc)}
-                                className="text-sm border rounded-2xl px-2 bg-slate-200 border-slate-300 cursor-pointer"
-                                >
-                                {loc}
-                              </span>
-                            )))}
-                          </div>
-                  </div>
-              </div>
-           
-              <div className="select-none border flex flex-col gap-4 border-slate-300 bg-white rounded-xl px-2 py-3 shadow-md">
-            <h2 className="font-semibold tracking-wider ">Search By Compony</h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    {componyInput.map(({ key, placeholder }, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          name={key}
-                          placeholder={placeholder}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              const inputValue = e.target.value.trim();
-                              
-                              if (inputValue) {
-                                setFilterData(prevState => ({
-                                  ...prevState,
-                                  [key]: prevState[key] && Array.isArray(prevState[key])
-                                    ? [...new Set([...prevState[key], inputValue])]
-                                    : [inputValue] 
-                                }));
-                                e.target.value = ""; 
-                              }
-                            }
-                          }}
-                          className="border w-full border-slate-300 bg-gray-100 pl-1.5 rounded focus:outline-none h-8 text-slate-600"
-                        />
-                      </div>
-                    ))}
-                   <div>
-                        <h3 className="font-semibold text-gray-600">Company Details</h3>
-                        <div className="flex gap-1 flex-wrap">
-                          {componyInput
-                            .filter(input => FilterData[input.key]?.length > 0) // Ensure only filled values appear
-                            .map(input =>
-                              FilterData[input.key].map((value, index) => (
-                                <p
-                                  key={`${input.key}-${index}`}
-                                  onClick={() =>
-                                    setFilterData(prev => ({
-                                      ...prev,
-                                      [input.key]: prev[input.key].filter(v => v !== value), // Remove clicked value
-                                    }))
-                                  }
-                                  className="text-sm border rounded-2xl px-2 bg-slate-200 border-slate-300 cursor-pointer"
-                                >
-                                  {value}
-                                </p>
-                              ))
-                            )}
-                        </div>
-                      </div>
-
-                  </form>
-              </div>
-
-              <div className="select-none bg-white border border-slate-300 rounded-xl px-4 py-3 shadow-md">
-              <h2 className="font-semibold tracking-wider ">Select Gender</h2>
-              { ["Male","Female"].map((job, i)=>(
-                    <div key={i} className="text-slate-800"> 
-                    <input type="checkbox" 
-                    id={job} 
-                    value={job}
-                    checked={Array.isArray(FilterData.gender) && FilterData.gender.includes(job)}
-                    onChange={(e)=> setFilterData({...FilterData , gender: e.target.checked ? [...FilterData.gender, e.target.value] : FilterData.gender.filter(exp => exp !== e.target.value )})}
-                    />
-                    <label htmlFor={job} className="cursor-pointer"> {job}
-                    </label>
-                </div>
-                ))
-              }
-            </div>
-
-            <div className="select-none border border-slate-300 bg-white rounded-xl px-4 py-3 shadow-md">
-            <h2 className="font-semibold tracking-wider ">Experience Level</h2>
-            
-            <div className="flex  gap-4">
-            <div className="flex gap-4 items-center">
-              {/* Min Experience Dropdown */}
-              <select
-                value={FilterData.experience.minExperience}
-                onChange={(e) => setFilterData({...FilterData, experience: {...FilterData.experience, minExperience: e.target.value}})}
-                className="border text-slate-700 border-slate-300 py-0.5 rounded"
-                
+              <form className="flex flex-col gap-4 px-2">
+              {keywordsInput.map(({ key, placeholder }) => (
+              <div key={key} className="flex flex-col gap-2">
+              <input
+              type="text"
+              placeholder={placeholder}
+              onKeyDown={(e) => handleKeyDown(e, key)}
+              className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+              />
+              {/* Tag List Below Input */}
+              <div className="flex flex-wrap gap-2">
+              {FilterData[key]?.map((value, index) => (
+              <p
+              key={`${key}-${index}`}
+              onClick={() => removeTag(key, value)}
+              className="border border-slate-300 rounded-full bg-slate-100 px-2 flex justify-center gap-1 items-center  focus:outline-none cursor-pointer active:bg-slate-300 text-slate-800 text-[14px] font-semibold"
               >
-                <option value="">Min Experience</option>
-                {experienceOptions.map((year) => (
-                  <option 
-                  key={year} 
-                  value={year}
-                  >{`${year} year${year > 1 ? "s" : ""}`}</option>
-                ))}
-              </select>
+              {value} <i className="ri-close-line text-orange-400"></i>
+              </p>
+              ))}
               </div>
-              {/* <<<--------Max Experience Dropdown ---------------->>> */}
-              <select
-                value={FilterData.experience.maxExperience}
-                onChange={(e) => setFilterData({...FilterData, experience:{...FilterData.experience, maxExperience:e.target.value}})}
-                className="border text-slate-700 border-slate-300 py-0.5 rounded"
-              >
-                <option value="">Max Experience</option>
-                {experienceOptions.map((year) => (
-                  <option 
-                  key={year} 
-                  value={year}
-                  >
-                    {`${year} year${year > 1 ? "s" : ""}`}</option>
-                ))}
-              </select>
-            </div>
-            </div>
+              </div>
+              ))}
+            </form>
+          </div>
 
-            {/* <div className="select-none  bg-white border border-slate-300 rounded-xl px-4 py-3 shadow-md">
-            <h2 className="font-semibold tracking-wider ">Date posted</h2>
-            { ["All","Last Hour","Last 24 Hours","Last 7 Days","Last 30 Days"].map((jobType, i)=>(
-                    <div key={i}>
-                    <input type="checkbox" 
-                    id={jobType}
-                    value={jobType} 
-                    checked={Array.isArray(FilterData.datePosted) && FilterData.datePosted.includes(jobType)}
-                    onChange={(e) => 
-                      setFilterData({
-                          ...FilterData,
-                          datePosted: e.target.checked
-                              ? [...FilterData.datePosted || [], e.target.value]  // Add
-                              :(FilterData.datePosted || []).filter(exp => exp !== e.target.value) // Remove
-                      })
-                  }
-                   />
-                    <label htmlFor={jobType} className="cursor-pointer"> {jobType}
-                    </label>
-                </div>
-                ))
+{/* <<--------------------------------- Experience ---<  CTC , N/P >---------------------------------------->>> */}
+          <div className="select-none gap-4 flex flex-col border-slate-300 bg-white px-2 py-1  ">
+                  
+            <div className="flex flex-col  gap-2">
+            <h2 className=" tracking-wider font-semibold mb-1 text-slate-700">Experience</h2>
+            <div className="flex gap-2">
+            <div className="flex gap-1 items-center">
+            {/* Min Experience Dropdown */}
+            <select
+              value={FilterData.experience.minExperience}
+              onChange={(e) => setFilterData({...FilterData, experience: {...FilterData.experience, minExperience: e.target.value}})}
+              className="border-b bg-slate-100 text-slate-700 border-slate-300 px-5 py-0.5 "
+              >
+              <option value="">Min Experience</option>
+              <option value="0">0 Years</option>
+              {experienceOptions.map((year) => (
+              <option 
+              key={year} 
+              value={year}
+              >
+              {`${year} year${year > 0 ? "s" : ""}`}</option>
+              ))}
+            </select>
+            </div>
+{/* <<<------------------------------------< Max Experience Dropdown >--------------------------------------->>> */}
+            <select
+            value={FilterData.experience.maxExperience}
+            onChange={(e) => setFilterData({...FilterData, experience:{...FilterData.experience, maxExperience:e.target.value}})}
+            className="border-b bg-slate-100 text-slate-700 border-slate-300 px-5 py-0.5 "
+            >
+            <option value="">Max Experience</option>
+            <option value="0">0 years</option>
+            {experienceOptions.map((year) => (
+            <option 
+            key={year} 
+            value={year}
+            >
+            {`${year} year${year > 0 ? "s" : ""}`}</option>
+            ))}
+            </select>
+            </div>
+            </div>
+{/* --------------------------------------< Notice Period >------------------------------------------------- */}
+
+          <div className="w-full flex flex-col gap-2">
+            <p className="font-semibold text-slate-700">Notice Period</p>
+            <select
+            value={FilterData.noticePeriod}
+            onChange={(e)=> setFilterData(prev => ({...prev, noticePeriod:e.target.value}))}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            >
+            <option value="">Select Notice Period...</option>
+            {noticePeriodOptions.map((option, index) => (
+            <option key={index} value={option}>
+            {option}
+            </option>
+            ))}
+            </select>
+          </div>
+{/* <<-------------------------------------------< salary >------------------------------------------------>> */}
+          <div className="flex flex-col gap-2">
+            <h2 className=" tracking-wider font-semibold text-slate-700">Salary</h2>
+            <div className="flex gap-2">
+            { ["Min","Max"].map((jobType, i)=>(
+            <div key={i}>
+            <input 
+            type="number"
+            id={jobType}
+            min={0}
+            placeholder={ jobType.includes("Min")? " Min salary" : "Max salary" }
+            value={FilterData.salary?.[jobType.toLocaleLowerCase()] || ""}
+            onChange={(e)=> setFilterData({...FilterData ,salary: {
+            ...FilterData.salary,
+            [jobType.toLowerCase()]: e.target.value, 
+            },})}
+            className="  focus:outline-none px-2 py-0.5 border-b bg-slate-100 border-gray-300 w-full"
+            />
+          </div>
+            ))
             }
-            </div> */}
+          </div>
+          </div>
+                  
+          <div className="flex flex-col gap-4">
+          <h3 className="text-lg font-semibold text-gray-600">Select Location</h3>
 
-            <div className="select-none flex flex-col gap-2 border border-slate-300 bg-white rounded-xl px-4 py-3 shadow-md">
-            <h2 className="font-semibold tracking-wider ">Education</h2>
-                    <input 
-                    type="text"
-                    onKeyDown={handleEducationInput}
-                    placeholder="e.g. University, M.ba, B.com"
-                    className="border w-full border-gray-300 bg-gray-100 pl-2 rounded focus:outline-none h-8 text-gray-600"
+{/*<<---------------------------------< Country, State, District Dropdowns >------------------------------->>*/}
+          <div className="flex flex-col gap-4">
+            {/* Country Dropdown */}
+            <select
+            value={FilterData.location.country}
+            onChange={(e)=>setFilterData((prev) => ({
+            ...prev,
+            location: { country:e.target.value, state:states, city: "" }
+            }))}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            >
+            <option>India</option>
+            {/* Add more countries if needed */}
+            </select>
 
-                    />
-                <div className="flex flex-wrap gap-2">
-                  {Array.isArray(FilterData.education) && FilterData.education.length > 0 && (FilterData.education.map((edu, i)=>(
-                    <span key={i}
-                    onClick={()=>handleRemoveEducation(edu)}
-                    className="text-sm border rounded-2xl px-2 bg-slate-200 border-slate-300 cursor-pointer"
-                    >
-                      {edu}
-                      </span>
-                  )))
+            {/* State Dropdown */}
+            <select
+            value={FilterData.location.state}
+            onChange={(e)=>setFilterData({...FilterData, location:{...FilterData.location, state:e.target.value}})}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            >
+            <option className="bg-gray-100 text-slate-400">Select State</option>
+            {states.map((state, index) => (
+            <option key={index} value={state}>{state}</option>
+            ))}
+            </select>
 
-                  }    
-                </div>
+            {/* City Dropdown */}
+            <select
+            value={FilterData.location.city}
+            onChange={(e)=>setFilterData({...FilterData, location:{...FilterData.location, city:e.target.value}})}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            disabled={!cities.length} 
+            >
+            <option className="bg-gray-100 text-slate-400">Select City</option>
+            {cities.map((city, index) => (
+            <option key={index} value={city}>{city}</option>
+            ))}
+            </select>
+          </div>
+          </div>
+          </div>
 
-              </div>
+          </div>
 
-            <div className="select-none flex flex-col gap-3 justify-between border border-slate-300  bg-white rounded-xl px-4 py-3 shadow-md">
-              <h2 className="font-semibold tracking-wider ">Salary</h2>
-              <div className="flex gap-1">
-              { ["Min","Max"].map((jobType, i)=>(
-                    <div key={i}>
-                    <label htmlFor={jobType} >{jobType} </label>
-                    <input 
-                    type="number"
-                    id={jobType}
-                    min={0}
-                    placeholder={ jobType.includes("Min")? " 3 or 3000000" : "7 or 7000000" }
-                    value={FilterData.salary?.[jobType.toLocaleLowerCase()] || ""}
-                    onChange={(e)=> setFilterData({...FilterData ,salary: {
-                      ...FilterData.salary,  // Keep existing values
-                      [jobType.toLowerCase()]: e.target.value, // Update min or max
-                  },})}
-                    className="bg-slate-200 rounded focus:outline-none px-2 py-0.5 border border-gray-300 w-full"
-                    />
-                </div>
-                  ))
+          <div className="select-none flex flex-col gap-1 justify-between  border-slate-300  bg-white  px-2 py-3  ">
+{/* <<----------------------------------< search by profile >------------------------------------------------->> */}
+          <div className="min-w-full gap-4 flex flex-col bg-white  border-slate-300   px-2   py-3">
+          <h2 className=" font-semibold tracking-wider text-slate-700">Serch by Profile</h2>
+          <input type="text" placeholder="search by name or number"
+          value={FilterData.profileName}
+          onChange={(e)=> setFilterData({...FilterData ,profileName: e.target.value})}
+          className="border-b bg-slate-100 text-slate-700 border-slate-300 px-5 py-0.5 "
+          />
+          </div>
+{/* <<----------------------------------< search by company >------------------------------------------------->> */}
+            <div className="select-none  flex flex-col gap-4 border-slate-300 bg-white   px-2 py-3  ">
+            <h2 className="font-semibold tracking-wider text-slate-700">Search By Company</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {componyInput.map(({ key, placeholder }, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+              type="text"
+              name={key}
+              placeholder={placeholder}
+              onKeyDown={(e) => {
+              if (e.key === "Enter") {
+              e.preventDefault();
+              const inputValue = e.target.value.trim();
+              if (inputValue) {
+              setFilterData(prevState => ({...prevState, [key]: prevState[key] && Array.isArray(prevState[key])?
+              [...new Set([...prevState[key], inputValue])]: [inputValue] })); e.target.value = ""; }
               }
-                </div>
-              </div>
-
+              }}
+              className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+              />
             </div>
+            ))}
+            <div className={`${Array.isArray(FilterData.currentCompony) && FilterData.currentCompony.length>0 || Array.isArray(FilterData.designation) && FilterData.designation.length>0 ? "": "hidden"}`}>
+              <h3 className="font-semibold text-gray-600">Company Details</h3>
+              <div className="flex gap-1 flex-wrap">
+              {componyInput.filter(input => FilterData[input.key]?.length > 0).map(input =>
+              FilterData[input.key].map((value, index) => (
+              <p
+              key={`${input.key}-${index}`}
+              onClick={() =>
+              setFilterData(prev => ({
+              ...prev,
+              [input.key]: prev[input.key].filter(v => v !== value), // Remove clicked value
+              }))
+              }
+              className="text-sm border rounded-2xl px-2 bg-slate-100 font-semibold border-slate-300 cursor-pointer"
+              >
+              {value} <i className="ri-close-line text-orange-400"></i>
+              </p>
+              ))
+              )}
+              </div>
+            </div>
+          </form>
+          </div>
+{/* <<-------------------------------------------< product & Functional Area >------------------------------>> */}
+          <div className="flex flex-col gap-4 px-2">
+            <div>
+            <p className="font-semibold text-slate-600 mb-2">Select Product</p>
+            <select 
+            value={FilterData.currentProduct} 
+            onChange={(e)=> setFilterData({...FilterData, currentProduct:e.target.value})}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            >
+            <option className="bg-gray-100 text-slate-400">select products</option>
+            { Array.isArray(Product) && Product.length && Product.map((product)=>(
+            <option 
+            value={product.name}
+            key={product._id}>
+            {product.name}
+            </option>
+            )) 
+            }
+            </select>
+          </div>
+{/* <<-------------------------------------------< Functional Area >-------------------------------------------------->> */}
+          <div className="">
+            <p className="font-semibold text-slate-600 mb-2">Functional Area</p>
+            <select 
+            value={FilterData.FunctionalArea} 
+            onChange={(e)=> setFilterData({...FilterData, FunctionalArea:e.target.value})}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            >
+            <option className="bg-gray-100 text-slate-400">select Functional Area</option>
+            { Array.isArray(FunctionalArea) && FunctionalArea.length && FunctionalArea.map((product)=>(
+            <option 
+            value={product.name}
+            key={product._id}>
+            {product.name}
+            </option>
+            )) 
+            }
+            </select>
+          </div>
+        </div>
+        <div className="select-none bg-white  border-slate-300   px-4 py-3  ">
+          <h2 className="font-semibold tracking-wider text-slate-700 ">Select Gender</h2>
+          { ["Male","Female"].map((job, i)=>(
+          <div key={i} className="text-slate-800"> 
+          <input type="checkbox" 
+          id={job} 
+          value={job}
+          checked={Array.isArray(FilterData.gender) && FilterData.gender.includes(job)}
+          onChange={(e)=> setFilterData({...FilterData , gender: e.target.checked ? [...FilterData.gender, e.target.value] : FilterData.gender.filter(exp => exp !== e.target.value )})}
+          />
+          <label htmlFor={job} className="cursor-pointer"> {job}
+          </label>
+          </div>
+          ))
+          }
+      </div>
+{/* <<--------------------------------< education search field >--------------------------------------->> */}
+          <div className="select-none flex flex-col gap-2  border-slate-300 bg-white py-3   ">
+          <h2 className="font-semibold tracking-wider text-slate-700 px-2">Education</h2>
+          <div className="px-2 flex flex-col gap-4">
+            <select 
+            value={FilterData.education.ug}
+            onChange={(e)=>(setFilterData((prev)=>({...prev, education:{...prev.education, ug:e.target.value }})))}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            >
+            <option className="bg-gray-100 text-slate-400">select UG</option>
+            { Array.isArray(UG) && UG.length && UG.map((ug)=>(
+            <option value={ug.name} key={ug._id}>{ug.name}</option>
+            ))
+            }
+            </select>   
+            <select 
+            value={FilterData.education.pg}
+            onChange={(e)=>(setFilterData((prev)=>({...prev, education:{...prev.education, pg:e.target.value}})))}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            >
+            <option className="bg-gray-100 text-slate-400">select PG</option>
+            { Array.isArray(PG) && PG.length && PG.map((pg)=>(
+            <option value={pg.name} key={pg._id}>{pg.name}</option>
+            ))
+
+            }
+            </select>   
+          </div>
+          </div>
+          {/* <<---------------------------------------------< reset serches >--------------------------------------->> */}
+          <div className="w-full justify-between  flex gap-4 px-4 pb-12 pt-2">
+          <button onClick={resetSearch} className="border w-full border-gray-100 py-0.5 px-6 text-[14px] font-semibold tracking-wider active:bg-gray-200 cursor-pointer rounded flex items-center justify-center gap-1  bg-orange-700 text-white shadow-md" ><span>Reset Searches</span> </button>
+          <button 
+          onClick={()=>handleSearch()}
+          className=" cursor-pointer w-full py-1 px-10 rounded border border-emerald-300 bg-emerald-800 text-gray-100"
+          >
+          Search
+          </button>
+          </div>
+          </div>
         </div>
 
-  {/* <<------------------------------- Rendered Filtered Candidate Profile ---------------------------> */}
-
+{/* <<-------------------------------------------------------< page navigator >----------------------------------------------->> */}
         <div className="h-[90vh] pt-4 overflow-y-scroll w-full max-sm:hidden " style={{scrollbarWidth:"thin", scrollBehavior:"smooth"}}>
-      <div className="mt-1 max-md:mt-16 px-4  gap-6 flex flex-col">
-        
-      { Loader ? (
-  <div className="h-screen w-full flex justify-center items-center">
-    <PuffLoader />
-  </div>
-
-  ): Array.isArray(Candidate) && Candidate.length > 0 ? (
-        Candidate.map((candidates) => (
-    <ProfileCard key={candidates._id} Candidate={candidates} />
-  ))
-) : (
-  <div className="h-screen w-full flex justify-center items-center">
-      <img src="../../public\images\Not-available-image.jpg" alt="" />    
-</div>
-)}
-
-      {/* <<--------------------buttons to navigate next pages and prev pages --------------------->> */}
-      <div className={` ${candidateLenght>0? "":"hidden"}  pagination w-full justify-between bottom-4 right-4 gap-2 flex pb-4`}>
-        <div className="flex gap-4">
-          <button className="px-4 py-1 rounded-full bg-gray-600 border border-slate-500 active:bg-gray-500  tracking-wider text-sm text-white"> Total Result - {candidateLenght} </button>
-          <button className="px-4 py-1 rounded-full bg-gray-600 border border-slate-500 active:bg-gray-500  tracking-wider text-sm text-white"> Remaining - {remainingData >0? remainingData : "0"} </button>
-        </div>
-        <div className="flex gap-4">
-          <button onClick={resetPage} className="px-4 py-1 rounded-full bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider"><i class="ri-home-4-line"></i> </button>
-          <button onClick={handlePreviousPage} className="px-4 py-1 rounded-full bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider"><i class="ri-arrow-left-s-line"></i></button>
+        <div className={`${Candidate.length>0? "w-full flex justify-between  px-4":"hidden"}`}>
+        <div className="flex gap-2">
+          <button onClick={resetPage} className="px-4 py-1 rounded bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider"><i className="ri-home-4-line"></i> </button>
           <select
-        value={page}
-        onChange={handleNavigateButtons}
-        className="px-4 py-1 rounded-full bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider cursor-pointer">
-        {Array.from({ length: Math.ceil(candidateLenght/20)}, (_, i) => (
+          value={page}
+          onChange={handleNavigateButtons}
+          className="px-4 py-1 rounded bg-slate-600 border text-white border-slate-500 active:bg-gray-500  tracking-wider cursor-pointer">
+          {Array.from({ length: Math.ceil(candidateLenght/20)}, (_, i) => (
           <option 
           key={i + 1} 
           value={i + 1}>
-            Page {i + 1}
+          Page {i + 1}
           </option>
+          ))}
+          </select>
+        </div>
+{/* <<------------------------------------------------------< Top navigator Button >----------------------------->> */}
+          <div className={`flex gap-4`}>
+          <button onClick={handlePreviousPage} className="px-4 py-1 rounded-sm bg-gray-300 border border-slate-400 active:bg-gray-500  tracking-wider"><i className="ri-arrow-left-s-line"></i></button>
+          <button className="px-4 py-1 rounded-sm bg-gray-600 border border-slate-500 active:bg-gray-500  tracking-wider text-sm text-white"> Remaining - {remainingData >0? remainingData : "0"} </button>
+          <button className="px-4 py-1 rounded-sm bg-gray-600 border border-slate-500 active:bg-gray-500  tracking-wider text-sm text-white flex items-center justify-center gap-4"> Total Search Result - {candidateLenght}</button>
+          <button onClick={handleNextPage} className="px-4 py-1 rounded-sm bg-gray-300 border border-slate-400 active:bg-gray-500  tracking-wider"><i className="ri-arrow-right-s-line"></i></button>
+          </div>
+        </div>
+{/* <<------------------------------------------------------< Rendered Filtered Candidate Profile >-----------------------------> */}
+        <div className="mt-1 max-md:mt-16 px-4 pt-2 gap-4 flex flex-col">
+          { !IsSearchQuery? (
+          <div className="justify-center h-[80vh] flex items-center">
+          <img src="/images/freepeakSearch.png" className="w-[500px] filter grayscale-90 opacity-70" /> 
+          </div>
+          ):Loader ? (
+          <div className="h-screen w-full flex justify-center items-center">
+          <PuffLoader />
+          </div>
+          ):!isOnline? (
+          <div className="flex h-[70vh] w-full justify-center items-center flex-col text-gray-400">
+          <i className="ri-cloud-off-line text-3xl"></i>
+          <span>No Internet Connection </span>
+          </div>
+          ) : Array.isArray(Candidate) && Candidate.length > 0 ? (
+          Candidate.map((candidates) => (
+          <ProfileCard key={candidates._id} Candidate={candidates} />
+          ))
+          ) : (
+          <div className="h-screen w-full flex justify-center select-none items-center">
+          <img src="../../public\images\Not-available-image.jpg" alt="" />    
+      </div>
+      )}
+{/* <<----------------------------------------< Success messages & Failed message >---------------------------------------->> */}
+      <div>
+        <button className={`${successMessage.length? "z-50 fixed bottom-[5%] right-[2%]  py-1 px-8 text-[14px]  tracking-wider rounded-2xl active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-emerald-600 text-white shadow-md" : "translate-y-[-100%] opacity-0"} duration-300 transition-all`}>{successMessage}</button>
+        <button className={`${failedMessage.length? " z-50 fixed bottom-[5%] right-[2%]  py-1 px-4 text-[14px] tracking-wider rounded-2xl active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-orange-600 text-white shadow-md" : "translate-y-[-100%] opacity-0 "} duration-300 transition-all`}>{failedMessage}</button>
+      </div>
+
+{/* <<------------------------------------< buttons to navigate next pages and prev pages ( In Bottom ) >------------------------------->> */}
+      <div className={` ${Candidate.length>0? "":"hidden"}  pagination w-full justify-center bottom-4 right-4 gap-2 flex pb-4`}>
+        <div className="flex gap-4">
+        <button onClick={resetPage} className="px-4 py-0.5 rounded bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider"><i className="ri-home-4-line"></i> </button>
+        <button onClick={handlePreviousPage} className="px-4 py-0.5 rounded bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider"><i className="ri-arrow-left-s-line"></i></button>
+        <select
+        value={page}
+        onChange={handleNavigateButtons}
+        className="px-4 py-0.5 rounded bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider cursor-pointer">
+        {Array.from({ length: Math.ceil(candidateLenght/20)}, (_, i) => (
+        <option 
+        key={i + 1} 
+        value={i + 1}>
+        Page {i + 1}
+        </option>
         ))}
-      </select>
-          <button onClick={handleNextPage} className="px-4 py-1 rounded-full bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider"><i class="ri-arrow-right-s-line"></i></button>
+        </select>
+        <button onClick={handleNextPage} className="px-4 py-0.5 rounded bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider"><i className="ri-arrow-right-s-line"></i></button>
         </div>
       </div>
 
       </div>
-
-      </div>
-        
+      </div> 
     </div>
+    </>
   );
 };
 
