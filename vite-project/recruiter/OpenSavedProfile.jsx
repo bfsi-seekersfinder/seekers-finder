@@ -4,43 +4,38 @@ import PageLoading from '../components/Loader.jsx/Loading'
 import axios from 'axios'
 
 const OpenSavedProfile = ({profile, title, searchTerm}) => {
-    const {user} = useContext(UserContext)
+    const { viewCount,} = useContext(UserContext)
     const url = import.meta.env.VITE_API_URI
     const [Loading, setLoading] = useState(false)
-    const [getViewedUser, setgetViewedUser] = useState([])
+    const [getViewedUser, setgetViewedUser] = useState(viewCount)
+
+    const [seenProfiles, setseenProfiles] = useState(() => {
+    try {
+    const storedProfiles = sessionStorage.getItem("seenProfiles");
+    return storedProfiles ? storedProfiles.split(",") : [];
+    } catch (error) {
+    console.error("Invalid sessionStorage data:", error);
+    return [];
+    }
+    });
+
     const [FaildMessage, setFaildMessage] = useState('')
-    
+
     const filteredData = profile.filter((user) =>
-        user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    user?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
+    console.log("saved profiles",profile)
 
-    const handleGetView = async () => {
-        try {
-        const response = await axios.get(`${url}/api/account/getview`, {
-        params: { recruiterId: user.id },
-        withCredentials: true,
-        headers: { "Content-Type": "application/json" }
-        });
-
-        setgetViewedUser(response.data.view.viewCount);
-        } catch (error) {
-        console.error("Error fetching view data:", error.message);
-        }
-    };
-    
-    useEffect(()=>{
-    handleGetView()
-    }, [] )
 
     const handleSeeSingleCandidateProfile = (candidateId) =>{
-        if(getViewedUser.includes(candidateId)){
-            sessionStorage.setItem("candidateId", candidateId);
-            if(!Loading) window.open("/account/candidate/profile");
+        if(seenProfiles.includes(candidateId)){
+        sessionStorage.setItem("candidateId", candidateId);
+        if(!Loading) window.open("/account/candidate/profile");
         }
         else{
-            setFaildMessage("You don't have seen yet!")
-            setTimeout(()=>setFaildMessage(''), 3000)
+        setFaildMessage("You don't have seen yet!")
+        setTimeout(()=>setFaildMessage(''), 3000)
         }
     }
 
@@ -48,7 +43,7 @@ const OpenSavedProfile = ({profile, title, searchTerm}) => {
   if(Loading) return <PageLoading/>
 
   return (
-    <div className='py-4 h-screen gap-4 flex flex-wrap justify-center overflow-y-auto' style={{scrollbarWidth:'none'}}>
+    <div className='py-4 h-screen gap-4 flex flex-wrap justify-center overflow-y-auto pb-20' style={{scrollbarWidth:'none'}}>
         <button className={`${FaildMessage?'absolute bottom-4 rounded-full bg-orange-500 px-5 py-0.5 text-white':'hidden'}`}>{FaildMessage}</button>
 
         {filteredData.length>0 && filteredData.map((user, i) => (
@@ -72,7 +67,7 @@ const OpenSavedProfile = ({profile, title, searchTerm}) => {
             <button data-field="number"  
             className={` text-white transition-all duration-300  w-60 max-lg:w-40 py-1 pl-2 flex items-center justify-center rounded-sm overflow-y-hidden  bg-slate-600 border border-slate-300 text-sm cursor-pointer px-1`} 
             style={{scrollbarWidth:"none"}}>
-            {Array.isArray(getViewedUser) && getViewedUser.includes(user?._id)? `${user.mobileNo? typeof user.mobileNo === "String"? `+91 ${user.mobileNo.slice(0,4)+"XXXXXX"}`: `+91 ${user.mobileNo.toString().slice(0,4)+"XXXXXX"}` : "Open Profile"}`: "Open Profile"}</button>
+            {Array.isArray(getViewedUser) && getViewedUser.includes(user?._id)? `${user.mobileNo? typeof user.mobileNo === "string"? `+91 ${user.mobileNo.slice(0,4)+"XXXXXX"}`: `+91 ${user.mobileNo.toString().slice(0,4)+"XXXXXX"}` : "Open Profile"}`: "Open Profile"}</button>
             <button data-field="email" 
             className={` text-white w-60 max-lg:w-40 py-1 pl-2 flex overflow-y-hidden rounded-sm bg-slate-600 items-center justify-center  border border-slate-300 text-sm cursor-pointer lowercase px-2`} 
             style={{scrollbarWidth:"none"}}>
@@ -94,7 +89,7 @@ const OpenSavedProfile = ({profile, title, searchTerm}) => {
             </div>
         <div className=' flex justify-between pr-2'>
                 <div></div>
-                <span className={`${getViewedUser.length>0 && getViewedUser.includes(user._id)? "text-blue-600":"text-gray-400"}`}>
+                <span className={`${Array.isArray(seenProfiles) && seenProfiles.length>0 && seenProfiles.includes(user._id)? "text-blue-600":"text-gray-400"}`}>
                 <i className="ri-check-double-line"></i>
                 </span>
             </div>

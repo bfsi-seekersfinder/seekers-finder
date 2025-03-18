@@ -1,4 +1,8 @@
 import mongoose from "mongoose";
+import admin from "./admin.mongoose.js";
+import bcrypt from 'bcrypt'
+const sessionModel = mongoose.connection.collection("sessions");
+
 
 const connectDB = async () => {
     try {
@@ -9,6 +13,8 @@ const connectDB = async () => {
       process.exit(1);
     }
   };
+
+  
 
   export default connectDB;
   

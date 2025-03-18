@@ -24,7 +24,10 @@ const aliasUserSchema = new mongoose.Schema({
         type:Date,
         default:Date.now()
     }],
-    block:Boolean,
+    block:{type:Boolean, default:false},
+    suspend:{
+        type:Boolean, default:false
+    },
     createdAT:{
         type:Date,
         default:Date.now()

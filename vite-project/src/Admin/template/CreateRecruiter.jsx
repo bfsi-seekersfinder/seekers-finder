@@ -4,7 +4,11 @@ import India from '../../../Generators/IndianCityName'
 import { Switch } from "@mui/material"
 import { useNavigate } from 'react-router-dom'
 import { MoonLoader } from 'react-spinners'
-const CreateRecruiter = () => {
+import DateSelector from '../../../Global/DateSelector'
+
+
+
+const CreateRecruiter = ({recruiter}) => {
     const navigate = useNavigate()
     const [States, setStates] = useState(Object.keys(India))
     const [City, setCity] = useState()
@@ -13,6 +17,16 @@ const CreateRecruiter = () => {
     const [Loading, setLoading] = useState(false)
     const [Success, setSuccess] = useState("")
     const [Failed, setFailed] = useState("")
+    const [isRecruiterUpdate, setisRecruiterUpdate] = useState(false)
+    const [selectRecruiter, setselectRecruiter] = useState('')
+    const [searchQuery, setSearchQuery] = useState("");  
+    const [filteredRecruiters, setFilteredRecruiters] = useState([]);
+    const [selectedRecruiter, setSelectedRecruiter] = useState(null);
+    const [isFilterInput, setisFilterInput] = useState(true)
+    const [isSelectedUser, setisSelectedUser] = useState(false)
+    const [recruitrId, setrecruitrId] = useState(null)
+    const [startDate, setstartDate] = useState(null)
+    const [endDate, setendDate] = useState(null)
     
 const handleAddAlias = (e) => {
     e.preventDefault()
@@ -37,7 +51,7 @@ const handleRemoveAlias = (id) => {
 };
 
 const handleSwitchCorporate= ()=>{
-    setisCorporate(prev => !prev)
+setisCorporate(prev => !prev)
 }
 
 const initiaData = {
@@ -67,11 +81,7 @@ const initiaData = {
         }
     ]
 }
-
 const [InputData, setInputData] = useState(initiaData)
-console.log("init-", initiaData)
-
-
 // console.log(InputData)
 const userFormValue = {
     role:InputData.role,
@@ -81,12 +91,15 @@ const userFormValue = {
     contactNo:InputData.contactNo,
     state:InputData.location.state,
     city:InputData.location.city,
+    landMark:InputData.location.landMark,
     currentCompany:InputData.currentCompany,
     currentDesignation:InputData.currentDesignation,
     PAN:InputData.panNo,
     GST:InputData.GSTNo,
     TAN:InputData.TANNo,
     limit:InputData.limit,
+    startDate:startDate,
+    expireDate:endDate,
     password:InputData.password,
     aliasUsers: InputData.alias.map((alias) => ({
         aliasRole: alias.aliasRole || null,
@@ -96,36 +109,6 @@ const userFormValue = {
         aliasPassword: alias.aliasPassword || null,
     })),
 }
-console.log(userFormValue)
-//<<---------------- handle submitting recruiter data and create user ------------>>
-const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    const cleanedData = Object.fromEntries(
-    Object.entries(userFormValue).filter(([_, v]) => v !== null && v !== "")
-    );
-    setLoading(true)
-    try {
-    const response = await axios.post("/api/recruiters/create-recruiter", cleanedData, {
-    headers: { "Content-Type": "application/json" }
-    });
-  
-    if (response.data.success) {
-    setSuccess(response.data.message);
-    setTimeout(() => setSuccess(""), 3000);
-    setInputData(initiaData);
-    setisCorporate(false)
-    }
-
-    } catch (error) {
-    setFailed(error.response?.data?.message || "Something went wrong");
-    setTimeout(() => setFailed(""), 3000);
-    }finally{
-        setLoading(false)
-    }
-
-};
-
 
 useEffect(()=>{
     if(InputData.location.state){
@@ -135,11 +118,125 @@ useEffect(()=>{
     }
 }, [InputData.location.state])
 
+const handleSelectDates = (startDate, endDate) =>{
+setstartDate(startDate)
+setendDate(endDate)
+}
+
+const handleUpdate =() =>{
+    setisRecruiterUpdate(prev => !prev)
+}
+
+const findRecruiter = () => {
+const recruiterFound = recruiter?.find(user => user.email === selectRecruiter);
+setSelectedRecruiter(recruiterFound || null); 
+}
+
+useEffect(()=>{
+    findRecruiter()
+}, [selectRecruiter])
+
+
+useEffect(() => {
+    if (!searchQuery) {
+        setFilteredRecruiters([]);
+        return;
+    }
+
+    const filtered = recruiter?.filter(user => 
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||  
+        user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||  
+        String(user.contactNo || "").includes(searchQuery)  
+    );
+
+    setFilteredRecruiters(filtered);
+}, [searchQuery, recruiter]);
+
+const selectRecruiterData = (id) =>{
+    const rec = recruiter.find(user => user._id === id)
+    setrecruitrId(id)
+   setSelectedRecruiter(rec)
+   setSearchQuery('')
+   setisFilterInput(false)
+   setisSelectedUser(true)
+}
+
+const handleRemoveSelectedRec = () =>{
+    setisFilterInput(true)
+    setSelectedRecruiter(null)
+    setisSelectedUser(false)
+}
+
+
+//<<---------------- handle submitting recruiter data and create user ------------>>
+
+const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    if(!isRecruiterUpdate){
+        const cleanedData = Object.fromEntries(
+        Object.entries(userFormValue).filter(([_, v]) => v !== null && v !== "")
+        );
+        setLoading(true)
+        try {
+        const response = await axios.post("/api/recruiters/create-recruiter", cleanedData, {
+        headers: { "Content-Type": "application/json" }
+        });
+      
+        if (response.data.success) {
+        setSuccess(response.data.message);
+        setTimeout(() => setSuccess(""), 3000);
+        setInputData(initiaData);
+        setisCorporate(false)
+        }
+    
+        } catch (error) {
+        setFailed(error.response?.data?.message || "Something went wrong");
+        setTimeout(() => setFailed(""), 3000);
+        }finally{
+            setLoading(false)
+        }
+
+    }else{
+
+        setLoading(true)
+        try {
+        const response = await axios.put(`/api/recruiters/update/${recruitrId}`, userFormValue, {
+        headers: { "Content-Type": "application/json" }
+        });
+      
+        if (response.data.success) {
+        setSuccess(response.data.message);
+        setTimeout(() => setSuccess(""), 3000);
+        setInputData(initiaData);
+        setSearchQuery('')
+        setisCorporate(false)
+        }
+    
+        } catch (error) {
+        setFailed(error.response?.data?.message || "Something went wrong");
+        setTimeout(() => setFailed(""), 3000);
+        }finally{
+            setLoading(false)
+        }
+    }
+
+    
+
+};
+
+
 
 return (
     <>
     <div className='flex shadow justify-between items-center px-8'>
+    <div className='flex items-center justify-between w-full'>
     <h1 className='py-4 text-slate-500 font-bold text-2xl'>{isCorporate? "Corporate": "Basic"} Plan</h1>
+    <div className='flex items-center px-4 rounded-full border border-slate-300'>
+    <span className={`${isRecruiterUpdate?'font-semibold text-emerald-700' : "text-gray-400"}`}>Update Recruiter</span> 
+    <Switch onClick={()=>handleUpdate()} />
+    </div>
+    </div>
     </div>
     <div className='h-[90vh]  overflow-y-auto overflow-x-hidden' style={{scrollbarWidth:"none", }}>
     <form 
@@ -148,6 +245,53 @@ return (
     onSubmit={handleSubmit}
     >            
     <div className="py-2 px-10">
+    <div className={`${isRecruiterUpdate?'flex flex-col gap-4 pb-8':"hidden"}`}>
+    <div className='font-bold text-xl text-cyan-700'>Find Recruiter to Update</div>
+    <div className='flex gap-4'>
+        <input 
+        type="text" 
+        placeholder='find candidate'
+        value={searchQuery}
+        onChange={(e)=>setSearchQuery(e.target.value)}
+        className={`${isFilterInput?'border border-slate-400 rounded px-4 py-0.5 w-[400px]' : 'hidden'}`}
+        />
+    {selectedRecruiter && (
+        <div className={`${isSelectedUser?'border border-slate-300 bg-slate-100 w-[400px] flex gap-4 items-center rounded px-2 py-2 cursor-pointer select-none' : "hidden"}`}>
+        <div className='flex justify-between w-full text-[12px]'>
+            <div className='flex flex-col'>
+            <span className='font-semibold text-slate-700'>{selectedRecruiter.recruiterName}</span>
+            <span className='text-slate-600'>{selectedRecruiter.email? selectedRecruiter.email :"email"}</span>
+            </div>
+            <div className='flex flex-col'>
+                <span>{selectedRecruiter.contactNo? "+91 "+ selectedRecruiter.contactNo : "email"}</span>
+                <span className='text-slate-600'>Account: {selectedRecruiter.plan? selectedRecruiter.plan : "email"}</span>
+            </div>
+            
+            <div onClick={()=>handleRemoveSelectedRec()} className='h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-200'>
+            <i className="ri-close-line text-2xl"></i>
+            </div>
+        </div>
+        </div>
+
+    )}
+        
+    </div>
+    {Array.isArray(filteredRecruiters) && filteredRecruiters.map((user) =>(
+    <div key={user._id} onClick={()=>selectRecruiterData(user._id)} className='border border-slate-300 w-[400px] flex gap-4 items-center rounded px-4 py-2 cursor-pointer select-none'>
+        <div className='h-8 w-8 rounded-full border border-slate-300'></div>
+        <div className='flex justify-between w-full text-[12px]'>
+            <div className='flex flex-col'>
+            <span className='font-semibold text-slate-700'>{user.recruiterName}</span>
+            <span className='text-slate-600'>{user.email}</span>
+            </div>
+            <div>{user.contactNo}</div>
+        </div>
+    </div>
+
+    ))
+
+    }
+    </div>  
     <div className='text-xl text-slate-600 font-semibold pb-2'>Personal information</div>
     <div className='flex flex-wrap gap-4'>
         <div className="flex flex-col gap-1">
@@ -451,7 +595,7 @@ return (
             <div className='flex gap-4 py-4'>
             
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-4">
                 <label htmlFor="password">select limit</label>
                 <select
                 value={InputData.limit}
@@ -466,10 +610,12 @@ return (
                   ))
                 }
                 </select>
+
+                <DateSelector selectDate={handleSelectDates}/>
             </div>
             </div>
-            <div className='py-4'>
-            <button type="submit" className="bg-slate-600 px-4 py-0.5 rounded text-white">create user</button>
+            <div className='py-4 px-8'>
+            <button type="submit" className="bg-slate-600 px-4 py-0.5 rounded text-white">{isRecruiterUpdate? "Update Recruiter" : "Create Reacruiter"}</button>
             </div>
     </div>
     <div className={`${Success.length>0?'absolute bottom-4 px-8 rounded-2xl py-1 bg-emerald-400 text-white': "hidden"}`}>{Success}</div>

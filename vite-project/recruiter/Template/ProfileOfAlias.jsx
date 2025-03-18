@@ -6,18 +6,21 @@ const ProfileOfAlias = ({aliasProfileId}) => {
     const alias = user.aliasUsers
 
     const Profile = alias.filter(aliasChild => aliasChild._id === aliasProfileId)
-    console.log("profile : ",Profile)
 
   return (
     <div className='bg-white shadow-md min-h-screen'>
         {Profile.length>0 && Profile.map((user)=>(
             <>
-        <div key={user._id} className='flex items-center px-8 gap-4  py-4  border-b border-gray-300'>
+        <div key={user._id} className='flex items-center justify-between px-8 gap-4  py-4  border-b border-gray-300'>
+            <div className='flex gap-4'>
             <div className='h-12 w-12 rounded-full border border-slate-300 flex items-center justify-center'>U</div>
-            <div className='flex flex-col'>
+              <div className='flex flex-col'>
             <div className='text-slate-600 font-semibold cursor-pointer'>{user.aliasName}</div>
             <div className='text-sm text-gray-500'>{user.aliasEmail}</div>    
+              </div>
             </div>
+            <div className='flex gap-2 items-center text-slate-400'><i className="ri-error-warning-line text-red-500"></i>{user.suspend? "account suspended" : ''}</div>
+            
         </div>
 
         <div className='flex flex-col gap-4 px-8 py-4'>

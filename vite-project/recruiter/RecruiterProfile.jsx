@@ -51,6 +51,8 @@ const RecruiterProfiles = () => {
         headers: { "Content-Type": "application/json" },
         });
 
+        console.log(response.data)
+
         if (response.data.success) {
         setCandidate(response.data.savedProfile);
         setSeenProfiles(response.data.seenProfile)

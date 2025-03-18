@@ -47,14 +47,28 @@ const recruiterSchema = new mongoose.Schema({
     },
     limit:{
         type:Number,
-        required:true
+        required:true,
+    },
+    startedAt:{
+        type:Date,
+        default:Date.now()
+    },
+    expireAt:{
+        type:Date,
+        default:null
     },
     totalView:{
         type:Number,
     },
-    pastLimits:[{
-        type:Number
-    }],
+    pastLimits: [{
+            value: {
+                type:Number
+            }, 
+            changedAt: { 
+                type: Date, 
+                default: Date.now
+            }
+        }],
     aliasUsers:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"aliasUser"
@@ -75,6 +89,10 @@ const recruiterSchema = new mongoose.Schema({
     notification:[{
         type:String,
     }],
+    block:{
+        type:Boolean,
+        default:false
+    },
     OTP:{
         type:Number
     },

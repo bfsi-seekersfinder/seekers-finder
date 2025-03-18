@@ -1,5 +1,6 @@
 import express from "express";
 import index from "./routes/index.js";
+import admin from './routes/admin.js'
 import path from 'path'
 import cors from 'cors'
 import dotenv from "dotenv";
@@ -7,15 +8,13 @@ import { fileURLToPath } from "url";
 import mongooseDb from './schema/mongoose.config.js'
 import session from 'express-session'
 import MongoStore from "connect-mongo";
-// import bfsiMongoose from './schema/bfsi.mongoose.js'
+import cookieParser from "cookie-parser";
 
 const app = express()
 dotenv.config()
 mongooseDb();
-// bfsiMongoose();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 app.set("view engine", "ejs");
 app.set('views', path.join(__dirname, 'views'))
@@ -31,18 +30,22 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
+app.use(cookieParser()); 
 app.use(session({
   secret: process.env.SECRET_SESSION || "defaultsecret",
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
   cookie: {
-      secure: process.env.NODE_ENV === "production", 
+      secure: false, 
       httpOnly: true, 
-      maxAge: 1000 * 60 * 60 * 24 
+      maxAge: 1000 * 60 * 60 * 24,
   }
 }));
+
+app.use("/uploads", express.static("uploads"));
 app.use('/', index);
+app.use('/admin', admin)
 
 
 const PORT = process.env.PORT || 8000

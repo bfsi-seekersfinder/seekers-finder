@@ -1,17 +1,36 @@
 import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
-    location: { type: String, },
-    currentCompany: { type: String, },
-    currentDesignation: { type: String, },
-    product: { type: String, },
-    experience: { type: String, },
-    currentCTC: { type: String, },
-    noticePeriod:{ type: String, },
-    FullName: { type: String, },
-    phoneNumber: { type: Number,},
-    email: { type: String, },
-    gender: { type: String }
+    fullName: { type: String, required: true },
+    mobileNo:Number,
+    email:String,
+    gender:String,
+    workExperience:[{
+        name:String,
+        designation:String,
+        description:String,
+    }],
+    product:String,
+    yearsOfExperience: { type: Number},
+    noticePeriod: { type: String, required: true },
+    currentCtc: { type: String, required: true },
+    previousCompanies: [{ type: String }], 
+    education: [{
+        name:String,
+        universityName:String,
+     }],
+    userLocation: {
+        country: { type: String, default: "India" },
+        state: { type: String },
+        city: { type: String },
+    },  
+    maritalStatus:String,
+    keySkills: [{ type: String }],
+    cv: [{ type: String }],
+    createdAt:{
+        type:Date,
+        default:Date.now()
+    }
 });
 
 const User = mongoose.model('newtesting2', userSchema);

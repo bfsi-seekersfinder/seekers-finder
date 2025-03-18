@@ -1,8 +1,22 @@
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+const saltRound = 10
+  const hashedPass = await bcrypt.hash("admin@123", saltRound)
+  const insertAdmin = async () => {
+    try {
+      const newAdmin = new admin({
+        adminRole: "Super Admin",
+        adminName: "Bankster India",
+        adminEmail: "talentx@gmail.com",
+        adminContact: 6546546654,
+        notification: [{message: "Welcome Admin"}],
+        password:hashedPass
+      });
+  
+      const savedAdmin = await newAdmin.save();
+      console.log("Admin inserted successfully:", savedAdmin);
+      mongoose.connection.close(); // Close the connection after insert
+    } catch (error) {
+      console.error("Error inserting admin:", error);
+    }
+  };
+  
+  // insertAdmin()

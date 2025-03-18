@@ -6,16 +6,19 @@ import  India  from "../../Generators/IndianCityName";
 import isEmpty from "../../Generators/isEmptyObject";
 import Navbar from "../searchcomponent/Nav";
 import InternetStatus from "../../Generators/InterNet";
+import { UserContext } from "../../Global/userContext";
 
 
 const FilteredProfiles = () => {
   const isOnline = InternetStatus()
     const url = import.meta.env.VITE_API_URI;
+    const {user} = useContext(UserContext)
     const [Candidate, setCandidate] = useState([])
     const [candidateLenght, setCandidatelength] = useState(0)
     const [remainingData, setRemainingData] = useState()
     const [page, setPage] = useState(1); 
     const [limit, setLimit] = useState(20)
+    const [isResponse, setisResponse] = useState(false)
     const [navClose, setNavClose] = useState(true)
     const [ShowHistory, setShowHistory] = useState(true)
     const [SerchHistory, setSerchHistory] = useState([])
@@ -29,7 +32,6 @@ const FilteredProfiles = () => {
     const buttonRef = useRef(null);
     const sidebarRef = useRef(null);
     const [Loader, setLoader] = useState(false)
-    const [IsSearchQuery, setIsSearchQuery] = useState(false)
     const [isFilterComplete, setisFilterComplete] = useState(false)
     const [selectedCountry, setSelectedCountry] = useState("India");
     const [states, setStates] = useState([]);
@@ -42,17 +44,17 @@ const FilteredProfiles = () => {
     let loadedCandidate = useRef(null)
 
 
-const handleSearch = () =>{
-  if(allEmpty) {
-    setFailedMessage('no search found')
-    setTimeout(()=>setFailedMessage(""), 3000)
-    return;
-  }
-  
-  setIsSearchQuery(true)
-  setLoader(true)
-  fetchCandidates();
-}
+    const handleSearch = () =>{
+      if(allEmpty) {
+        setFailedMessage('select any One Field to search')
+        setTimeout(()=>setFailedMessage(""), 3000)
+        return;
+      }
+      
+      setLoader(true)
+      setisResponse(true)
+      fetchCandidates();
+    }
     
 const isPopUp = () =>{
   setPopupSave(prev => !prev)
@@ -67,14 +69,17 @@ const resetPage = () =>{
 }
 
 const handlePreviousPage = () => {
+  setisResponse(true)
  if (page > 1) setPage(page - 1);
 };
 
 const handleNextPage = () => {
+  setisResponse(true)
   if(remainingData<0){ 
     setSuccessMessage("no more data...")
     setTimeout(()=>setSuccessMessage(""), 3000)
-    return;}
+    return;
+  }
   if(remainingData>0) setPage(page+1)
 };
 
@@ -178,7 +183,10 @@ const filterParam = {
   gender:FilterData.gender
 }
 
-const allEmpty = isEmpty(FilterData)
+let allEmpty = isEmpty(FilterData)
+useEffect(()=>{
+  allEmpty = isEmpty(FilterData)
+}, [])
 
 useEffect(() => {
   if (selectedCountry === "India") {
@@ -217,13 +225,14 @@ const resetSearch = () =>{
     return;
   }
   setFilterData(initialData)
-  setIsSearchQuery(false)
+  setisResponse(false)
   setSuccessMessage("all search clear")
   setTimeout(()=>setSuccessMessage(''), 3000)
 }
 
 //<<---------------------< (fetching filterCandidates) >--------------->>
 const fetchCandidates = async () => {
+
     try {
       const skip = (page - 1) * limit;
       const { data } = await axios.get(`${url}/api/user`, {
@@ -233,12 +242,12 @@ const fetchCandidates = async () => {
           ...filterParam,  
         },
       });
+      
       setCandidate(data.newData);
       setCandidatelength(data.totalDocument)
       loadedCandidate.current = data.newData
-      setRemainingData(
-      data.totalDocument > 20 ? data.totalDocument - (page * 20) : 0
-      );
+      setRemainingData(data.totalDocument - (page * limit))
+      
     } catch (err) {
       setFailedMessage("Server err, Try next time !");
       setTimeout(() => setFailedMessage(""), 3500);
@@ -250,7 +259,16 @@ const fetchCandidates = async () => {
 
 };
 
-//<<---------------------< fetchng (Product & Education List) >--------------->>
+useEffect(()=>{
+  if(allEmpty) return;
+  setLoader(true)
+  fetchCandidates()
+  setTimeout(() => {
+    setLoader(false)
+  }, 500);
+}, [limit])
+
+//<<---------------------< fetchng (Product & Education sist) >--------------->>
 const productData = async () => {      
   try {
     const res = await axios.get(`${url}/api/product`);
@@ -263,6 +281,7 @@ const productData = async () => {
   }
 };
 
+
 useEffect(() => {
   productData();
 }, []);
@@ -272,7 +291,7 @@ const handleShowHistorySearch = async (e) =>{
   e.stopPropagation();
   setShowHistory((prev) => !prev);
   try {
-    const id = sessionStorage.getItem("userId")
+    const id = user.id
     const response = await axios.get(`${url}/api/recruiter/gethistory/${id}`,{
 })
     const getHistory = response.data.searchHistory
@@ -292,7 +311,7 @@ const saveSearchHistory = async () => {
   }
 
   const cleanFilteredData = JSON.parse(JSON.stringify(FilterData));
-  const recruiterId = sessionStorage.getItem("userId");
+  const recruiterId = user.id;
 
   const newSearch = {
     recruiterId, 
@@ -311,25 +330,31 @@ const saveSearchHistory = async () => {
     }
   } catch (error) {
     setFailedMessage("Failed to save history");
+    console.log(error.message)
     setTimeout(() => setFailedMessage(""), 3500);
   }
 };
 
-const handleApplyHistory = (e) => {
-  const historyItemId = e.currentTarget.dataset.id;
+
+const handleApplyHistory = (id) => {
+  const historyItemId = id;
   if (!historyItemId) {
     setFailedMessage("cannot get history");
     setTimeout(() => setFailedMessage(""), 3500);    
     return;
   }
-  const savedHistory = Array.isArray(SerchHistory) ? SerchHistory.map((item) => item.filters) : [];
-  const selectedIndexOfItem = Number(historyItemId);
+  const savedHistory = Array.isArray(SerchHistory) ? SerchHistory : [];
 
-  let filters = {}
-  if(selectedIndexOfItem >= 0 && selectedIndexOfItem<savedHistory.length){
-  filters = savedHistory[selectedIndexOfItem]
+  const historyItem = savedHistory.find((item) => item._id === id);
+
+  if (!historyItem) {
+    setFailedMessage("History not found");
+    setTimeout(() => setFailedMessage(""), 3500);
+    return;
   }
 
+  const filters = historyItem.filters || {}; 
+  
   const newFilterData =  {
     jobProfile: [],
     keywords:[],
@@ -429,30 +454,44 @@ const handleApplyHistory = (e) => {
   setShowHistory(prev => !prev)
 };
 
-const clearHistory = () => {
-  localStorage.removeItem('searchHistory')
-  setSerchHistory("")
-  setShowHistory(true)
-  setFailedMessage("Filter History Clear")
-  setTimeout(()=>setFailedMessage(""),2000)
-}
-
-const removeSingleHistory = (e) =>{
-  const selectedItem = e.currentTarget.getAttribute("data-id")
-  let historyAllItem = JSON.parse(localStorage.getItem("searchHistory"))
-
-  historyAllItem = historyAllItem.filter((item) => String(item.id) !== selectedItem);
-  if(historyAllItem === 0){
-    localStorage.removeItem('searchHistory')
-  }else{
-    localStorage.setItem("searchHistory", JSON.stringify(historyAllItem));
+const removeSingleHistory = async (id) =>{
+  try {
+    const response = await axios.post(`${url}/api/recruiter/history/delete/${id}`, {}, 
+      { withCredentials:true, 
+        headers: {"Content-Type": "application/json"} 
+      })
+      console.log(response.data)
+    if(response.data.success){
+      setShowHistory(prev=>!prev)
+      setFailedMessage(response.data.message)
+      setTimeout(()=>setFailedMessage(""), 2000)
+    }
+    
+  } catch (error) {
+    console.log(error.message)
   }
 
-  setShowHistory(prev=>!prev)
-  setFailedMessage('history removed')
-  setTimeout(()=>setFailedMessage(""), 2000)
-
 }
+
+const clearHistory = async () => {
+  try {
+    const response = await axios.post(`${url}/api/recruiter/history/clear`, {}, {
+    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
+    });
+
+    if (response.data.success) {
+    setShowHistory(prev=>!prev)
+    setFailedMessage(response.data.message);
+    setTimeout(() => setFailedMessage(""), 3000);
+    }
+  } catch (error) {
+    console.error("Error clearing search history:", error.message);
+    setFailedMessage("Failed to clear search history");
+    setTimeout(() => setFailedMessage(""), 3000);
+  }
+  
+};
 
 const handleClickOutside = (event) => {
   if (
@@ -484,9 +523,9 @@ useEffect(() => {
 //sidebar close when click outside
 useEffect(()=>{
   if(!navClose){
-    document.addEventListener('mousedown', handleSidebarClickOutSide)
+  document.addEventListener('mousedown', handleSidebarClickOutSide)
   }else{
-    document.removeEventListener("mousedown", handleSidebarClickOutSide)
+  document.removeEventListener("mousedown", handleSidebarClickOutSide)
   }
 return () => {
   document.removeEventListener("mousedown", handleSidebarClickOutSide)
@@ -499,7 +538,6 @@ useEffect(()=>{
 
 useEffect(()=>{
   if(allEmpty){
-    setIsSearchQuery(false)
     setCandidate('')
     return;
   }
@@ -509,16 +547,12 @@ useEffect(()=>{
 useEffect(()=>{
   if(allEmpty){
     setCandidate('')
-    setIsSearchQuery(false)
     return;
   }
-  setIsSearchQuery(true)
 
 }, [])
 
-useEffect(() => {
-  if (allEmpty) return;
-  
+useEffect(() => {  
   const fetchData = async () => {
     try {
       setLoader(true);
@@ -531,13 +565,18 @@ useEffect(() => {
   fetchData();
 }, [page]);
 
+useEffect(()=>{
+  if(allEmpty) return;
+  setisResponse(true)
+},[])
+
 
 
   return (
     <>
     <Navbar  />
     <div className="w-full pt-16 px-1.5  flex max-md:flex-col ">
-      <div className="hidden max-sm:flex  justify-center items-center max-sm:pt-28 text-orange-400">This website is not support in mobile layout !</div>
+      <div className="hidden max-[580px]:flex  justify-center items-center max-[580px]:pt-28 text-orange-400">This website is not support in mobile layout !</div>
       <div className="px-2  max-lg:block hidden max-lg:fixed top-1 left-0 max-lg:z-100  rounded-r-xl max-sm:hidden">
         <span className={`text-[30px] ${navClose ? '' : 'hidden'} duration-500`} onClick={handleNav}><i className="ri-menu-line"></i></span>
       </div>
@@ -546,7 +585,7 @@ useEffect(() => {
         <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border shadow-lg max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[400px]`} style={{scrollbarWidth:"none", scrollBehavior:"smooth"}}>
             <div className={` transition-all duration-700 max-lg:bg-white  flex flex-col gap-4 bg-gray-10 px-1.5 py-2 rounded-2xl borde  border-gray-200 border-t-0`}>
 
-            <div className="select-no flex gap-4 px-1 items-center bg-white">
+            <div className="select-none flex gap-4 px-1 items-center bg-white">
               <button ref={buttonRef}  onClick={handleShowHistorySearch} className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded "><i className="ri-history-line"></i> Recent Searches </button>
               <button onClick={isPopUp} disabled={!initialData}  className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded "><i className="ri-bookmark-fill"></i>Save Search</button>
               
@@ -565,8 +604,8 @@ useEffect(() => {
               <div key={i}
               data-id={i}
               className="shadow flex justify-between items-center cursor-pointer pl-4 rounded bg-gray-500  border border-slate-300 text-white">
-              <span onClick={handleApplyHistory} data-id={i} className=" w-full py-1 text-sm"><i className="ri-time-line"></i> {item.header} </span>
-              <button onClick={removeSingleHistory} data-id={i} className="cursor-pointer h-full bg-slate-700 py-0.5">
+              <span onClick={()=>handleApplyHistory(item._id)} data-id={item._id} className=" w-full py-1 text-sm"><i className="ri-time-line"></i> {item.header} </span>
+              <button onClick={()=> removeSingleHistory(item._id)} className="cursor-pointer h-full bg-slate-700 py-0.5">
               {/* <i className="ri-close-line "></i> */}
               <i className="ri-delete-bin-line text-[14px] px-4 text-gray-200"></i>
               </button> 
@@ -898,7 +937,7 @@ useEffect(() => {
             </select>   
           </div>
           </div>
-          {/* <<---------------------------------------------< reset serches >--------------------------------------->> */}
+{/* <<---------------------------------------------< reset serches >--------------------------------------->> */}
           <div className="w-full justify-between  flex gap-4 px-4 pb-12 pt-2">
           <button onClick={resetSearch} className="border w-full border-gray-100 py-0.5 px-6 text-[14px] font-semibold tracking-wider active:bg-gray-200 cursor-pointer rounded flex items-center justify-center gap-1  bg-orange-700 text-white shadow-md" ><span>Reset Searches</span> </button>
           <button 
@@ -912,7 +951,7 @@ useEffect(() => {
         </div>
 
 {/* <<-------------------------------------------------------< page navigator >----------------------------------------------->> */}
-        <div className="h-[90vh] bg-gray-100 pt-4 overflow-y-scroll w-full max-sm:hidden " style={{scrollbarWidth:"thin", scrollBehavior:"smooth"}}>
+        <div className="h-[90vh] bg-gray-100 pt-4 overflow-y-scroll w-full  max-[580px]:hidden " style={{scrollbarWidth:"thin", scrollBehavior:"smooth"}}>
         <div className={`${Candidate.length>0? "w-full flex justify-between  px-4":"hidden"}`}>
         <div className="flex gap-2">
           <button onClick={resetPage} className="px-4 py-1 rounded bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider"><i className="ri-home-4-line"></i> </button>
@@ -920,7 +959,7 @@ useEffect(() => {
           value={page}
           onChange={handleNavigateButtons}
           className="px-4 py-1 rounded bg-slate-600 border text-white border-slate-500 active:bg-gray-500  tracking-wider cursor-pointer">
-          {Array.from({ length: Math.ceil(candidateLenght/20)}, (_, i) => (
+          {Array.from({ length: Math.ceil(candidateLenght/limit)}, (_, i) => (
           <option 
           key={i + 1} 
           value={i + 1}>
@@ -932,14 +971,24 @@ useEffect(() => {
 {/* <<------------------------------------------------------< Top navigator Button >----------------------------->> */}
           <div className={`flex gap-4`}>
           <button onClick={handlePreviousPage} className="px-4 py-1 rounded-sm bg-gray-300 border border-slate-400 active:bg-gray-500  tracking-wider"><i className="ri-arrow-left-s-line"></i></button>
-          <button className="px-4 py-1 rounded-sm bg-gray-600 border border-slate-500 active:bg-gray-500  tracking-wider text-sm text-white"> Remaining - {remainingData >0? remainingData : "0"} </button>
-          <button className="px-4 py-1 rounded-sm bg-gray-600 border border-slate-500 active:bg-gray-500  tracking-wider text-sm text-white flex items-center justify-center gap-4"> Total Search Result - {candidateLenght}</button>
+          <span className="px-4 gap-0 py-1 cursor-pointer rounded-sm bg-gray-600 border border-slate-500 active:bg-gray-500  tracking-wider text-sm text-white">
+          Show
+          <select onChange={(e)=> setLimit(e.target.value)} className="rounded-sm  tracking-wider text-sm text-white focus:outline-none bg-gray-600 cursor-pointer">  
+          {
+            [20, 50, 100, 250, 300].map((value, i)=>(
+              <option key={i} value={value}>{value}</option>
+            ))
+          }
+          </select>
+          
+          </span>
+          <button className="px-4 py-1 rounded-sm bg-gray-600 border border-slate-500 active:bg-gray-500  tracking-wider text-sm text-white flex items-center justify-center gap-4"> Search Result - {page} of {Math.ceil(candidateLenght/limit)}</button>
           <button onClick={handleNextPage} className="px-4 py-1 rounded-sm bg-gray-300 border border-slate-400 active:bg-gray-500  tracking-wider"><i className="ri-arrow-right-s-line"></i></button>
           </div>
         </div>
 {/* <<------------------------------------------------------< Rendered Filtered Candidate Profile >-----------------------------> */}
         <div className="mt-1 max-md:mt-16 px-4 pt-2 gap-4 flex flex-col">
-          { !IsSearchQuery? (
+          {!isResponse? (
           <div className="justify-center h-[80vh] flex items-center">
           <img src="/images/freepeakSearch.png" className="w-[500px] filter grayscale-90 opacity-70" /> 
           </div>
@@ -976,7 +1025,7 @@ useEffect(() => {
         value={page}
         onChange={handleNavigateButtons}
         className="px-4 py-0.5 rounded bg-gray-300 border border-slate-500 active:bg-gray-500  tracking-wider cursor-pointer">
-        {Array.from({ length: Math.ceil(candidateLenght/20)}, (_, i) => (
+        {Array.from({ length: Math.ceil(candidateLenght/limit)}, (_, i) => (
         <option 
         key={i + 1} 
         value={i + 1}>

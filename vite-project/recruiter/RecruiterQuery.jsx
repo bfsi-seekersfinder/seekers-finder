@@ -1,7 +1,48 @@
+import React, {useState, useEffect} from "react";
+import axios from "axios";
+
 
 export default function RecruiterQuery() {
+  const url = import.meta.env.VITE_API_URI
+  
+  const initialQuery ={
+    recruiterName:'',
+    email:"",
+    contactNo:"",
+    companyName:"",
+    designation:"",
+    location:"",
+  }
+  const [queryMessage, setqueryMessage] = useState(initialQuery)
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setqueryMessage((prev) => ({
+        ...prev,
+        [name]: value
+    }));
+};
+
+const handleSubmitQuery = async ()=>{
+
+  try {
+    const response = await axios.post(url+"/admin/api/query", {...queryMessage}, {
+      withCredentials: true,
+      headers: { "Content-Type": "application/json" },
+      })
+
+      if(response.data.success){
+        alert("data sumbitted successfully")
+        setqueryMessage(initialQuery)
+      }
+    
+  } catch (error) {
+    console.log(error.message)
+  }
+}
+
     return (
-      <div className="min-h-screen flex bg-gray-100 p-8">
+      <div className=" h-[100vh] overflow-y-hidden flex bg-gray-100 p-8">
         {/* Left Section - TalentX Info */}
         <div className="w-1/2 p-6">
           <h2 className="text-2xl font-bold text-gray-800">Talent<span className="text-orange-500">X</span></h2>
@@ -14,31 +55,34 @@ export default function RecruiterQuery() {
         </div>
         
         {/* Right Section - User Form */}
-        <div className="w-1/2 p-6 text-slate-600  shadow-lg ml-8">
+        <div className="w-1/2 p-6 text-slate-600  shadow-lg ml-8 overflow-y-auto h-screen pb-18" >
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Recruiter Query</h2>
-          <form>
             <div className="mb-4">
               <label className="block text-gray-700">Your Name</label>
-              <input type="text" className="w-full px-4 py-2 border border-slate-300 focus:outline-none required" />
+              <input type="text" name="recruiterName" value={queryMessage.recruiterName ?? ""} onChange={handleChange} placeholder="Your name" className="w-full px-4 py-2 border border-slate-300 focus:outline-none required" />
             </div>
             <div className="mb-4">
               <label className="block text-gray-700">Company Name</label>
-              <input type="text" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
+              <input type="text" name="companyName"  value={queryMessage.companyName?? ""} onChange={handleChange} placeholder="company name" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
             </div>
             <div className="mb-4">
               <label className="block text-gray-700">Designation</label>
-              <input type="text" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
+              <input type="text" name="designation" value={queryMessage.designation??""} onChange={handleChange} placeholder="current designation" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
             </div>
             <div className="mb-4">
               <label className="block text-gray-700">Contact No</label>
-              <input type="text" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
+              <input type="text" name="contactNo" value={queryMessage.contactNo??""} onChange={handleChange} placeholder="valid contact number" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
             </div>
             <div className="mb-4">
               <label className="block text-gray-700">Email</label>
-              <input type="email" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
+              <input type="email" name="email" value={queryMessage.email?? ""} onChange={handleChange} placeholder="busyness email" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
             </div>
-            <button type="submit" className="w-full bg-emerald-500 text-white py-2   hover:bg-emerald-600 transition">Submit</button>
-          </form>
+            <div className="mb-4">
+              <label className="block text-gray-700">Location</label>
+              <input type="text" name="location" value={queryMessage.location?? ""} onChange={handleChange} placeholder="Your company Address" className="w-full px-4 py-2 border border-slate-300 focus:outline-none" required />
+            </div>
+           
+            <button onClick={()=>handleSubmitQuery()} type="submit" className="w-full bg-emerald-500 text-white py-2   hover:bg-emerald-600 transition">Submit</button>
         </div>
       </div>
     );
