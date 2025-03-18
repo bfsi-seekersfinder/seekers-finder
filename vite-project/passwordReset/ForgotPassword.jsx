@@ -17,13 +17,14 @@ const ForgotPassword = () => {
         { withCredentials: true,
         headers: { "Content-Type": "application/json" }
       });
-      console.log(response)
+      setisEmailVerified(response.data.success)
+      sessionStorage.setItem("resetEmail", email)
+      console.log("email setting session ",email)
       setMessage(response.data.message);
-      if(response.data.success){
-        setisEmailVerified(true)
-      }
+      setTimeout(()=>setMessage(''),3000)
     } catch (error) {
       setMessage(error.response?.data?.message || "Something went wrong.");
+      setTimeout(()=>setMessage(''),3000)
       console.log(error.message)
     } finally {
       setLoading(false);
@@ -36,26 +37,30 @@ const ForgotPassword = () => {
     setMessage("");
 
     try {
-      const response = await axios.post(url+"/api/verify/otp", { email, OTP });
-      setMessage(response.data.message);
-      if(response.data.success){
+      const response = await axios.post(url+"/api/verify/otp", { email, OTP }, {headers:{"Content-Type": "application/json"}});
+      
+      if(response.data.success) {
         window.location.href = "/account/reset-password"
       }
+      setMessage(response.data.message);
+      setTimeout(()=>setMessage(''),3000)      
     } catch (error) {
       setMessage(error.response?.data?.message || "Something went wrong.");
+      setTimeout(()=>setMessage(''),3000)
     } finally {
       setLoading(false);
     }
   };
 
+  console.log(isEmailVerified)
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h2 className="text-2xl font-bold mb-4">Forgot Password</h2>
-      <form onSubmit={handleForgotPassword} className=" w-[400px] p-4 rounded">
+    <div className="flex flex-col w-[400px] mx-auto items-center justify-center min-h-screen">
+      <h2 className="text-xl font-semibld mb-4 text-slate-600 flex w-full">Enter a Valid Email</h2>
         <input
           type="email"
           placeholder="Enter your email"
-          className=" p-2 border border-slate-600 rounded mb-2 w-full"
+          className=" p-2 border-b bg-slate-100 border-slate-600 mb-2 w-full"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -63,28 +68,29 @@ const ForgotPassword = () => {
         <input
           type="number"
           placeholder="Enter OTP"
-          className={`${isEmailVerified?" p-2 border border-slate-600 rounded mb-2 w-full" : 'hidden'}`}
+          className={`${isEmailVerified?" p-2 border-b bg-slate-100 border-slate-600 mb-2 w-full" : 'hidden'}`}
           value={OTP}
           onChange={(e) => setOTP(e.target.value)}
           required
         />
         <button
+        type="button"
           onClick={()=>{handleForgotPassword()}}
-          className="w-full p-2 bg-blue-600 text-white rounded"
+          className={`${isEmailVerified?"hidden": "w-full mt-2 p-2 bg-blue-600 text-white rounded" }`}
           disabled={loading}
         >
           Verify Email
         </button>
 
         <button
+        type="button"
           onClick={()=>handleVerifyOtp()}
-          className={`${isEmailVerified?"w-full p-2 bg-blue-600 text-white rounded":"hidden"}`}
+          className={`${isEmailVerified? "w-full mt-2 p-2 bg-blue-600 text-white rounded" : "hidden"}`}
           disabled={loading}
         >
-          {isEmailVerified? "Sending..." : "Send OTP"}
+          {!isEmailVerified? "Sending..." : "Verify OTP"}
         </button>
-        {message && <p className="mt-2 text-center">{message}</p>}
-      </form>
+        {message && (<p className="mt-2 text-center">{message}</p>)}
     </div>
   );
 };

@@ -1,27 +1,25 @@
 import Recruiter from "../schema/createRecruiter.mongoose.js";
-
 import { sendOTPEmail } from "../generator/otpGen.js";
 import { generateOTP } from "../generator/otpGen.js";
 
  const  forgotPassword = async (req, res) => {
     try {
         const { email} = req.body;
-        console.log(email)
         if (!email) return res.status(400).json({ message: "Email is required" });
 
         const user = await Recruiter.findOne({ email });
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ message: "Enter a Valid Email" });
 
 
         const otp = generateOTP();
         const otpExpiry = Date.now() + 5 * 60 * 1000;
-        console.log(otp, otpExpiry)
 
         user.OTP = otp;
         user.otpExpiry = otpExpiry;
         await user.save();
 
-        await sendOTPEmail(email, otp);
+        const otpMessage = `Your Talentx Password Reset OTP is ${otp}. This OTP is valid for 5 min, Don't share with anyone`
+        await sendOTPEmail(email, otpMessage);
 
         res.json({ message: "OTP sent to email", success:true });
     } catch (error) {

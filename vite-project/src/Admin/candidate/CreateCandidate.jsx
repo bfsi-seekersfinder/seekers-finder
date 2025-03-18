@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import DateSelector from "../../../Global/DateSelector";
 import axios from "axios";
 import { Switch } from "@mui/material"
+import { PuffLoader } from "react-spinners";
 
 const UserForm = () => {
   const url = import.meta.env.VITE_API_URI;
@@ -14,6 +15,8 @@ const UserForm = () => {
   const [isCandidateUpdate, setisCandidateUpdate] = useState(false)
   const [filterCandidates, setfilterCandidates] = useState([])
   const [selectedCandidate, setselectedCandidate] = useState()
+  const [Loading, setLoading] = useState(false)
+  const [successMessage, setsuccessMessage] = useState('')
 
 
   const handleCandidateUpdate = () =>{
@@ -44,8 +47,6 @@ const UserForm = () => {
 
   const [formData, setFormData] = useState(initialData);
 
-
-  // console.log(formData)
 
   const productData = async () => {      
     try {
@@ -92,7 +93,6 @@ const UserForm = () => {
       education: prev.education.filter((item) => item.id !== index),
     }));
   };
-
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -165,19 +165,20 @@ const UserForm = () => {
   const handleUpload = async () => {
 
     try {
+      Loading(true)
       const response = await axios.post(url+'/api/create/candidate', formData,{
         headers: { "Content-Type": "application/json" },
       })
 
-      if(response.data.success){
-        setFormData(initialData)
-        console.log('data upload and created candidate')
-      }
+      setsuccessMessage(response.data.message)
+      setTimeout(()=>setsuccessMessage(''), 3000)
       
     } catch (error) {
       console.log(error.message)
+    }finally{
+      setLoading(false)
+      setFormData(initialData)
     }
-
 
   }
 
@@ -496,6 +497,14 @@ const UserForm = () => {
       ))
     }
 
+    </div>
+    {Loading && (
+    <div className="w-full h-screen flex items-center justify-center absolute top-0 left-0">
+      <PuffLoader/>
+    </div> ) 
+    }
+    <div className="absolute bottom-10 left-[40%]">
+      <div className={`${successMessage.length?"flex items-center justify-center py-1 px-4 rounded-2xl text-slate-700 bg-slate-200 border border-slate-400" :"hidden"}`}>{successMessage}</div>
     </div>
     </div>
     </>

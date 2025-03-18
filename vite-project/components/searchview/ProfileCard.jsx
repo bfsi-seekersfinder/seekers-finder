@@ -237,34 +237,29 @@ const ProfileCard = ({Candidate}) => {
         const recruiterName = user.recruiterName
         const suggestion = suggestionText;
         try {
-            if (!recruiterId || !suggestion) {
-                console.error("Recruiter ID or suggestion is missing");
-                return;
+            if (!suggestion.length) {
+            setFailedMessage('Type Something')
+            setTimeout(()=>setFailedMessage(''), 2000)
+            return;
             }
     
             const response = await axios.post(url+"/admin/api/recruiter/getsuggestion", {
-                recruiterId,
-                recruiterName,
-                candidateId,
-                suggestion,
-            }, {
-                withCredentials: true,  // If your API requires authentication cookies
-                headers: { "Content-Type": "application/json" }
+            recruiterId,
+            recruiterName,
+            candidateId,
+            suggestion,
+            }, {headers: { "Content-Type": "application/json" }
             });
-    
-            if (response.data.success) {
-                console.log("Suggestion sent successfully:", response.data.message);
-            } else {
-                console.log("Failed to send suggestion:", response.data.message);
-            }
+            setSuccesMessage(response.data.message)
+            setTimeout(()=>setSuccesMessage(''), 3000)
+            
         } catch (error) {
             console.error("Error sending suggestion:", error.response?.data?.message || error.message);
         }finally{
             setsuggestionText('')
+            setisSuggetionBox(false)
         }
     };
-    
-    
     
     const redirectToWhatsApp = (phoneNumber, message) => {
         if(!VeiwNumberAndEmail){
@@ -360,7 +355,7 @@ const ProfileCard = ({Candidate}) => {
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Notice Period </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{condidate.noticePeriod? condidate.noticePeriod :""}</span></div>
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Product </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{condidate.product? condidate.product.length>40? condidate.product.slice(0, 40)+"...": Candidate.product: "Not available"}</span></div>
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Degree </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]  max-lg:text-end '>{condidate.education? condidate.education.map((edu, i)=>( <p key={i}>{edu.name}</p> )) :""}</span></div>
-                <div className='flex gap-4 max-lg:justify-between '><span className='tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>University </span> <span className=' font-semibold tracking-wider text-slate-800 max-lg:text-[12px]  max-lg:text-end '>{condidate.education? condidate.education.map((edu, i)=>( <p key={i}>{edu.universityName? edu.universityName.length>40?edu.universityName.slice(0,44)+"...":edu.universityName :"" }</p> )):""}</span></div>
+                <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>University </span> <span className=' font-semibold tracking-wider text-slate-800 max-lg:text-[12px]  max-lg:text-end '>{condidate.education? condidate.education.map((edu, i)=>( <p key={i}>{edu.universityName? edu.universityName.length>40?edu.universityName.slice(0,44)+"...":edu.universityName :"" }</p> )):""}</span></div>
 
                 <div className=' py-4 '>
                     <div className={`${ isSuggetionBox?'flex w-full h-8 justify-between gap-2 ' : "hidden"}`}>
@@ -407,12 +402,12 @@ const ProfileCard = ({Candidate}) => {
             </div>
 
             <div className={`${isWhatsAppOpen? "absolute":"hidden"} z-10 bottom-8 right-4 rounded-md overflow-hidden w-[280px] h-[200px] bg-slate-300`}>
-                    <div className='bg-emerald-500 px-4 py-2 text-white flex justify-between'><span className='font-semibold'>WhatsApp</span> <span onClick={()=>setisWhatsAppOpen(false)} className='cursor-pointer'><i class="ri-close-fill"></i></span></div>
-                    <textarea name="" value={inputValue} onChange={(e)=>handleChange(e)} placeholder='Type Message...' className=' pt-0.5 px-2 border-gray-500 text-slate-800 h-[120px] w-full focus:outline-none'></textarea>
-                    <div className='px-2'>
+                <div className='bg-emerald-500 px-4 py-2 text-white flex justify-between'><span className='font-semibold'>WhatsApp</span> <span onClick={()=>setisWhatsAppOpen(false)} className='cursor-pointer'><i class="ri-close-fill"></i></span></div>
+                <textarea name="" value={inputValue} onChange={(e)=>handleChange(e)} placeholder='Type Message...' className=' pt-0.5 px-2 border-gray-500 text-slate-800 h-[120px] w-full focus:outline-none'></textarea>
+                <div className='px-2'>
 
-                    <button onClick={()=>redirectToWhatsApp(condidate.mobileNo, WhatsAppMessage)} className='px-4 py-0.5 rounded bg-slate-600 w-full text-white'>Send</button>
-                    </div>
+                <button onClick={()=>redirectToWhatsApp(condidate.mobileNo, WhatsAppMessage)} className='px-4 py-0.5 rounded bg-slate-600 w-full text-white'>Send</button>
+                </div>
             </div>  
     </div>
   )

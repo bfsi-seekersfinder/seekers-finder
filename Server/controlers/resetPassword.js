@@ -1,5 +1,6 @@
+import { sendOTPEmail } from "../generator/otpGen.js";
 import recruiterModule from "../schema/createRecruiter.mongoose.js";
-
+import bcrypt from "bcrypt"
 
 const resetPassword = async (req, res) => {
     try {
@@ -11,6 +12,8 @@ const resetPassword = async (req, res) => {
 
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
+        const mail = 'Your TalentX Password is Reset Succesfully'
+       await sendOTPEmail(email, mail)
 
         res.json({ message: "Password reset successful" });
     } catch (error) {
