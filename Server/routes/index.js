@@ -7,12 +7,8 @@ import aliasUserModel from "../schema/aliasUser.mongoose.js";
 import forgotPassword from "../controlers/forgotPassword.js";
 import resetPassword from "../controlers/resetPassword.js";
 import verifyOTP from "../controlers/verifyOTP.js";
-// import multer from "../middleware/multer.js";
-import upload from "../middleware/multer.js";
-// import multer from "multer";
 
 const router = express.Router()
-// const upload = multer({ storage, fileFilter });
 
 
 
@@ -533,34 +529,65 @@ router.post("/api/account/login", async (req, res) => {
         if (!username || !password) {
         return res.status(400).json({ message: "All fields are required." });
         }
-        const user = await recruiterModule.findOne({ email: username }).populate(["savedProfile", "aliasUsers"])
-        // const alias = await aliasUserModel.finOne({email: username})
+        let user = await recruiterModule.findOne({ email: username }).populate(["savedProfile", "aliasUsers"])
+
+        if(!user){
+            user = await aliasUserModel.findOne({aliasEmail:username}).populate("limit");
+        }
+
+        if (!user) {
+            return res.status(400).json({ message: "Incorrect password." });
+        }
+
         if(!user ) {
         return res.status(404).json({message: "Email not vallid !"})
         }
-        const isMatch = await bcrypt.compare(password, user.password);
+
+        let isMatch = null
+        if(user.role === 'recruiter'){
+         isMatch = await bcrypt.compare(password, user.password);
+        }
+        else{
+            isMatch = await bcrypt.compare(password, user.aliasPassword)
+        }
+
         if (!isMatch) {
         return res.status(400).json({ message: "Incorrect Password."});
         }
+        console.log(user)
 
-        req.session.user = { 
-            id: user._id, 
-            email: user.email, 
-            role: user.role, 
-            recruiterName: user.recruiterName, 
-            contactNo: user.contactNo,
-            currentCompany:user.currentCompany,
-            currentDesignation:user.currentDesignation,
-            PAN:user.PAN,
-            TAN:user.TAN,
-            GST:user.GST,
-            plan:user.plan,
-            limit:user.limit,
-            aliasUsers:user.aliasUsers,
-            pastLimits:user.pastLimits,
-            currentLimit:user.currentLimit,
-            
-        };
+        if(user?.role === 'recruiter'){
+            req.session.user = { 
+                id: user._id, 
+                email: user.email, 
+                role: user.role, 
+                recruiterName: user.recruiterName, 
+                contactNo: user.contactNo,
+                currentCompany:user.currentCompany,
+                currentDesignation:user.currentDesignation,
+                PAN:user.PAN,
+                TAN:user.TAN,
+                GST:user.GST,
+                plan:user.plan,
+                limit:user.limit,
+                aliasUsers:user.aliasUsers,
+                pastLimits:user.pastLimits,
+                currentLimit:user.currentLimit,
+                
+            };
+
+        }else if(user.aliasRole === "alias"){
+
+            req.session.user = {
+                id: user._id,
+                email:user.aliasEmail,
+                role:user.aliasRole,
+                recruiterName:user.aliasName,
+                contactNo:user.aliasContactNo,
+                recruiter:user.limit
+            }
+
+        }
 
         res.json({ message: "Login successful!", user:req.session.user});
 
@@ -584,22 +611,43 @@ router.get("/api/account/getview",  async (req, res) => {
         return res.status(400).json({ success: false, message: "Recruiter ID is required" });
         }
 
-        const user = await recruiterModule.findById(recruiterId);
+        let user = await recruiterModule.findById(recruiterId);
+
+        if(!user){
+            user = await aliasUserModel.findById(recruiterId).populate("recruiterId");
+        }
 
         if (!user) {
         return res.status(404).json({ success: false, message: "Recruiter not found" });
         }
 
-        const viewCount = user.viewedProfile.length;
-        user.totalView = viewCount;
+        let viewCount = null
+
+        if(user.aliasRole === 'alias'){
+            viewCount = user.recruiterId.viewedProfile.length
+        }else{
+            viewCount = user.viewedProfile.length;
+        }
+
+
+        if(user.aliasRole === 'alias'){
+            const rootRecruiter = await findById(user.recruiterId._id)
+            rootRecruiter.totalView = viewCount
+
+            await rootRecruiter.save()
+        }else{
+            user.totalView = viewCount;
+        }
+
         await user.save();
 
         res.json({ 
             success: true, 
             view: {
-            viewedProfiles: user.viewedProfile, 
-            totalView: user.totalView
+            viewedProfiles: user.role === 'recruiter'? user.viewedProfile : user.recruiterId?.viewedProfile || [], 
+            totalView: user.role === 'recruiter'? user.totalView : user.recruiterId?.totalView
             }
+            
         });
     } catch (error) {
         console.error("Error fetching view data:", error);

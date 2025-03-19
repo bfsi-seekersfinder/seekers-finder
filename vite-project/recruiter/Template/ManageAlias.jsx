@@ -12,28 +12,27 @@ const ManageAlias = ({openProfile, profile}) => {
     const [Alias, setAlias] = useState([])
 
     const handleAction = (id) =>{
-        const userId = profile.some(user => user._id === id)
-        setActionId(prev => prev === id? null : id)
+    const userId = profile.some(user => user._id === id)
+    setActionId(prev => prev === id? null : id)
     }
-
 
     const fetchBlockedUsers = async () => {
         const recruiterid = user.id
         try {
-            const response = await axios.get(url+`/api/alias/${recruiterid}`, {withCredentials:true});
-            setAlias(response.data.user)
+        const response = await axios.get(url+`/api/alias/${recruiterid}`, {withCredentials:true});
+        setAlias(response.data.user)
 
         } catch (error) {
-            console.error("Error fetching users:", error.message);
+        console.error("Error fetching users:", error.message);
         }
     };
 
     useEffect(() => {
-        fetchBlockedUsers();
+    fetchBlockedUsers();
     }, []);
 
     useEffect(() => {
-        fetchBlockedUsers();
+    fetchBlockedUsers();
     }, [isAliasBlock]);
 
     
@@ -41,13 +40,12 @@ const ManageAlias = ({openProfile, profile}) => {
     const handleBlockToggle = async (userId, isBlocked) => {
         try {
           const response =  await axios.post(`${url}/api/block/${ActionId}`, {}, { withCredentials: true });
-
-            setisAliasBlock(prev=> !prev)
-            setMessage(response.data.message);
-            setTimeout(()=>setMessage(''), 3000)
+        setisAliasBlock(prev=> !prev)
+        setMessage(response.data.message);
+        setTimeout(()=>setMessage(''), 3000)
 
         } catch (error) {
-            console.error("currently unable to block:", error.messgae);
+        console.error("currently unable to block:", error.messgae);
         }
     };
 

@@ -11,7 +11,6 @@ export const AdminProvider = ({ children }) => {
         try {
             const response = await axios.get(url + "/admin/api/me", { withCredentials: true });  
             setAdmin(response.data.admin);
-            console.log("response from context", response.data.admin);
         } catch (error) {
             console.log("Error fetching admin:", error.message);
         }

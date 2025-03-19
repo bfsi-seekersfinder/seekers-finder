@@ -15,6 +15,7 @@ const RecruiterProfiles = () => {
   const url =import.meta.env.VITE_API_URI
   const Navigate = useNavigate()
   const {user, setUser} = useContext(UserContext)
+  const [recruiter, setrecruiter] = useState(user.role === 'recruiter'? user : user.recruiter)
   const [candidate, setCandidate] = useState([])
   const [SeenProfiles, setSeenProfiles] = useState([])
   const [findCandidate, setFindCandidate] = useState('')
@@ -43,15 +44,13 @@ const RecruiterProfiles = () => {
     const handleGetSavedProfile = async () => {
         setLoading(true)
         try {
-        const userId = user.id
+        const userId = user.role === 'recruiter' ? user.id : recruiter._id
         if (!userId) throw new Error("User ID not found in session storage");
 
         const response = await axios.get(`${url}/api/account/profile/saved/${userId}`, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
         });
-
-        console.log(response.data)
 
         if (response.data.success) {
         setCandidate(response.data.savedProfile);
@@ -95,18 +94,18 @@ const RecruiterProfiles = () => {
         <i className="ri-user-line"></i>
         </div>
         <div>
-        <h2 className="text-2xl font-semibold capitalize text-slate-700">{user.recruiterName? user.recruiterName:"" }</h2>
-        <p className=" text-cyan-500"><span><i class="ri-building-line "></i> </span>{user.currentCompany? user.currentCompany:"not available"}</p>
+        <h2 className="text-2xl font-semibold capitalize text-slate-700">{recruiter.recruiterName? recruiter.recruiterName:"" }</h2>
+        <p className=" text-cyan-500"><span><i class="ri-building-line "></i> </span>{recruiter.currentCompany? recruiter.currentCompany:"not available"}</p>
         </div>
         </div>
         <div className='p-4'>
         <div className=" flex items-center justify-between flex-wrap-reverse ">
-        <p className="text-yellow-500 rounded font-semibold ">{user.currentDesignation? user.currentDesignation:""}</p>
-        <p className=" font-semibold text-cyan-600 border rounded px-2 border-cyan-600">{user.role? user.role:""}</p>
+        <p className="text-yellow-500 rounded font-semibold ">{recruiter.currentDesignation? recruiter.currentDesignation:""}</p>
+        <p className=" font-semibold text-cyan-600 border rounded px-2 border-cyan-600">{recruiter.role? recruiter.role:""}</p>
         </div>
         <div className='flex gap-2 text-sm font-semibold'>
           <span className='text-emerald-500'><i className="ri-flower-fill"></i></span>
-          <span className='text-emerald-500'>{user.plan}</span>
+          <span className='text-emerald-500'>{recruiter.plan}</span>
         </div>
         </div>
           

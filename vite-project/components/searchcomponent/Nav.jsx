@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { useState, useContext, useEffect } from "react";
 import InternetStatus from "../../Generators/InterNet";
 import { UserContext } from "../../Global/userContext";
@@ -21,11 +20,12 @@ useEffect(()=>{
     
     try {
         const response = await axios.get(`${url}/api/account/getview`, {
-        params: { recruiterId: user.id },
+        params: { recruiterId: user.role === 'recruiter'? user.id : user.recruiter._id },
         withCredentials: true,
         headers: { "Content-Type": "application/json" }
         });
 
+        console.log(response.data)
         settotalSeenCV(response.data.view.totalView);
         setgetOpenProfile(response.data.view.viewedProfiles);
         setviewCount(response.data.view.totalView);
@@ -38,6 +38,9 @@ useEffect(()=>{
   handleGetView()
 },[isprofileOpen])
 
+// useEffect(()=>{
+//   handleGetView()
+// },[])
 
   
 
@@ -77,7 +80,7 @@ useEffect(()=>{
 
         <div className="text-[12px] flex flex-col">
             <span className="font-semibold capitalize">{loggedInUser?.recruiterName? loggedInUser.recruiterName: "loading..."}</span>
-            <span className="text-[12px]"><i className="ri-database-2-fill"></i>{loggedInUser?.limit? `${totalSeenCV}/${loggedInUser.limit}`: "0"}</span>
+            <span className="text-[12px]"><i className="ri-database-2-fill"></i>{loggedInUser?.limit? `${totalSeenCV}/${loggedInUser.limit}`: loggedInUser.recruiter?.limit? `${totalSeenCV}/${loggedInUser.recruiter.limit}`: "0"}</span>
         </div>
           <div>
             <i className="ri-arrow-right-wide-fill"></i>

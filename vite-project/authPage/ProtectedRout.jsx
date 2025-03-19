@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../Global/userContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 
 const ProtectedRoutes = ({ children }) => {
     const { user } = useContext(UserContext);
@@ -18,7 +19,7 @@ const ProtectedRoutes = ({ children }) => {
         }
     }, [user, navigate, location.pathname, loading]);
 
-    if (loading) return <div onClick={()=> window.location.replace('/account/login')} className="h-screen w-full flex items-center justify-center text-blue-700 underline">Login Again! <i className="ri-reset-left-line"></i></div>;
+    if (loading) return <div onClick={()=> window.location.replace('/account/login')} className="h-screen w-full flex items-center justify-center text-blue-700 underline"><ClipLoader  color="#2a9487" /></div>;
 
     return children;
 };

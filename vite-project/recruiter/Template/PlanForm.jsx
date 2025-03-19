@@ -50,23 +50,22 @@ const PlanForm = ({planType}) => {
         );
     };
 
-    //payment calculation
     useEffect(()=>{
         if(isCorporate){
             if(!isMonth){
-                setPrice(Math.floor(((selectLimit * cvPriceForYear) - (selectLimit * (cvPriceForYear * (Discount/100)))) * 12) )
-                setwithoutDiscount(selectLimit * cvPriceForYear * 12)
+            setPrice(Math.floor(((selectLimit * cvPriceForYear) - (selectLimit * (cvPriceForYear * (Discount/100)))) * 12) )
+            setwithoutDiscount(selectLimit * cvPriceForYear * 12)
             }
             else{
-                setPrice(selectLimit * cvPriceForMonth)
+            setPrice(selectLimit * cvPriceForMonth)
             }
         }
         else{
             if(!isMonth){
-                setPrice(((selectLimit * cvPriceForYear) - (selectLimit * (cvPriceForYear * (Discount/100)))) * 12)
-                setwithoutDiscount(selectLimit * cvPriceForYear * 12)
+            setPrice(((selectLimit * cvPriceForYear) - (selectLimit * (cvPriceForYear * (Discount/100)))) * 12)
+            setwithoutDiscount(selectLimit * cvPriceForYear * 12)
             }else{
-                setPrice(selectLimit * cvPriceForMonth)
+            setPrice(selectLimit * cvPriceForMonth)
             }
         }
     }, [selectLimit, isMonth, isCustomizeLimit])

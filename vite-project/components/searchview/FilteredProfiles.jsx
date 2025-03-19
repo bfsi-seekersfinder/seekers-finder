@@ -16,7 +16,7 @@ const FilteredProfiles = () => {
     const [Candidate, setCandidate] = useState([])
     const [candidateLenght, setCandidatelength] = useState(0)
     const [remainingData, setRemainingData] = useState()
-    const [page, setPage] = useState(1); 
+    const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20)
     const [isResponse, setisResponse] = useState(false)
     const [navClose, setNavClose] = useState(true)
@@ -157,6 +157,7 @@ const initialData = {
 const savedFilters = localStorage.getItem('filters');
 const [FilterData, setFilterData] = useState(savedFilters ? JSON.parse(savedFilters) : initialData);
 
+
 useEffect(() => {
   localStorage.setItem('filters', JSON.stringify(FilterData));
 }, [FilterData]);
@@ -232,14 +233,15 @@ const resetSearch = () =>{
 
 //<<---------------------< (fetching filterCandidates) >--------------->>
 const fetchCandidates = async () => {
+  if(allEmpty) return;
 
     try {
       const skip = (page - 1) * limit;
       const { data } = await axios.get(`${url}/api/user`, {
         params: {
-          limit,
-          skip,
-          ...filterParam,  
+        limit,
+        skip,
+        ...filterParam,  
         },
       });
       
@@ -280,7 +282,6 @@ const productData = async () => {
           } catch (error) {
   }
 };
-
 
 useEffect(() => {
   productData();

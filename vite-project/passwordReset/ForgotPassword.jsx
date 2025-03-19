@@ -19,7 +19,6 @@ const ForgotPassword = () => {
       });
       setisEmailVerified(response.data.success)
       sessionStorage.setItem("resetEmail", email)
-      console.log("email setting session ",email)
       setMessage(response.data.message);
       setTimeout(()=>setMessage(''),3000)
     } catch (error) {

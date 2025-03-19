@@ -26,6 +26,7 @@ export default function LoginPage() {
     })
 
     const user = response.data.user;
+    console.log(user)
     if(!user) return navigate("/account/login")
     setUser(user);
     sessionStorage.setItem("userId", user.id)

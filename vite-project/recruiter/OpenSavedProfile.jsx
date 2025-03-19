@@ -25,9 +25,6 @@ const OpenSavedProfile = ({profile, title, searchTerm}) => {
     user?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    console.log("saved profiles",profile)
-
-
     const handleSeeSingleCandidateProfile = (candidateId) =>{
         if(seenProfiles.includes(candidateId)){
         sessionStorage.setItem("candidateId", candidateId);

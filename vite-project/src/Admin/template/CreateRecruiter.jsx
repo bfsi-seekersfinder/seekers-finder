@@ -167,9 +167,7 @@ const handleRemoveSelectedRec = () =>{
     setisSelectedUser(false)
 }
 
-
 //<<---------------- handle submitting recruiter data and create user ------------>>
-
 const handleSubmit = async (e) => {
     e.preventDefault();
   

@@ -7,11 +7,11 @@ const aliasUserSchema = new mongoose.Schema({
     aliasContactNo:Number,
     aliasPassword:String,
     limit:{
-        type:mongoose.Schema.Types.ObjectID,
+        type:mongoose.Schema.Types.ObjectId,
         ref:"RecruiterTalent"
     },
     recruiterId:{
-        type:mongoose.Schema.Types.ObjectID,
+        type:mongoose.Schema.Types.ObjectId,
         ref:"RecruiterTalent"
     },
     cvsCount:Number,

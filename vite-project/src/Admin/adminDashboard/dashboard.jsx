@@ -37,13 +37,11 @@ useEffect(() => {
   const fetchAdmin = async () =>{
     try {
       const adminId = sessionStorage.getItem('adminId')
-      console.log('admin id', adminId)
       const response = await axios.get(url+`/admin/api/admin/${adminId}`, {
-        withCredentials: true,
-        headers: { "Content-Type": "application/json" },
-        })
+      withCredentials: true,
+      headers: { "Content-Type": "application/json" },
+      })
       setAdmin(response.data.admin)
-      console.log(response.data.admin)
     } catch (error) {
       console.log(error)
     }

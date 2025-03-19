@@ -9,18 +9,15 @@ const AdminProtected = ({ children }) => {
     const [loading, setLoading] = useState(true);  
 
     useEffect(() => {
-        console.log('Protected Route Check - Admin:', admin);
         
-        // If admin is still null, wait for fetch to complete
         if (admin === null) {
             return;
         }
 
-        // If admin is undefined (session expired), redirect to login
         if (!admin) {
             navigate("/admin login", { replace: true });
         } else {
-            setLoading(false);  // Only set loading to false when admin is available
+            setLoading(false); 
         }
     }, [admin, navigate, location.pathname]);
 

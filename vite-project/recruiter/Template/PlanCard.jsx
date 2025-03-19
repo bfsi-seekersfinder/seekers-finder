@@ -1,5 +1,4 @@
 import React, {useState} from 'react'
-import PlanForm from './PlanForm'
 
 const PlanCard = ({title, image, id, onCardClick, corporate}) => {
 

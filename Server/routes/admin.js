@@ -79,7 +79,8 @@ router.get("/api/admin/:id", async (req, res) => {
             return res.status(400).json({ message: "Invalid User ID" });
         }
 
-        const admin = await adminModule.findById(id); // No need to convert manually
+        const admin = await adminModule.findById(id).populate("notification.refrence")
+        
         if (!admin) {
             return res.status(404).json({ message: "Unauthorized access denied" });
         }

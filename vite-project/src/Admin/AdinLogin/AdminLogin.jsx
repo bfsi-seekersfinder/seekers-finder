@@ -14,20 +14,15 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-        const response = await axios.post(url+"/admin/api/login",
-            { email, password },
-            {
-                withCredentials: true, 
-            }
+        const response = await axios.post(url+"/admin/api/login",{ email, password }, { withCredentials: true, }
         );
 
-        console.log("Login response:", response.data.admin);
         sessionStorage.setItem('adminId', response.data.admin._id)
 
         if (response.data.success) {
-            window.location.href = "/admin-dashboard"; 
+          window.location.href = "/admin-dashboard"; 
         } else {
-            setError(response.data.message); 
+          setError(response.data.message); 
         }
     } catch (error) {
         console.log("Login error:", error.message);

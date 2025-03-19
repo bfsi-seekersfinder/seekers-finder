@@ -17,6 +17,7 @@ const UserForm = () => {
   const [selectedCandidate, setselectedCandidate] = useState()
   const [Loading, setLoading] = useState(false)
   const [successMessage, setsuccessMessage] = useState('')
+  const [isCandidateSelect, setisCandidateSelect] = useState(false)
 
 
   const handleCandidateUpdate = () =>{
@@ -244,12 +245,14 @@ const UserForm = () => {
 
   const handleSelectUpdateCandidate = (id) =>{
   setselectedCandidate([id])
+  setisCandidateSelect(true)
   setfindCandidatedInput('')
   setfilterCandidates([])
   }
 
   const handleRemoveSelectedCandidate = () =>{
   setselectedCandidate([])
+  setisCandidateSelect(false)
   setfindCandidatedInput('')
   setfilterCandidates([])
   }
@@ -449,10 +452,10 @@ const UserForm = () => {
       <span className="text-slate-600 font-bold tracking-wider">Find candidate to update</span>
       <input type="text" value={findCandidatedInput} onChange={(e) => setfindCandidatedInput(e.target.value)} placeholder="find candidate" className="border border-slate-300 rounded py-1 px-2 focus:outline-gray-400"/>
     </div>
-    <div className="flex flex-col gap-4 h-[75vh] overflow-y-auto pb-10 mt-4" style={{scrollbarWidth:"none"}}>
+    <div className={`${isCandidateSelect? "hidden" : "flex flex-col gap-2 h-[75vh] overflow-y-auto pb-10 mt-4"}`} style={{scrollbarWidth:"none"}}>
     {
       Array.isArray(filterCandidates) && filterCandidates.length>0 && filterCandidates.map((user)=>(
-      <div key={user._id} onClick={()=> handleSelectUpdateCandidate(user)} className="flex flex-col gap-2 mt-4 shadow">
+      <div key={user._id} onClick={()=> handleSelectUpdateCandidate(user)} className="flex flex-col gap-2 shadow">
       <div className="w-full border border-slate-300 cursor-pointer bg-gray-200 gap-4 flex justify-between rounded px-2 py-1 items-center">
         <div className="flex flex-col">
         <span className="text-slate-600 font-semibold">{user.fullName}</span>
