@@ -1,9 +1,68 @@
 import React, {useEffect, useState} from 'react'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { BarLoader } from 'react-spinners'
 
-const CandidateList = ({candidate, sendValue}) => {
+const CandidateList = ({ sendValue,}) => {
+  const url = import.meta.env.VITE_API_URI
     const [popMessage, setpopMessage] = useState('')
     const [Query, setquery] = useState('')
+    const [isSkip, setisSkip] = useState(false)
+    const [Page, setPage] = useState(1)
+    const [limit, setLimit] = useState(25)
+    const [candidate, setcandidate] = useState()
+    const [totalCandidates, settotalCandidates] = useState()
+    const [Loading, setLoading] = useState(false)
+
+    const handleFetchUsers = async () => {
+      try {
+        const skip = (Page * limit) - limit
+        setLoading(true)
+          const response = await axios.get(`${url}/admin/api/users`, {
+            params:{
+              limit,
+              skip,
+            }
+          }, {
+              withCredentials: true,
+          });
+    
+          setcandidate(response.data.users)
+          settotalCandidates(response.data.totalCandidates)
+      } catch (error) {
+          console.error("Error fetching users:", error);
+          return [];
+      }finally{
+        setLoading(false)
+      }
+    
+    };
+
+    useEffect(()=>{
+      
+      handleFetchUsers()
+    },[Page])
+
+    const handleNext = () =>{
+      if(candidate.length === 0){
+        setpopMessage('No More data')
+        setTimeout(()=>setpopMessage(''),500)
+        return
+      }
+      setPage(Page+1)
+    }
+
+    const handlePrev = () =>{
+      if(Page<=1){
+        setpopMessage('No data')
+        setTimeout(()=>setpopMessage(''),500)
+        return;
+      }
+      setPage(Page-1)
+    }
+
+    // if(Loading) return 
+
 
   return (
     <div>
@@ -26,7 +85,10 @@ const CandidateList = ({candidate, sendValue}) => {
             <span className="border-l border-gray-300 flex justify-center w-[80px] px-1 ">Update</span>
             </div>
             <div className='flex flex-col gap-2 h-[75vh] overflow-y-auto mt-2' style={{scrollbarWidth:'none'}}>
-            {Array.isArray(candidate) && candidate.length && candidate.map((recruiter)=>(
+            {Loading && <div>
+              <div className='flex items-center justify-center h-[75vh]  '><BarLoader/></div>
+            </div>}
+            {!Loading && Array.isArray(candidate) && candidate.length && candidate.map((recruiter)=>(
             <div key={recruiter._id} className="bg-gray-200 shadow  py-1.5 px-2 rounded flex justify-between  text-[14px]">
             <span className="  flex  items-center   w-[250px] px-1 tracking-wider text-slate-700">{recruiter.fullName? recruiter.fullName:"_"}</span>
             <span className=" flex items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider text-slate-700">{recruiter.workExperience? recruiter.workExperience[0]?.designation: ''}</span>
@@ -38,8 +100,8 @@ const CandidateList = ({candidate, sendValue}) => {
             </div>
             ))}
             <div className='flex justify-end gap-4 py-4'>
-            <button className='bg-slate-500 px-4 py-1 rounded-2xl text-white cursor-pointer'>Prev</button>
-            <button className='bg-slate-500 px-4 py-1 rounded-2xl text-white cursor-pointer'>Next</button>
+            <button onClick={()=>handlePrev()} className='bg-slate-500 px-4 py-1 rounded-2xl text-white cursor-pointer'>Prev</button>
+            <button onClick={()=>handleNext()} className='bg-slate-500 px-4 py-1 rounded-2xl text-white cursor-pointer'>Next</button>
 
             </div>
 

@@ -311,7 +311,7 @@ return (
         </div>
 
         <div className="flex flex-col gap-1">
-            <label for="name">Recruiter Name:</label>
+            <label htmlFor="userName">Recruiter Name:</label>
             <input 
             type="text" 
             id="userName" 

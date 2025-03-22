@@ -45,8 +45,7 @@ const handleMarkAsSeen = async (adminId, notificationId) => {
   }
 };
 
-console.log("Details ",notification)
-console.log("inspect notic  ",notificationDetails)
+
 
 
   return (

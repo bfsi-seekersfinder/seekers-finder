@@ -73,12 +73,15 @@ router.get('/api/me',  async (req, res) => {
 router.get("/api/admin/:id", async (req, res) => {
     try {
         const { id } = req.params;
+        if(!req.session.admin){
+            return res.status(401).json({message:"Unathourized User"})
+        }
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid User ID" });
         }
 
-        const admin = await adminModule.findById(id).populate(["notification.refrence","notification.refrenceAnother", "notification.sender"]);
+        const admin = await adminModule.findById(req.session.admin._id).populate(["notification.refrence","notification.refrenceAnother", "notification.sender"]);
         
         if (!admin) {
             return res.status(404).json({ message: "Unauthorized access denied" });
@@ -244,7 +247,21 @@ router.put('/api/update/seen/:adminId/:notificationId',  async (req, res) => {
 
 router.get("/api/users", async (req, res) => {
     try {
-    const users = await User.find().sort({ createdAt: -1 }).limit(25);
+    const {limit, skip} = req.query
+
+    const parsedLimit = parseInt(limit);
+    const parsedSkip = parseInt(skip)
+
+    if (isNaN(parsedLimit) || isNaN(parsedSkip)) {
+        return res.status(400).json({ success: false, message: "Invalid limit or skip value" });
+    }
+
+
+    const users = await User.find()
+    .sort({ createdAt: -1 })
+    .limit(parsedLimit)
+    .skip(parsedSkip);
+
     const totalCandidates1 = await User.countDocuments()
     const totalCandidates2 = await Candidate.countDocuments()
     const totalCandidates = totalCandidates1 + totalCandidates2
@@ -254,6 +271,7 @@ router.get("/api/users", async (req, res) => {
     console.error("Error fetching users:", error);
     res.status(500).json({ success: false, message: "Server error" });
     }
+
 });
 
 

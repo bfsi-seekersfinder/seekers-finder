@@ -19,6 +19,10 @@ const [isSidebar, setisSidebar] = useState(false)
 const [popMessage, setpopMessage] = useState()
 const [isNotificationDelete, setisNotificationDelete] = useState(false)
 const [Candidates, setCandidates] = useState([])
+const [limit, setLimit] = useState(25)
+const [Loading, setLoading] = useState(false)
+const [Page, setPage] = useState(1)
+const [isCandidateSkip, setisCandidateSkip] = useState(false)
 const [totalCandidates, settotalCandidates] = useState()
 const [totalRecruiter, settotalRecruiter] = useState()
 const [toalInactivePlan, settoalInactivePlan] = useState()
@@ -84,32 +88,6 @@ useEffect(() => {
   return () => document.removeEventListener("click", handleClickOutside);
 }, [isSidebar]);
 
-const handleFetchUsers = async () => {
-  try {
-      const response = await axios.get(`${url}/admin/api/users`, {
-          withCredentials: true,
-      });
-
-      setCandidates(response.data.users)
-      settotalCandidates(response.data.totalCandidates)
-      if (response.data.success) {
-          console.log("Fetched Users:", response.data.users);
-          return response.data.users;
-      } else {
-          console.error("Failed to fetch users:", response.data.message);
-          return [];
-      }
-  } catch (error) {
-      console.error("Error fetching users:", error);
-      return [];
-  }
-};
-
-useEffect(()=>{
-  handleFetchUsers()
-},[])
-
-
 const handleLogout = async () =>{
   try {
     const {data} = await axios.post(url+"/admin/api/logout", {}, {withCredentials:true})
@@ -136,7 +114,6 @@ const handleSetSearchQuery = (query) =>{
   setSearchRecruiter(query)
 }
 
-console.log(admin)
 
   return (
     <div className="flex ">
@@ -200,7 +177,7 @@ console.log(admin)
             
             ): Step === 2? (
             <div className="h-screen overflow-y-auto">
-              <CandidateList candidate={Candidates} sendValue={handleUpdateState}/>
+              <CandidateList  sendValue={handleUpdateState} />
             </div>
             ): Step === 3?(
             <div>

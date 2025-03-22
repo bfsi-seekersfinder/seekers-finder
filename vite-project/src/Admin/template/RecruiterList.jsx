@@ -16,7 +16,6 @@ const RecruiterList = ({Recruiter, pageValue, setQuery}) => {
         setSelectedRecruiter(user)
     }
 
-    console.log("SelectedRecruiter",SelectedRecruiter)
 
   return (
     <div>

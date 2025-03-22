@@ -48,7 +48,6 @@ const UserForm = () => {
   }
 
   const [formData, setFormData] = useState(initialData);
-console.log(formData)
 
   const productData = async () => {      
     try {
@@ -210,8 +209,6 @@ console.log(formData)
     }
 
   }
-
-  console.log("selected", selectedCandidate?.map(id => id._id))
 
 
   const handleAddSkill = (e) => {
