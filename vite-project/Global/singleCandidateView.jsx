@@ -28,7 +28,9 @@ export const SingleCandidateProvider = ({ children }) => {
     };
 
     getUserProfile();
-}, [candidateId]);
+  }, [candidateId]);
+
+  if(Loading) return <p> Loading...</p>
 
   return (
     <SingleCandidateContext.Provider value={{ setCandidateId, candidate, Loading }}>

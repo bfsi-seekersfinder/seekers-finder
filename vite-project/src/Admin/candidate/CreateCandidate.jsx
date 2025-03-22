@@ -34,6 +34,7 @@ const UserForm = () => {
     currentCompany: "",
     noticePeriod: "",
     currentCtc: "",
+    designation:"",
     workExperience: [],
     education: [{id:Date.now(), name:"", universityName:"", startDate:"", endDate:"",}],
     userLocation: {
@@ -47,7 +48,7 @@ const UserForm = () => {
   }
 
   const [formData, setFormData] = useState(initialData);
-
+console.log(formData)
 
   const productData = async () => {      
     try {
@@ -77,6 +78,10 @@ const UserForm = () => {
       ),
     }));
   };
+
+  useEffect(()=>{
+    
+  },[formData.education])
 
   const addEducationField = () => {
     setFormData((prevFormData) => ({
@@ -165,23 +170,49 @@ const UserForm = () => {
 
   const handleUpload = async () => {
 
-    try {
-      Loading(true)
-      const response = await axios.post(url+'/api/create/candidate', formData,{
+    if(!isCandidateUpdate){
+
+      try {
+        setLoading(true)
+        const response = await axios.post(url+'/api/create/candidate', formData,{
+          headers: { "Content-Type": "application/json" },
+        })
+  
+        setsuccessMessage(response.data.message)
+        setTimeout(()=>setsuccessMessage(''), 3000)
+        setFormData(initialData)
+        
+      } catch (error) {
+        console.log(error.message)
+      }finally{
+        setLoading(false)
+      }
+    }else{
+
+      try {
+        const id = selectedCandidate?.map(candidate => candidate._id) 
+        setLoading(true)
+      const response = await axios.put(url+`/api/update/candidate/${id}`, formData,{
+        withCredentials:true,
         headers: { "Content-Type": "application/json" },
       })
 
       setsuccessMessage(response.data.message)
       setTimeout(()=>setsuccessMessage(''), 3000)
+      setFormData(initialData)
       
     } catch (error) {
       console.log(error.message)
     }finally{
       setLoading(false)
-      setFormData(initialData)
+    }
+
     }
 
   }
+
+  console.log("selected", selectedCandidate?.map(id => id._id))
+
 
   const handleAddSkill = (e) => {
     if (e.key === "Enter" || e.key === ",") {
@@ -270,11 +301,14 @@ const UserForm = () => {
     </nav>
 
     <form onSubmit={handleSubmit} className="p-4 max-w-lg pl-8 space-y-4 shadow pt-18 h-screen overflow-y-auto" style={{scrollbarWidth:"none"}}>
-      <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" required />
-      <input type="text" name="mobileNo" placeholder="Mobile No" value={formData.mobileNo} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" />
-      <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" />
+      <label htmlFor="">Full Name</label>
+      <input type="text" name="fullName"   placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full p-2 border rounded border-slate-300"  />
+      <label htmlFor="">Contact No</label>
+      <input type="text" name="mobileNo"   placeholder="Mobile No" value={formData.mobileNo} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" />
+      <label htmlFor="">Email</label>
+      <input type="email" name="email"   placeholder="Email" value={formData.email} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" />
       <div className="flex gap-5 w-full p-2 border rounded border-slate-300">
-        <label>Gender:</label>
+        <label className="text-slate-800 font-semibold">Gender:</label>
         <label className="flex gap-2">
           <input
           type="radio"
@@ -299,7 +333,7 @@ const UserForm = () => {
       </div>
 
       <div className="flex gap-5 w-full p-2 border rounded border-slate-300">
-      <label>Marital Status:</label>
+      <label className="text-slate-800 font-semibold">Marital Status:</label>
         <label className="flex gap-2">
           <input
           type="radio"
@@ -324,7 +358,7 @@ const UserForm = () => {
       </div>
 
       <div className="flex gap-6 flex-col">
-        <p className="text-slate-700 font-bold">Select Education</p>
+        <p className="text-slate-700 font-bold">Education Details</p>
       {
         Array.isArray(formData.education) && formData.education.length > 0 && formData.education.map((item)=>(
         <div key={item.id} className="flex flex-col gap-4 " >
@@ -362,8 +396,9 @@ const UserForm = () => {
       </button>
       </div>
 
+        <label htmlFor="">Product</label>
       <select name="product" id="" onChange={handleChange} className="w-full p-2 border rounded border-slate-300">
-        <option value="">select product</option>
+        <option value="">Select product</option>
         {
         Product.map((item, i)=>(
         <option key={i} value={item.name}>{item.name}</option>
@@ -371,21 +406,26 @@ const UserForm = () => {
       }
       </select>
 
-      <input type="text" name="currentCompany" placeholder="current company" value={formData.currentCompany} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" />
-      <input type="number" name="yearsOfExperience" placeholder="Years of Experience" value={formData.yearsOfExperience} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" />
-      <select name="noticePeriod" onChange={handleChange} className="w-full p-2 border rounded border-slate-300">
+      {/* <input type="text" name="currentCompany" placeholder="current company" value={formData.currentCompany} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" /> */}
+      <label htmlFor="">Experience</label>
+      <input type="number"   name="yearsOfExperience" placeholder="Years of Experience" value={formData.yearsOfExperience} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" />
+      <label htmlFor="">Designation</label>
+      <input type="text"   name="designation" placeholder="designation" value={formData.designation} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" />
+      <label htmlFor="">Notice period</label>
+      <select name="noticePeriod" value={formData.noticePeriod}  onChange={handleChange} className="w-full p-2 border rounded border-slate-300">
         <option value="">select notice Period</option>
       {noticePeriodOptions.map((value, i)=>(
         <option key={i} value={value}>{value}</option>
       ))}
       </select>
-      <input type="text" name="currentCtc" placeholder="Current CTC" value={formData.currentCtc} onChange={handleChange} className="w-full p-2 border rounded border-slate-300" required />
+      <label htmlFor="">Current CTC</label>
+      <input type="text" name="currentCtc" placeholder="Current CTC" value={formData.currentCtc} onChange={handleChange} className="w-full p-2 border rounded border-slate-300"  />
       
       {/* <input type="text" name="maritalStatus" placeholder="Marital Status" value={formData.maritalStatus} onChange={handleChange} className="w-full p-2 border rounded" /> */}
       
       {/* Work Experience */}
       <div className="flex flex-col gap-4">
-        <h3 className="font-semibold">Work Experience</h3>
+        <h3 className="font-semibold">Company Details</h3>
         {formData.workExperience.map((exp, index) => (
           <div key={index} className="space-y-2">
             <input type="text" placeholder="Company Name" value={exp.name} onChange={(e) => handleArrayChange(index, "name", e.target.value, "workExperience")} className="w-full p-2 border rounded border-slate-300" />
@@ -395,14 +435,17 @@ const UserForm = () => {
             <button type="button" onClick={() => removeArrayField("workExperience", index)} className="bg-red-500 text-white p-2 rounded">Remove</button>
           </div>
         ))}
-        <button type="button" onClick={() => addArrayField("workExperience", { name: "", designation: "", description: "", startDate:"", endDate:"", })} className="bg-blue-500 text-white p-2 rounded">Add Experience</button>
+        <button type="button" onClick={() => addArrayField("workExperience", { name: "", designation: "", description: "", startDate:"", endDate:"", })} className="bg-blue-500 text-white p-2 rounded">+Add Company</button>
       </div>
 
       {/* User Location */}
       <div className="flex flex-col gap-4">
         <h3 className="font-semibold">User Location</h3>
+        <label htmlFor="">Country</label>
         <input type="text" name="country" placeholder="country" value={formData.userLocation.country} onChange={handleLocation} className="w-full p-2 border rounded border-slate-300" />
+        <label htmlFor="">State</label>
         <input type="text" name="state" placeholder="state" value={formData.userLocation.state} onChange={handleLocation} className="w-full p-2 border rounded border-slate-300" />
+        <label htmlFor="">City</label>
         <input type="text" name="city" placeholder="city" value={formData.userLocation.city} onChange={handleLocation} className="w-full p-2 border rounded border-slate-300" />
       </div>
 

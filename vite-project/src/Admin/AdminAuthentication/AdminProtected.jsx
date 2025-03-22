@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AdminContext } from "../../../Global/AdminUserContext";
+import { ClipLoader } from "react-spinners";
 
 const AdminProtected = ({ children }) => {
     const { admin } = useContext(AdminContext);
@@ -10,27 +11,16 @@ const AdminProtected = ({ children }) => {
 
     useEffect(() => {
         
-        if (admin === null) {
-            return;
+        if (admin !== null) {
+            setLoading(false)
         }
 
-        if (!admin) {
+        if (!admin && !loading) {
             navigate("/admin login", { replace: true });
-        } else {
-            setLoading(false); 
-        }
+        } 
     }, [admin, navigate, location.pathname]);
 
-    if (loading) {
-        return (
-            <div 
-                onClick={() => window.location.replace('/admin login')} 
-                className="h-screen w-full flex items-center justify-center text-blue-700 underline"
-            >
-                Login Again! <i className="ri-reset-left-line"></i>
-            </div>
-        );
-    }
+    if (loading) return <div onClick={()=> window.location.replace('/admin login')} className="h-screen w-full flex items-center justify-center text-blue-700 underline"><ClipLoader  color="#2a9487" /></div>;
 
     return children;
 };

@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 import mongoose from 'mongoose';
 import upload from "../middleware/multer.js";
 import User from "../schema/user.mongoose.js"
+import Candidate from '../schema/userdata.mongoose.js';
 
 
 const router = express.Router()
@@ -56,19 +57,17 @@ router.post("/api/login", async (req, res) => {
     }
 });
 
-router.get('/api/me', async (req, res) => {
+router.get('/api/me',  async (req, res) => {
     try {
-
-
         if (!req.session.admin) {
             return res.status(401).json({ message: "Login Again" });
         }
-
         res.json({ success: true, admin: req.session.admin });
     } catch (error) {
         console.error("Error in /me:", error.message);
         res.status(500).json({ message: "Server error" });
     }
+
 });
 
 router.get("/api/admin/:id", async (req, res) => {
@@ -79,7 +78,7 @@ router.get("/api/admin/:id", async (req, res) => {
             return res.status(400).json({ message: "Invalid User ID" });
         }
 
-        const admin = await adminModule.findById(id).populate("notification.refrence")
+        const admin = await adminModule.findById(id).populate(["notification.refrence","notification.refrenceAnother", "notification.sender"]);
         
         if (!admin) {
             return res.status(404).json({ message: "Unauthorized access denied" });
@@ -91,6 +90,7 @@ router.get("/api/admin/:id", async (req, res) => {
         console.error(error.message);
         res.status(500).json({ message: "Server error" });
     }
+
 });
 
 router.post('/api/query', async (req, res) => {
@@ -114,7 +114,7 @@ router.post('/api/query', async (req, res) => {
 
         // Push notification to Admin
         for(const admin of Admin){
-            admin.notification.push({
+            admin.notification.unshift({
                 notificationType:"queryReq",
                 headLine: `New query received from ${recruiterName}`,
                 queryMessage,
@@ -152,18 +152,38 @@ router.post("/api/recruiter/getsuggestion", async (req, res) => {
 
         const Admins = await adminModule.find({ adminRole: "Super Admin" });
 
-        for (const admin of Admins) {
-            admin.notification.push({
-                notificationType: "recruiter suggestion",
-                sender: recruiterId,
-                refrence:candidateId,
-                headLine: `New suggestion from ${recruiterName}`,
-                message:suggestion
-                
-            });
+        let ulterSchema = await User.findById(candidateId)
+        // let updateSchema = ulterSchema? { refrence: candidateId }: { refrenceAnother: candidateId };
+
+        if(ulterSchema){
+            for (const admin of Admins) {
+                admin.notification.push({
+                    notificationType: "recruiter suggestion",
+                    sender: recruiterId,
+                    refrence:candidateId,
+                    headLine: `New suggestion from ${recruiterName}`,
+                    message:suggestion
+                    
+                });
+
+                await admin.save(); 
+            }
+            }else{
+
+                for (const admin of Admins) {
+                    admin.notification.push({
+                        notificationType: "recruiter suggestion",
+                        sender: recruiterId,
+                        refrenceAnother:candidateId,
+                        headLine: `New suggestion from ${recruiterName}`,
+                        message:suggestion
+                        
+                    });
+
+                    await admin.save(); 
+                 }
         
-            await admin.save(); 
-        }
+            }
 
         res.json({ success: true, message: "Thank You ❤️ for Your Suggestion" });
 
@@ -173,76 +193,85 @@ router.post("/api/recruiter/getsuggestion", async (req, res) => {
     }
 });
 
-router.post("/api/logout", (req, res) => {
-    req.session.destroy((err) => {
-    if (err) {
-    return res.status(500).json({ message: "Logout failed", error: err.message });
-    }
-    res.clearCookie("connect.sid");
-    res.json({ success: true, message: "Logged out successfully" });
-    });
-});
-
-
-router.post("/api/create-candidate", upload.single("cv"), async (req, res) => {
+router.delete("/api/delete/notification/:adminId/:notificationId",  async (req, res) => {
     try {
-        const {
-            fullName,
-            mobileNo,
-            email,
-            gender,
-            workExperience = "[]",
-            product,
-            yearsOfExperience,
-            noticePeriod,
-            currentCtc,
-            previousCompanies = "[]",
-            education = "[]",
-            userLocation = "[]",
-            maritalStatus,
-            keySkills = "[]",
-        } = req.body;
+        const { notificationId , adminId} = req.params;
 
-        // Parse JSON fields properly
-        const parsedWorkExperience = JSON.parse(workExperience);
-        const parsedPreviousCompanies = JSON.parse(previousCompanies);
-        const parsedEducation = JSON.parse(education);
-        const parsedUserLocation = JSON.parse(userLocation);
-        const parsedKeySkills = JSON.parse(keySkills);
-
-        // Handle file upload
-        let cvUrl = [];
-        if (req.file) {
-            cvUrl.push(`uploads/${req.file.filename}`);
+        if (!notificationId || !adminId) {
+            return res.status(400).json({ success: false, message: "Notification ID is required" });
         }
 
-        // Create new candidate
-        const newCandidate = new User({
-            fullName,
-            mobileNo: Number(mobileNo) || null,
-            email,
-            gender,
-            workExperience: parsedWorkExperience,
-            product,
-            yearsOfExperience: Number(yearsOfExperience) || null,
-            noticePeriod,
-            currentCtc,
-            previousCompanies: parsedPreviousCompanies,
-            education: parsedEducation,
-            userLocation: parsedUserLocation,
-            maritalStatus,
-            keySkills: parsedKeySkills,
-            cv: cvUrl,
-        });
+        const deletedNotification = await adminModule.findByIdAndUpdate(adminId, 
+            {$pull: {notification : {_id: notificationId}}},
+            {new: true}
+        );
 
-        // Save to database
-        await newCandidate.save();
-        res.status(201).json({ success: true, message: "Candidate created successfully!", newCandidate });
+        if (!deletedNotification) {
+            return res.status(404).json({ success: false, message: "Notification not found" });
+        }
+
+        res.json({ success: true, message: "Notification deleted successfully" });
     } catch (error) {
-        console.error("Error creating candidate:", error);
+        console.error("Error deleting notification:", error);
         res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 });
+
+router.put('/api/update/seen/:adminId/:notificationId',  async (req, res) => {
+    try {
+        const { adminId, notificationId } = req.params;
+
+        if (!adminId || !notificationId) {
+            return res.status(400).json({ success: false, message: "Admin ID and Notification ID are required" });
+        }
+
+        const updatedAdmin = await adminModule.findOneAndUpdate(
+            { _id: adminId, "notification._id": notificationId }, // Find admin with matching notificationId
+            { $set: { "notification.$.seen": true } }, // Update the seen field to true
+            { new: true }
+        );
+        
+        if (!updatedAdmin) {
+            return res.status(404).json({ success: false, message: "Notification not found" });
+        }
+
+        res.json({ success: true, message: "Notification marked as seen", admin: updatedAdmin });
+    } catch (error) {
+        console.error("Error updating notification:", error);
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+});
+
+router.get("/api/users", async (req, res) => {
+    try {
+    const users = await User.find().sort({ createdAt: -1 }).limit(25);
+    const totalCandidates1 = await User.countDocuments()
+    const totalCandidates2 = await Candidate.countDocuments()
+    const totalCandidates = totalCandidates1 + totalCandidates2
+    res.json({ success: true, users , totalCandidates});
+
+    } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
+
+router.post("/api/logout", (req, res) => {
+
+    if (!req.session.admin) {
+        return res.status(400).json({ message: "No active session to log out" });
+    }
+
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ message: "Logout failed", error: err.message });
+        }
+        res.clearCookie("connect.sid");
+        res.json({ success: true, message: "Logged out successfully" });
+    });
+});
+
 
 
 export default router

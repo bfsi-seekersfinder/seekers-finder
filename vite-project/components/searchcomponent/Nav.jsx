@@ -6,7 +6,7 @@ import axios from "axios";
 export default function Navbar() {
   const url = import.meta.env.VITE_API_URI
   const isOnline = InternetStatus()
-  const { user, setviewCount, isprofileOpen, setgetOpenProfile, getOpenProfile} = useContext(UserContext);
+  const { user, setviewCount, isprofileOpen, setisprofileOpen, setgetOpenProfile, getOpenProfile} = useContext(UserContext);
   const [totalSeenCV, settotalSeenCV] = useState(0)
   const loggedInUser = user
   const [isOpen, setisOpen] = useState(false)
@@ -25,22 +25,20 @@ useEffect(()=>{
         headers: { "Content-Type": "application/json" }
         });
 
-        console.log(response.data)
         settotalSeenCV(response.data.view.totalView);
         setgetOpenProfile(response.data.view.viewedProfiles);
         setviewCount(response.data.view.totalView);
         sessionStorage.setItem("seenProfiles", response.data.view.viewedProfiles);
     } catch (error) {
         console.error("Error fetching view data:", error.message);
+    }finally{
+      setisprofileOpen(false)
     }
+
   };
 
   handleGetView()
 },[isprofileOpen])
-
-// useEffect(()=>{
-//   handleGetView()
-// },[])
 
   
 
@@ -80,7 +78,7 @@ useEffect(()=>{
 
         <div className="text-[12px] flex flex-col">
             <span className="font-semibold capitalize">{loggedInUser?.recruiterName? loggedInUser.recruiterName: "loading..."}</span>
-            <span className="text-[12px]"><i className="ri-database-2-fill"></i>{loggedInUser?.limit? `${totalSeenCV}/${loggedInUser.limit}`: loggedInUser.recruiter?.limit? `${totalSeenCV}/${loggedInUser.recruiter.limit}`: "0"}</span>
+            <span className="text-[12px]"><i className="ri-database-2-fill"></i> {loggedInUser?.limit? `${totalSeenCV}/${loggedInUser.limit}`: loggedInUser.recruiter?.limit? `${totalSeenCV}/${loggedInUser.recruiter.limit}`: "0"}</span>
         </div>
           <div>
             <i className="ri-arrow-right-wide-fill"></i>

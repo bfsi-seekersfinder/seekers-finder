@@ -27,7 +27,12 @@ const CreateRecruiter = ({recruiter}) => {
     const [recruitrId, setrecruitrId] = useState(null)
     const [startDate, setstartDate] = useState(null)
     const [endDate, setendDate] = useState(null)
-    
+    const [isLimitCustomize, setisLimitCustomize] = useState(false)
+
+const handleCustomizeLimit = () =>{
+setisLimitCustomize(!isLimitCustomize)
+}
+
 const handleAddAlias = (e) => {
     e.preventDefault()
     setInputData((prev) => ({
@@ -224,7 +229,6 @@ const handleSubmit = async (e) => {
 };
 
 
-
 return (
     <>
     <div className='flex shadow justify-between items-center px-8'>
@@ -253,6 +257,7 @@ return (
         onChange={(e)=>setSearchQuery(e.target.value)}
         className={`${isFilterInput?'border border-slate-400 rounded px-4 py-0.5 w-[400px]' : 'hidden'}`}
         />
+
     {selectedRecruiter && (
         <div className={`${isSelectedUser?'border border-slate-300 bg-slate-100 w-[400px] flex gap-4 items-center rounded px-2 py-2 cursor-pointer select-none' : "hidden"}`}>
         <div className='flex justify-between w-full text-[12px]'>
@@ -261,8 +266,8 @@ return (
             <span className='text-slate-600'>{selectedRecruiter.email? selectedRecruiter.email :"email"}</span>
             </div>
             <div className='flex flex-col'>
-                <span>{selectedRecruiter.contactNo? "+91 "+ selectedRecruiter.contactNo : "email"}</span>
-                <span className='text-slate-600'>Account: {selectedRecruiter.plan? selectedRecruiter.plan : "email"}</span>
+            <span>{selectedRecruiter.contactNo? "+91 "+ selectedRecruiter.contactNo : "email"}</span>
+            <span className='text-slate-600'>Account: {selectedRecruiter.plan? selectedRecruiter.plan : "email"}</span>
             </div>
             
             <div onClick={()=>handleRemoveSelectedRec()} className='h-10 w-10 flex items-center justify-center rounded-full hover:bg-gray-200'>
@@ -278,17 +283,17 @@ return (
     <div key={user._id} onClick={()=>selectRecruiterData(user._id)} className='border border-slate-300 w-[400px] flex gap-4 items-center rounded px-4 py-2 cursor-pointer select-none'>
         <div className='h-8 w-8 rounded-full border border-slate-300'></div>
         <div className='flex justify-between w-full text-[12px]'>
-            <div className='flex flex-col'>
-            <span className='font-semibold text-slate-700'>{user.recruiterName}</span>
-            <span className='text-slate-600'>{user.email}</span>
-            </div>
-            <div>{user.contactNo}</div>
+        <div className='flex flex-col'>
+        <span className='font-semibold text-slate-700'>{user.recruiterName}</span>
+        <span className='text-slate-600'>{user.email}</span>
+        </div>
+        <div>{user.contactNo}</div>
         </div>
     </div>
 
     ))
-
     }
+
     </div>  
     <div className='text-xl text-slate-600 font-semibold pb-2'>Personal information</div>
     <div className='flex flex-wrap gap-4'>
@@ -480,7 +485,7 @@ return (
 
         <div className='flex justify-end items-center text-xl text-slate-500 font-bold'>
         <span>       
-            <button onChange={handleSwitchCorporate} className=' text-slate-600 font-semibold px-4 rounded-sm py-1'> Switch to {isCorporate?"Basic":"Corporate"} <Switch/> </button>
+            <button type='button' onChange={handleSwitchCorporate} className=' text-slate-600 font-semibold px-4 rounded-sm py-1'> Switch to {isCorporate?"Basic":"Corporate"} <Switch/> </button>
         </span>
         </div>
 {/* <<-------------------------------  Alias User Adding ---------------------------------->> */}
@@ -590,18 +595,21 @@ return (
             <div>
             <div className='text-xl text-slate-600 font-semibold mt-4'>Personal Credentials</div>
             </div>
-            <div className='flex gap-4 py-4'>
-            
 
+            <div className='flex gap-4 py-4'>
             <div className="flex flex-col gap-4">
-                <label htmlFor="password">select limit</label>
+                <div className='flex justify-between items-center'>
+                <label htmlFor="password" className='text-slate-600 font-semibold'>Select limit</label>
+                <span className='text-cyan-700 font-semibold'> Customize Limit<Switch onClick={()=> handleCustomizeLimit()} /></span>
+                </div>
+                {!isLimitCustomize? (
                 <select
                 value={InputData.limit}
                 onChange={(e)=> setInputData((prev)=>({...prev, limit:e.target.value}))}
                 name="role" 
-                className="border border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+                className="border border-slate-300 rounded w-[400px] px-1 py-2 focus:outline-none"
                 >
-                <option value="">select limit</option>
+                <option value="">Select limit</option>
                 {
                   Array.isArray(limitArray) && limitArray.length &&  limitArray.map((value, i)=>(
                         <option value={value} key={i}>{value}</option>
@@ -609,11 +617,24 @@ return (
                 }
                 </select>
 
+                ):(
+                <div 
+                className="border border-slate-300 rounded w-[400px] px-2  focus:outline-none"
+                >
+                <input 
+                type="Number" 
+                placeholder='Enter limit'
+                value={InputData.limit}
+                onChange={(e)=> setInputData((prev)=>({...prev, limit:e.target.value}))} 
+                className='w-full h-full py-2 focus:outline-none'/>
+                </div>
+                 )}
+
                 <DateSelector selectDate={handleSelectDates}/>
             </div>
             </div>
-            <div className='py-4 px-8'>
-            <button type="submit" className="bg-slate-600 px-4 py-0.5 rounded text-white">{isRecruiterUpdate? "Update Recruiter" : "Create Reacruiter"}</button>
+            <div className='py-4 '>
+            <button type="submit" className="cursor-pointer bg-slate-600 w-[26rem] px-4 py-2 rounded text-white">{isRecruiterUpdate? "Update Recruiter" : "Create Reacruiter"}</button>
             </div>
     </div>
     <div className={`${Success.length>0?'absolute bottom-4 px-8 rounded-2xl py-1 bg-emerald-400 text-white': "hidden"}`}>{Success}</div>

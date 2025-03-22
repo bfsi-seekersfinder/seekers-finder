@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useContext, useCallback} from 'react'
+import React, { useEffect, useState, useContext, useCallback} from 'react';
 import getDuration from '../../Generators/getDuration';
 import axios from 'axios';
 import { UserContext } from '../../Global/userContext';
 import { SingleCandidateContext } from '../../Global/singleCandidateView';
 import { useNavigate } from 'react-router-dom';
-import { debounce } from 'lodash'
+import { debounce } from 'lodash';
 
 
 
@@ -76,7 +76,7 @@ const ProfileCard = ({Candidate}) => {
         if (response.data.success) {
         setisprofileOpen(true);
         setisProfileview(true);
-        setVeiwNumberAndEmail(prev => !prev);
+        setVeiwNumberAndEmail(true);
         }
     
         } catch (error) {
@@ -123,13 +123,14 @@ const ProfileCard = ({Candidate}) => {
         const isProfileSeen = getOpenProfile.some(profileId => profileId === id)
         if(isProfileSeen){
             setVeiwNumberAndEmail(prev => !prev)
-        }else{
-            setFailedMessage('Open Profile')
-            setTimeout(()=>{
-                setFailedMessage('')
-            },3000)
         }
 
+        if(VeiwNumberAndEmail){
+            return
+        }
+
+        handleViewProfile(id)
+        setisprofileOpen(true)
     }
 
     const handleSeeSingleCandidateProfile = (candidateId) =>{
@@ -144,37 +145,17 @@ const ProfileCard = ({Candidate}) => {
         if(!Loading) window.open("/account/candidate/profile");
     }
 
-    const handleViewPDF = async (pdfUrl) => {
-        if (!pdfUrl) {
-          setResumeMessage("No PDF available");
-          setTimeout(()=> setResumeMessage(""), 2000)
-
-          return;
-        }
-      
-        try {
-          const response = await fetch(pdfUrl);
-          if (!response.ok) throw new Error("Failed to load PDF");
-      
-          const blob = await response.blob();
-          const pdfBlobUrl = URL.createObjectURL(blob);
-          window.open(pdfBlobUrl, "_blank");
-        } catch (error) {
-          setResumeMessage("Failed to load PDF");
-          setTimeout(()=> setResumeMessage(""), 500)
-        }
-    };
-    
     const handleSaveProfile = async (candidateId) => {
         if (!user || !user.id) {
             setFailedMessage("User must be logged in");
             setTimeout(() => setFailedMessage(""), 3000);
             return;
         }
+        console.log(savedProfiles)
+        console.log(candidateId)
         
         const recruiterID = user.id;
         const isAlreadySaved = savedProfiles.some((item) => item._id === candidateId);
-    
         const updatedProfiles = isAlreadySaved
             ? savedProfiles.filter((item) => item._id !== candidateId) 
             : [...savedProfiles, { _id: candidateId }]; 
@@ -192,7 +173,7 @@ const ProfileCard = ({Candidate}) => {
     
             if (response.data.success) {
             setSuccesMessage(response.data.message);
-            setTimeout(() => setSuccesMessage(""), 3000);
+            setTimeout(() => setSuccesMessage(""), 500);
             } else {
             setFailedMessage(response.data.message || "Something went wrong");
             setTimeout(() => setFailedMessage(""), 3000);
@@ -292,6 +273,8 @@ const ProfileCard = ({Candidate}) => {
     setInputValue(event.target.value);
     debouncedSetMessage(event.target.value); 
     }
+
+   
         
         
 
@@ -304,7 +287,7 @@ const ProfileCard = ({Candidate}) => {
                     <div className='flex flex-col'>
                     <div className='flex flex-col gap-0.5'>
                     {/* <div className='h-18 w-18 rounded-full border justify-center items-center overflow-hidden'> <img className='h-full w-full' src={candidate.profilePicture? candidate.profilePicture: ''} alt="" /></div> */}
-                    <span className='font-bold text-slate-600 tracking-wider capitalize'>{candidate.fullName? candidate.fullName:""} </span>
+                    <span className='font-bold flex items-center  gap-2 text-slate-600 tracking-wider capitalize'>{candidate.fullName? candidate.fullName:""} </span>
                     <span className='text-[14px] font-bold tracking-wider text-slate-500'>
                     {candidate.workExperience && candidate.workExperience[0] && candidate.workExperience[0]?.description 
                         ? candidate.workExperience[0].description 
@@ -341,7 +324,8 @@ const ProfileCard = ({Candidate}) => {
                     <div className='flex flex-col '>
                     <div className='flex gap-3 justify-between max-lg:justify-normal '>
                     <button  onClick={()=>handleSeeSingleCandidateProfile(candidate._id)} className='border max-lg:text-[12px] border-slate-400 px-4 max-lg:px-2 py-0.5 hover:bg-slate-700 hover:text-white active:bg-slate-600 active:text-white  rounded-sm text-sm text-slate-700 cursor-pointer'>Profile</button>
-                    <button  onClick={()=>handleViewcontacts(candidate._id)} className='border max-lg:text-[12px] border-slate-400 px-4 max-lg:px-2 py-0.5 hover:bg-slate-700 hover:text-white active:bg-slate-600 active:text-white  rounded-sm text-sm text-slate-700 cursor-pointer'>View Contacts</button>
+                    <button  onClick={()=>{
+                        handleViewcontacts(candidate._id)}} className='border max-lg:text-[12px] border-slate-400 px-4 max-lg:px-2 py-0.5 hover:bg-slate-700 hover:text-white active:bg-slate-600 active:text-white  rounded-sm text-sm text-slate-700 cursor-pointer'>{VeiwNumberAndEmail?"Hide":"View"} Contacts</button>
                     {/* <button onClick={() => handleViewPDF(candidate.resume)} className='border max-lg:text-[12px] border-slate-400 px-4  active:bg-slate-600 hover:bg-slate-700 hover:text-white active:text-white max-lg:px-2 py-0.5 rounded-sm text-sm text-slate-700 cursor-pointer'>View CV</button> */}
                     </div>
                     <div className='flex justify-end'>
@@ -375,7 +359,7 @@ const ProfileCard = ({Candidate}) => {
             </div>
 
                 <div className='flex flex-col items-center relative  gap-4 w-10  text-gray-600'>
-                   <span className='cursor-pointer text-xl'><i className="ri-file-download-line"></i></span>    
+                   {/* <span className='cursor-pointer text-xl'><i className="ri-file-download-line"></i></span>     */}
                     <button onClick={()=>{handleSaveProfile(candidate._id)}} 
                     className='cursor-pointer text-xl'>{savedProfiles.length>0 && savedProfiles.some(item => item._id === candidate._id)? (<i className="ri-bookmark-fill"></i>) : (<i className="ri-bookmark-line"></i>)} 
                     </button>

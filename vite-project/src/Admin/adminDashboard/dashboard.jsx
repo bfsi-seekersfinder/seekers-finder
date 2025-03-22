@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import Notification from "../template/Notification/Notification";
 import CreateCandidate from "../candidate/CreateCandidate";
 import CandidateUpdateForm from "../candidate/candidateUpdate";
+import CandidateList from "../candidate/candidateList";
+import RecruiterList from "../template/RecruiterList";
 
 
 const AdminDashboard = () => {
@@ -15,23 +17,35 @@ const [SearchRecruiter, setSearchRecruiter] = useState()
 const [admin, setAdmin] = useState()
 const [isSidebar, setisSidebar] = useState(false)
 const [popMessage, setpopMessage] = useState()
+const [isNotificationDelete, setisNotificationDelete] = useState(false)
+const [Candidates, setCandidates] = useState([])
+const [totalCandidates, settotalCandidates] = useState()
+const [totalRecruiter, settotalRecruiter] = useState()
+const [toalInactivePlan, settoalInactivePlan] = useState()
+
+
+const fetchRecruiters = async () => {
+try {
+  const { data } = await axios.get(`${url}/api/recruiter`, {
+  params: SearchRecruiter ? { SearchRecruiter } : {},
+  });
+  settotalRecruiter(data.totalRecruiter)
+  setRecruiter(data.recruiters);
+  settoalInactivePlan(data.totalActives)
+  setpopMessage(data.message)
+  setTimeout(()=>setpopMessage(''), 2000)
+} catch (error) {
+  console.log(error.message);
+}
+};
 
 useEffect(() => {
-    const fetchRecruiters = async () => {
-    try {
-      const { data } = await axios.get(`${url}/api/recruiter`, {
-      params: SearchRecruiter ? { SearchRecruiter } : {},
-      });
-      setRecruiter(data.recruiters);
-      setpopMessage(data.message)
-      setTimeout(()=>setpopMessage(''), 2000)
-    } catch (error) {
-      console.log(error.message);
-    }
-    };
-  
     fetchRecruiters();
   }, [SearchRecruiter]); 
+  
+useEffect(() => {
+    fetchRecruiters();
+  }, []); 
   
 
   const fetchAdmin = async () =>{
@@ -47,6 +61,9 @@ useEffect(() => {
     }
   }
 
+  useEffect(()=>{
+    fetchAdmin()
+  }, [isNotificationDelete])
 
 useEffect(()=>{
   fetchAdmin()
@@ -67,9 +84,59 @@ useEffect(() => {
   return () => document.removeEventListener("click", handleClickOutside);
 }, [isSidebar]);
 
+const handleFetchUsers = async () => {
+  try {
+      const response = await axios.get(`${url}/admin/api/users`, {
+          withCredentials: true,
+      });
 
-  
+      setCandidates(response.data.users)
+      settotalCandidates(response.data.totalCandidates)
+      if (response.data.success) {
+          console.log("Fetched Users:", response.data.users);
+          return response.data.users;
+      } else {
+          console.error("Failed to fetch users:", response.data.message);
+          return [];
+      }
+  } catch (error) {
+      console.error("Error fetching users:", error);
+      return [];
+  }
+};
 
+useEffect(()=>{
+  handleFetchUsers()
+},[])
+
+
+const handleLogout = async () =>{
+  try {
+    const {data} = await axios.post(url+"/admin/api/logout", {}, {withCredentials:true})
+
+    if(data.success){
+      window.location.replace('/admin login');
+    }
+    console.log(data.message)
+  } catch (error) {
+    console.log(error.message)
+  }
+}
+
+const handleUpdateState = (value)=>{
+  setStep(value)
+
+}
+
+const handleSetPage = (value) =>{
+  setStep(value)
+}
+
+const handleSetSearchQuery = (query) =>{
+  setSearchRecruiter(query)
+}
+
+console.log(admin)
 
   return (
     <div className="flex ">
@@ -82,14 +149,15 @@ useEffect(() => {
         </div>
         <div className="w-full flex flex-col gap-4 mt-10  text-slate-600 font-semibold tracking-widest text-2xl">
         </div>
+
         <div className="w-full flex flex-col gap-4 mt-10  text-white">
         <button onClick={()=>setStep(3)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-list-check text-xl"></i> Recuruiter List</button>
-        <button onClick={()=>setStep(5)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-settings-line text-xl"></i>Update Recuruiter</button>
+        <button onClick={()=>setStep(4)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-settings-line text-xl"></i>Update Recuruiter</button>
+        <button onClick={()=>setStep(2)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-settings-6-line text-xl"></i>Candidate List</button>
         <button onClick={()=>setStep(1)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-user-add-line text-xl"></i>Create Candidate</button>
-        <button onClick={()=>setStep(2)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-settings-6-line text-xl"></i>Update Candidate</button>
         </div>
         <div className="absolute bottom-0 left-0 w-full">
-        <button className="bg-gray-500 py-2 cursor-pointer w-full"><i className="ri-logout-box-r-line"></i> <span>Logout</span></button>  
+        <button onClick={()=> handleLogout()} className="bg-gray-500 py-2 cursor-pointer w-full"><i className="ri-logout-box-r-line"></i> <span>Logout</span></button>  
         </div>
         </div>
         <div className="bg-gray-100 w-full h-screen ">
@@ -107,11 +175,22 @@ useEffect(() => {
                 <span className="px-2 py-0.5 shadow rounded-sm bg-white cursor-pointer "><i className="ri-megaphone-line"></i></span>
               </div>
               </nav>
-            <div className="flex gap-6 px-8 pt-8">
-            <div className="h-[100px] w-[200px] shadow rounded-xl flex items-center justify-center">user</div>
-            <div className="h-[100px] w-[200px] shadow rounded-xl flex items-center justify-center">user</div>
-            <div className="h-[100px] w-[200px] shadow rounded-xl flex items-center justify-center">user</div>
-            <div className="h-[100px] w-[200px] shadow rounded-xl flex items-center justify-center">user</div>
+            <div className="flex gap-10 px-8 pt-8 flex-wrap">
+            <div className="h-[100px] w-[200px] shadow rounded-xl flex flex-col gap-2 items-center justify-center bg-white">
+              <span className="text-slate-600 font-bold text-2xl mt-2">{totalCandidates}</span>
+              <span className="font-semibold text-cyan-600 text-[14px]">Total Canidates</span>
+            </div>
+
+            <div className="h-[100px] w-[200px] shadow rounded-xl flex flex-col gap-2 items-center justify-center bg-white">
+              <span className="text-slate-600 font-bold text-2xl mt-2">{totalRecruiter}</span>
+              <span className="font-semibold text-cyan-600 text-[14px]">Total Recruiter</span>
+            </div>
+
+            <div className="h-[100px] w-[200px] shadow rounded-xl flex flex-col gap-2 items-center justify-center bg-white">
+              <span className="text-slate-600 font-bold text-2xl mt-2">{toalInactivePlan}</span>
+              <span className="font-semibold text-cyan-600 text-[14px]">Active Recruiter</span>
+            </div>
+            
             </div>
             </div>
             ):Step===1? (
@@ -121,53 +200,22 @@ useEffect(() => {
             
             ): Step === 2? (
             <div className="h-screen overflow-y-auto">
-              <CandidateUpdateForm/>
+              <CandidateList candidate={Candidates} sendValue={handleUpdateState}/>
             </div>
             ): Step === 3?(
             <div>
-            <nav className="w-full h-14 shadow justify-end flex items-center px-12 ">
-            <div className="flex gap-4">
-            <span className="w-[300px] border border-gray-300 rounded px-2 flex items-center ">
-            <input type="text" onChange={(e)=>setSearchRecruiter(e.target.value)} placeholder="Find recruiter..." className="w-full focus:outline-none"/>
-            <button  className="border-l border-gray-300 px-2 text-gray-500 font-bold cursor-pointer"><i className="ri-search-2-line"></i></button>
-            </span>
-            <button onClick={()=>setStep(4)} className="bg-slate-600 px-4 py-1 cursor-pointer rounded text-white">Create Recruiter</button>
-            </div>
-            </nav>
-            <div className="flex flex-col px-12 py-6 gap-2">
-            <div className="bg-slate-600 text-gray-100 py-1 px-4 rounded flex justify-between border border-slate-400">
-            <span className=" border-slate-300 flex justify-center w-[250px] px-1 ">Recuiter</span>
-            <span className="border-l border-gray-300 flex justify-center w-[200px] px-1 ">Designation</span>
-            <span className="border-l border-gray-300 flex justify-center w-[200px] px-1 ">Compony</span>
-            <span className="border-l border-gray-300 flex justify-center w-[200px] px-1 ">Number</span>
-            <span className="border-l border-gray-300 flex justify-center w-[80px] px-1 ">Update</span>
-            </div>
-            {Array.isArray(Recruiter) && Recruiter.length && Recruiter.map((recruiter)=>(
-            <div key={recruiter._id} className="bg-gray-200 py-1 px-4 rounded flex justify-between  text-[14px]">
-            <span className="  flex justify-center  w-[250px] px-1 tracking-wider  text-slate-500">{recruiter.recruiterName? recruiter.recruiterName:"_"}</span>
-            <span className=" flex justify-center border-l border-gray-300 w-[200px] px-1 tracking-wider text-slate-500">{recruiter.currentDesignation}</span>
-            <span className=" flex justify-center border-l border-gray-300 w-[200px] px-1 tracking-wider  text-slate-500">{recruiter.currentCompany} </span>
-            <span className=" flex justify-center border-l border-gray-300 w-[200px] px-1 tracking-wider text-slate-500">{recruiter.contactNo}</span>
-            <Link to="/account/recruiter/profile">
-            <span className=" flex justify-center border-l border-gray-300 w-[80px] px-1 tracking-wider text-orange-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
-            </Link>
-            </div>
-            ))}
-
-            </div>
-
+            <RecruiterList Recruiter={Recruiter} pageValue={handleSetPage} setQuery={handleSetSearchQuery}/>
             <div className={`${popMessage?.length>0? "bottom-10 left-[40%] absolute px-4 rounded text-slate-700 bg-gray-300 py-0.5 flex items-center justify-center" : "hidden" }`}>{popMessage}</div>
             </div>
             ): Step === 4?(
             <div className="flex justify-start flex-col">
-              
             <CreateRecruiter recruiter={Recruiter}/>
             </div>
             ) :Step ===5? (
             <div>page 5</div>
             ):Step===6?(
               <>
-              <Notification notification={admin.notification}/>
+              <Notification notification={admin.notification} adminId={admin._id} setChanges={setisNotificationDelete}/>
               </>
             ):(
               <p>page 7</p>

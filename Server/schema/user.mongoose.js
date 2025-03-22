@@ -12,8 +12,8 @@ const userSchema = new mongoose.Schema({
     }],
     product:String,
     yearsOfExperience: { type: Number},
-    noticePeriod: { type: String, required: true },
-    currentCtc: { type: String, required: true },
+    noticePeriod: { type: String,  },
+    currentCtc: { type: String, },
     previousCompanies: [{ type: String }], 
     education: [{
         name:String,
@@ -25,13 +25,10 @@ const userSchema = new mongoose.Schema({
         city: { type: String },
     },  
     maritalStatus:String,
-    keySkills: [{ type: String }],
+    skills: [{ type: String }],
     cv: [{ type: String }],
-    createdAt:{
-        type:Date,
-        default:Date.now()
-    }
-});
+      
+}, {timestamps: true});
 
 const User = mongoose.model('newtesting2', userSchema);
 

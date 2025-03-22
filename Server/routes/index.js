@@ -1,6 +1,7 @@
-import express from "express";
+import express, { json } from "express";
 import bcrypt from "bcrypt"
 import userModel from '../schema/user.mongoose.js'
+import Candidate from "../schema/userdata.mongoose.js";
 import productModule from "../schema/product.mongoose.js";
 import recruiterModule from "../schema/createRecruiter.mongoose.js";
 import aliasUserModel from "../schema/aliasUser.mongoose.js";
@@ -19,6 +20,7 @@ const isAuthenticated = (req, res, next) => {
     next();
 };
 
+
 router.get('/api/user',  async (req, res) => {
     try {
         const { 
@@ -31,8 +33,7 @@ router.get('/api/user',  async (req, res) => {
         } = req.query;
 
         const skipValue = Math.max(Number(skip) || 0, 0);
-        const limitValue = Math.max(Number(limit) || 10, 1);
-
+        const limitValue = Math.max(Number(limit/2) || 10, 0);
         
         let query = {};
 
@@ -162,10 +163,17 @@ router.get('/api/user',  async (req, res) => {
             if (maxSalary) query.currentCtc.$lte = Number(maxSalary);
         }
 
-        const totalDocument = await userModel.countDocuments(query);
+        const totalUserDocs = await userModel.countDocuments(query);
         const paginatedData = await userModel.find(query).skip(skipValue).limit(limitValue);
+        
+        const totalCandidates = await Candidate.countDocuments(query);
+        const paginatedCandidateData = await Candidate.find(query).skip(skipValue).limit(limitValue);
 
-        res.json({success:true, newData: paginatedData, totalDocument });
+        
+        const totalDocument = totalUserDocs + totalCandidates
+        const combinedData = [...paginatedData, ...paginatedCandidateData]
+
+        res.json({success:true, newData: combinedData, totalDocument });
     } catch (err) {
         console.error("Error:", err.message);
         res.status(500).json({ message: "Server error", error: err.message });
@@ -202,18 +210,23 @@ router.get('/api/recruiter',  async (req, res) => {
             { email: { $regex: SearchRecruiter, $options: "i" } },
             { currentCompany: { $regex: SearchRecruiter, $options: "i" } },
 
-            ]
+        ]
             };
         }
         const recruiters = await recruiterModule.find(query);
+        const totalRecruiter = await recruiterModule.countDocuments()
+        const activePlan = await recruiterModule.find({planActive:true})
+        const totalActives = activePlan.length
         if (!recruiters.length) {
         return res.json({ message: "No recruiters found!" });
         }
-        res.json({ recruiters });
+
+        res.json({ recruiters, totalRecruiter, totalActives });
     } catch (error) {
         console.error("Error:", error.message);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
+
 });
 
 router.post("/api/recruiters/create-recruiter",  async (req, res) => {
@@ -255,6 +268,7 @@ router.post("/api/recruiters/create-recruiter",  async (req, res) => {
         const newRecruiter = new recruiterModule({
             role,
             plan,
+            planActive:true,
             recruiterName,
             email,
             contactNo,
@@ -345,6 +359,7 @@ router.put("/api/recruiters/update/:recruiterId", async (req, res) => {
 
         // Find existing recruiter
         let recruiter = await recruiterModule.findById(recruiterId);
+
         if (!recruiter) {
         return res.status(404).json({ message: "Recruiter not found" });
         }
@@ -370,6 +385,8 @@ router.put("/api/recruiters/update/:recruiterId", async (req, res) => {
         recruiter.TAN = TAN || recruiter.TAN;
         recruiter.viewedProfile = [];
         recruiter.savedProfile = [];
+        recruiter.planActive = true,
+        recruiter.block = false
 
         if (password) {
         const saltRound = 10;
@@ -433,7 +450,7 @@ router.post("/api/create/candidate",  async (req, res) => {
         mobileNo, 
         email, 
         gender, 
-        product, 
+        product,
         yearsOfExperience, 
         currentCompany, 
         noticePeriod, 
@@ -445,11 +462,11 @@ router.post("/api/create/candidate",  async (req, res) => {
 
       const newCandidate = new userModel({
         fullName,
-        mobileNo,
+        mobileNo: Number(mobileNo),
         email,
         gender,
         product,
-        yearsOfExperience,
+        yearsOfExperience: Number(yearsOfExperience),
         currentCompany,
         noticePeriod,
         currentCtc,
@@ -470,22 +487,68 @@ router.post("/api/create/candidate",  async (req, res) => {
     }
   });
 
-router.put("/api/update/candidate/:id", async (req, res) => {
-try {
-    const candidateId = req.params.id;
-    const updateData = req.body;
+  router.put("/api/update/candidate/:id", async (req, res) => {
+    try {
+        const candidateId = req.params.id;
+        const {
+            fullName,
+            mobileNo,
+            email,
+            gender,
+            product,
+            yearsOfExperience,
+            noticePeriod,
+            currentCtc,
+            designation,
+            workExperience,
+            education,
+            userLocation,
+            maritalStatus,
+            skills,
+        } = req.body;
 
-    const updatedCandidate = await userModel.findByIdAndUpdate(candidateId, updateData, { new: true });
+        const existingCandidate = await userModel.findById(candidateId);
+        if (!existingCandidate) {
+            return res.status(404).json({ success: false, message: "Candidate not found" });
+        }
 
-    if (!updatedCandidate) {
-    return res.status(404).json({ success: false, message: "Candidate not found" });
+        // Update fields only if they exist in the request
+        if (fullName) existingCandidate.fullName = fullName;
+        if (mobileNo) existingCandidate.mobileNo = mobileNo;
+        if (email) existingCandidate.email = email;
+        if (gender) existingCandidate.gender = gender;
+        if (product) existingCandidate.product = product;
+        if (yearsOfExperience) existingCandidate.yearsOfExperience = yearsOfExperience;
+        if (noticePeriod) existingCandidate.noticePeriod = noticePeriod;
+        if (currentCtc) existingCandidate.currentCtc = currentCtc;
+        if (designation) existingCandidate.designation = designation;
+        if (userLocation) existingCandidate.userLocation = userLocation;
+        if (maritalStatus) existingCandidate.maritalStatus = maritalStatus;
+
+        if (Array.isArray(workExperience)) {
+            existingCandidate.workExperience.unshift(...workExperience);
+        }
+        
+        if (Array.isArray(education)) {
+            existingCandidate.education.unshift(...education);
+        }
+        
+        if (Array.isArray(skills)) {
+            existingCandidate.skills.unshift(...skills);
+        }
+        
+        
+
+
+        const updatedCandidate = await existingCandidate.save();
+
+        res.status(200).json({ success: true, message: "Candidate updated successfully!", data: updatedCandidate });
+    } catch (error) {
+        console.error("Error updating candidate:", error.message);
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 
-    res.status(200).json({ success: true, message: "Candidate updated successfully!", data: updatedCandidate });
-} catch (error) {
-    console.error("Error updating candidate:", error.message);
-    res.status(500).json({ success: false, message: "Server error", error: error.message });
-}
+
 });
 
 router.get("/api/get/candidate", async (req, res) => {
@@ -554,7 +617,6 @@ router.post("/api/account/login", async (req, res) => {
         if (!isMatch) {
         return res.status(400).json({ message: "Incorrect Password."});
         }
-        console.log(user)
 
         if(user?.role === 'recruiter'){
             req.session.user = { 
@@ -573,6 +635,8 @@ router.post("/api/account/login", async (req, res) => {
                 aliasUsers:user.aliasUsers,
                 pastLimits:user.pastLimits,
                 currentLimit:user.currentLimit,
+                block:user.block,
+                planActive:user.planActive,
                 
             };
 
@@ -584,7 +648,9 @@ router.post("/api/account/login", async (req, res) => {
                 role:user.aliasRole,
                 recruiterName:user.aliasName,
                 contactNo:user.aliasContactNo,
-                recruiter:user.limit
+                recruiter:user.limit,
+                block:user.block,
+                suspend:user.suspend
             }
 
         }
@@ -596,13 +662,32 @@ router.post("/api/account/login", async (req, res) => {
     }
 });
 
-router.get("/api/account/me", async (req, res) => {
+router.get("/api/account/me/", async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: "Not logged in" });
         }
 
         res.json({ success: true, user: req.session.user });
 });
+
+router.get("/api/account/checkplan", async (req, res)=>{
+    try {
+        if(!req.session.user){
+            return res.status(404).json({message: "Login again"})
+        }
+
+        const recruiter = await recruiterModule.findById(req.session.user.id)
+        if(!recruiter){
+            return res.status(401).json({message: "unauthorize"})
+        }
+
+        res.json({success:true, user : recruiter.planActive})
+        
+    } catch (error) {
+        console.log(error.message)
+    }
+
+})
 
 router.get("/api/account/getview",  async (req, res) => {
     try {
@@ -676,12 +761,18 @@ router.get("/api/account/user/:userEmail", async (req, res) => {
 
 router.post('/api/recruiter/save-history',  async (req, res) => {
     try {
-      const { recruiterId, header, filters } = req.body;      
-      const recruiter = await recruiterModule.findById(recruiterId);
+      const { recruiterId, header, filters } = req.body;     
+
+      let recruiter = await recruiterModule.findById(recruiterId);
+
+      if(!recruiter){
+        recruiter = await aliasUserModel.findById(recruiterId)
+      }
       
       if (!recruiter) {
       return res.status(404).json({ success: false, message: "Recruiter not found" });
       }
+
       recruiter.savedSearches.push({header, filters });
 
       if (recruiter.savedSearches.length > 10) {
@@ -701,10 +792,15 @@ router.post('/api/recruiter/save-history',  async (req, res) => {
 router.get('/api/recruiter/gethistory/:id',  async (req, res) => {
 try {
     const {id} = req.params;
-    const recruiter = await recruiterModule.findById(id).select('savedSearches');
+    let recruiter = await recruiterModule.findById(id).select('savedSearches');
+
+    if(!recruiter){
+        recruiter = await aliasUserModel.findById(id).select('savedSearches')
+    }
     if (!recruiter) {
     return res.status(404).json({ success: false, message: "Recruiter not found" });
     }
+
     res.json({ success: true, searchHistory: recruiter.savedSearches });
 } catch (error) {
     console.error("Error fetching search history:", error);
@@ -717,16 +813,27 @@ try {
 const {id} = req.params
 
 if(!id) return res.status(400).json({message:"history id not found"})
+
 if(!req.session.user || !req.session.user.id){
     return res.status(400).json({message: "Login again user"})
 }
-const recruiterid = req.session.user.id
+const recruiterid = req.session.user
 
+let recruiter = null
+if(recruiterid.role === 'recruiter'){
+    recruiter = await recruiterModule.findByIdAndUpdate(recruiterid.id, 
+    {$pull: {savedSearches:{_id:id}}},
+    {new:true }
+    )
+    
+}else{
 
-const recruiter = await recruiterModule.findByIdAndUpdate(recruiterid, 
-{$pull: {savedSearches:{_id:id}}},
-{new:true }
-)
+    recruiter = await aliasUserModel.findByIdAndUpdate(recruiterid.id, 
+    {$pull: {savedSearches:{_id:id}}},
+    {new:true }
+    )
+
+}
 
 if (!recruiter) {
 return res.status(404).json({ message: "Recruiter not found" });
@@ -747,13 +854,24 @@ router.post("/api/recruiter/history/clear", async (req, res) => {
         return res.status(401).json({ message: "Login again user" });
       }
   
-      const recruiterId = req.session.user.id;
-  
-      const recruiter = await recruiterModule.findByIdAndUpdate(
-        recruiterId,
-        { $set: { savedSearches: [] } }, 
-        { new: true }
-      );
+      const recruiterId = req.session.user;
+
+      let recruiter = null
+      if(recruiterId.role === "recruiter"){
+        recruiter = await recruiterModule.findByIdAndUpdate(
+            recruiterId.id,
+            { $set: { savedSearches: [] } }, 
+            { new: true }
+          );
+          
+        }else{
+          recruiter = await aliasUserModel.findByIdAndUpdate(
+              recruiterId.id,
+              { $set: { savedSearches: [] } }, 
+              { new: true }
+            );
+
+      }
   
       if (!recruiter) {
         return res.status(404).json({ message: "Recruiter not found" });
@@ -775,20 +893,46 @@ router.put("/api/recruiter/view-profile",  async (req, res) => {
         return res.status(400).json({ success: false, message: "Missing recruiterId or candidateId" });
         }
 
-        const recruiter = await recruiterModule.findById(recruiterId);
+        let recruiter = await recruiterModule.findById(recruiterId);
+
+        if(!recruiter){
+            recruiter = await aliasUserModel.findById(recruiterId).populate('recruiterId');
+        }
+
         if (!recruiter) {
         return res.status(404).json({ success: false, message: "Recruiter not found" });
         }
 
-        if (recruiter.viewedProfile.includes(candidateId)) {
-        return res.json({ success: true, message: "Profile already viewed", recruiter });
+        if(recruiter.role === 'recruiter'){
+            if (recruiter.viewedProfile.includes(candidateId)) {
+            return res.json({ success: true, message: "Profile already viewed", recruiter });
+            }
+            
+        }else{
+            if (recruiter.recruiterId.viewedProfile.includes(candidateId)) {
+            return res.json({ success: true, message: "Profile already viewed", recruiter });
+            }
+
         }
 
-        const updatedRecruiter = await recruiterModule.findByIdAndUpdate(
-        recruiterId,
-        { $addToSet: { viewedProfile: candidateId } },
-        { new: true }
-        );
+
+        let updatedRecruiter = null
+
+        if(recruiter.role === "recruiter"){
+             updatedRecruiter = await recruiterModule.findByIdAndUpdate(
+            recruiterId,
+            { $addToSet: { viewedProfile: candidateId  } },
+            { new: true }
+            );
+
+        } else{
+             updatedRecruiter = await recruiterModule.findByIdAndUpdate(
+            recruiter.recruiterId._id,
+            { $addToSet: { viewedProfile: candidateId  } },
+            { new: true }
+            );
+
+        }
 
         
         
@@ -802,13 +946,18 @@ router.put("/api/recruiter/view-profile",  async (req, res) => {
 });
 
 router.get("/api/candidate/profile", async (req, res) => {
-    const { candidateId } = req.query; // ✅ Correct way for GET request
+    const { candidateId } = req.query; 
     try {
     if (!candidateId) {
     return res.status(401).json({ message: "Candidate ID not found" });
     }
 
-    const candidate = await userModel.findById(candidateId);
+    let candidate = await userModel.findById(candidateId);
+
+    if(!candidate){
+        candidate = await Candidate.findById(candidateId)
+    }
+
     if (!candidate) {
     return res.status(404).json({ message: "Candidate not found" });
     }
@@ -817,36 +966,77 @@ router.get("/api/candidate/profile", async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+
 });
 
 router.put("/api/account/profile/save", async (req, res) => {
     const { candidateId, recruiterID } = req.body;
-
     try {
         if (!candidateId || !recruiterID) {
         return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
-        const recruiter = await recruiterModule.findById(recruiterID);
+        let recruiter = await recruiterModule.findById(recruiterID);
+
+        if(!recruiter){
+            recruiter = await aliasUserModel.findById(recruiterID);
+        }
+
         if (!recruiter) {
         return res.status(404).json({ success: false, message: "Recruiter not found" });
         }
 
-        let updatedRecruiter;
-        if (recruiter.savedProfile?.includes(candidateId)) {
-        updatedRecruiter = await recruiterModule.findByIdAndUpdate(
-        recruiterID,
-        { $pull: { savedProfile: candidateId } },
-        { new: true }
-        );
-        return res.json({ success: true, message: "Candidate Unsaved", savedProfiles: updatedRecruiter.savedProfile });
+        let existIdSchema = await userModel.findById(candidateId)
+        let updateQuery;
+        if (existIdSchema) {
+            updateQuery = { $addToSet: { savedProfile: candidateId } };
+        } else {
+            updateQuery = { $addToSet: { savedProfileAnother: candidateId } };
         }
 
-        updatedRecruiter = await recruiterModule.findByIdAndUpdate(
-        recruiterID,
-        { $addToSet: { savedProfile: candidateId } },
-        { new: true }
-        );
+
+
+        let updatedRecruiter;
+        if(recruiter.role === 'recruiter'){
+            if (recruiter.savedProfile?.includes(candidateId)) {
+            updatedRecruiter = await recruiterModule.findByIdAndUpdate(
+            recruiterID,
+            { $pull: { savedProfile: candidateId } },
+            { new: true }
+            );
+    
+            return res.json({ success: true, message: "Candidate Unsaved", savedProfiles: updatedRecruiter.savedProfile });
+            }
+            
+        }else{
+
+            if (recruiter.savedProfile?.includes(candidateId)) {
+            updatedRecruiter = await aliasUserModel.findByIdAndUpdate(
+            recruiterID,
+            { $pull: { savedProfile: candidateId } },
+            { new: true }
+            );
+    
+            return res.json({ success: true, message: "Candidate Unsaved", savedProfiles: updatedRecruiter.savedProfile });
+            }
+
+        }
+
+        if(recruiter.role === 'recruiter'){
+            updatedRecruiter = await recruiterModule.findByIdAndUpdate(
+            recruiterID,
+            updateQuery,            
+            { new: true }
+            );
+            
+        }else{
+            updatedRecruiter = await aliasUserModel.findByIdAndUpdate(
+            recruiterID,
+            updateQuery,
+            { new: true }
+            );
+
+        }
 
         return res.json({ success: true, message: "Candidate Saved", savedProfiles: updatedRecruiter.savedProfile });
 
@@ -854,6 +1044,7 @@ router.put("/api/account/profile/save", async (req, res) => {
         console.error("Error in PUT /api/account/profile/save:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
+
 });
 
 router.get("/api/account/profile/saved/:id", async (req, res) => {
@@ -864,19 +1055,25 @@ router.get("/api/account/profile/saved/:id", async (req, res) => {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
-        const recruiter = await recruiterModule.findById(id).populate("savedProfile").populate("viewedProfile");
+        let recruiter = await recruiterModule.findById(id)
+        .populate(["viewedProfile", "savedProfileAnother"])
+        .populate("savedProfile");
+
+        if(!recruiter){
+            recruiter = await aliasUserModel.findById(id).populate(["savedProfile", "savedProfileAnother"]).populate("recruiterId.viewedProfile");
+        }
 
         if (!recruiter) {
             return res.status(404).json({ success: false, message: "Recruiter not found" });
         }
 
-        const savedProfile = recruiter.savedProfile
-        const seenProfile = recruiter.viewedProfile
+        const savedProfile = [...recruiter.savedProfile, ...recruiter.savedProfileAnother]
+        const seenProfile = recruiter.role === 'recruiter'? recruiter.viewedProfile : recruiter.recruiterId.viewedProfile
 
         return res.json({
             success: true,
-            savedProfile,  // Sending only IDs
-            seenProfile,   // Sending only IDs
+            savedProfile, 
+            seenProfile,   
             message: "Saved profile IDs retrieved successfully",
         });
 
@@ -890,23 +1087,48 @@ router.put('/api/account/password/update', async (req, res) => {
     try {
         const { recruiterId, password, newPassword } = req.body;
 
-        if (!recruiterId || !password) {
+        if (!recruiterId || !password || !newPassword) {
         return res.status(400).json({ message: "Recruiter ID and password are required" });
         }
 
-        const Recruiter = recruiterModule.findById(recruiterId)
-        const isMatch = await bcrypt.compare(password, Recruiter.password)
+        let Recruiter = await recruiterModule.findById(recruiterId)
+
+        if(!Recruiter){
+            Recruiter = await aliasUserModel.findById(recruiterId)
+        }
+
+        if(!Recruiter){
+            return res.status(404).json({ message: "login again and change" });
+        }
+
+        let isMatch = null
+
+        if(Recruiter.role === 'recruiter'){
+             isMatch = await bcrypt.compare(password, Recruiter.password)
+        }else{
+            isMatch = await bcrypt.compare(password, Recruiter.aliasPassword)
+        }
         if(!isMatch){
         return res.json({message:"Enter a valid Password"})
         }
         
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        const recruiter = await recruiterModule.findByIdAndUpdate(
+        let recruiter = null
+        if(Recruiter.role === "recruiter"){
+             recruiter = await recruiterModule.findByIdAndUpdate(
+                recruiterId, 
+                { password: hashedPassword }, 
+                { new: true } 
+            );
+            
+        }
+        else{
+             recruiter = await aliasUserModel.findByIdAndUpdate(
             recruiterId, 
-            { password: hashedPassword }, 
+            { aliasPassword: hashedPassword }, 
             { new: true } 
-        );
+        )}
 
        
 
@@ -962,9 +1184,6 @@ router.get("/api/alias/:id", isAuthenticated, async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
-
-
-
 
 router.post("/api/account/logout", (req, res) => {
     req.session.destroy((err) => {

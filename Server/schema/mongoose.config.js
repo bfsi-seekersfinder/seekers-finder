@@ -14,7 +14,38 @@ const connectDB = async () => {
     }
   };
 
+  const saltRound = 10
+  const hashedPass = await bcrypt.hash("admin@123", saltRound)
+  const insertAdmin = async () => {
+    try {
+      const newAdmin = new admin({
+        adminRole: "Super Admin",
+        adminName: "Bankster India",
+        adminEmail: "talentx@gmail.com",
+        adminContact: 6546546654,
+        notification: [{message: "Welcome Admin", headLine:"Welcome Admin"}],
+        password:hashedPass
+      });
   
+      const savedAdmin = await newAdmin.save();
+      console.log("Admin inserted successfully:", savedAdmin);
+      mongoose.connection.close(); // Close the connection after insert
+    } catch (error) {
+      console.error("Error inserting admin:", error);
+    }
+  };
+  
+
+  // insertAdmin()
+
+
+  // const finder = admin.find({ "notification.refrence": { $exists: true }, "notification.refrenceModel": { $exists: false } })
+// console.log(finder)
+// admin.updateMany(
+//   { "notification.refrence": { $exists: true }, "notification.refrenceModel": { $exists: false } },
+//   { $set: { "notification.$[].refrenceModel": "newtesting2" } }  
+// )
+
 
   export default connectDB;
   

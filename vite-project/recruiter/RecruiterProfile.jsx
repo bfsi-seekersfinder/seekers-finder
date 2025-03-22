@@ -15,7 +15,7 @@ const RecruiterProfiles = () => {
   const url =import.meta.env.VITE_API_URI
   const Navigate = useNavigate()
   const {user, setUser} = useContext(UserContext)
-  const [recruiter, setrecruiter] = useState(user.role === 'recruiter'? user : user.recruiter)
+  const [recruiter, setrecruiter] = useState(user)
   const [candidate, setCandidate] = useState([])
   const [SeenProfiles, setSeenProfiles] = useState([])
   const [findCandidate, setFindCandidate] = useState('')
@@ -24,8 +24,9 @@ const RecruiterProfiles = () => {
   const [PlanPageStep, setPlanPageStep] = useState(1)
   const [PlanType, setPlanType] = useState(false)
   const [isAlias, setisAlias] = useState(false)
-  const [AliasUsers, setAliasUsers] = useState(user.aliasUsers)
+  const [AliasUsers, setAliasUsers] = useState(user?.aliasUsers)
   const [selectedAliasId, setselectedAliasId] = useState('')
+
 
   const handleAliasProfile = (response, clickedUser)=>{
     if(response && clickedUser.length>0){
@@ -44,7 +45,7 @@ const RecruiterProfiles = () => {
     const handleGetSavedProfile = async () => {
         setLoading(true)
         try {
-        const userId = user.role === 'recruiter' ? user.id : recruiter._id
+        const userId = user.id
         if (!userId) throw new Error("User ID not found in session storage");
 
         const response = await axios.get(`${url}/api/account/profile/saved/${userId}`, {
@@ -94,8 +95,8 @@ const RecruiterProfiles = () => {
         <i className="ri-user-line"></i>
         </div>
         <div>
-        <h2 className="text-2xl font-semibold capitalize text-slate-700">{recruiter.recruiterName? recruiter.recruiterName:"" }</h2>
-        <p className=" text-cyan-500"><span><i class="ri-building-line "></i> </span>{recruiter.currentCompany? recruiter.currentCompany:"not available"}</p>
+        <h2 className="text-2xl font-semibold capitalize text-slate-700">{recruiter.recruiterName? recruiter.recruiterName:'' }</h2>
+        <p className=" text-cyan-500"><span><i className="ri-building-line "></i> </span>{recruiter.currentCompany? recruiter.currentCompany:"not available"}</p>
         </div>
         </div>
         <div className='p-4'>
@@ -114,9 +115,9 @@ const RecruiterProfiles = () => {
         <hr className='border border-gray-300 mb-2 '/>
         <div className="flex flex-col gap-4 select-none">
         <div onClick={()=>setStep(1)} className={`${Step === 1? "bg-slate-300": ""} border-gray-300 active:bg-gray-200 hover:bg-slate-100 px-4 py-2 font-semibold flex justify-between items-center text-cyan-600 cursor-pointer shadow-md`}><span>Personal Info</span> <i className="ri-arrow-right-wide-fill"></i></div>
-        <div onClick={()=>setStep(2)} className={`${Step === 2? "bg-slate-300": ""} border-gray-300 active:bg-gray-200 hover:bg-slate-100 px-4 py-2 font-semibold flex justify-between items-center text-cyan-600 cursor-pointer shadow-md`}><span>Company Details</span><i className="ri-arrow-right-wide-fill"></i></div>
+        {recruiter.role === 'recruiter' &&  (<> <div onClick={()=>setStep(2)} className={`${Step === 2? "bg-slate-300": ""} border-gray-300 active:bg-gray-200 hover:bg-slate-100 px-4 py-2 font-semibold flex justify-between items-center text-cyan-600 cursor-pointer shadow-md`}><span>Company Details</span><i className="ri-arrow-right-wide-fill"></i></div>
         <div onClick={()=>setStep(3)} className={`${Step === 3? "bg-slate-300": ""} border-gray-300 active:bg-gray-200 hover:bg-slate-100 px-4 py-2 font-semibold flex justify-between items-center text-cyan-600 cursor-pointer shadow-md`}><span>Manage Accounts</span><i className="ri-arrow-right-wide-fill"></i></div>
-        <div onClick={()=>setStep(4)} className={`${Step === 4? "bg-slate-300": ""} border-gray-300 active:bg-gray-200 hover:bg-slate-100 px-4 py-2 font-semibold flex justify-between items-center text-cyan-600 cursor-pointer shadow-md`}><span>Renew Plans</span><i className="ri-arrow-right-wide-fill"></i></div>
+        </>)} 
         <div onClick={()=>setStep(5)} className={`${Step === 6? "bg-slate-300": ""} border-gray-300 active:bg-gray-200 hover:bg-slate-100 px-4 py-2 font-semibold flex justify-between items-center text-cyan-600 cursor-pointer shadow-md`}><span>Saved Candidates</span><i className="ri-arrow-right-wide-fill"></i></div>
         </div>
         <div className='absolute bottom-0 w-full'>
@@ -178,7 +179,7 @@ const RecruiterProfiles = () => {
             <div className='text-2xl text-slate-600 font-semibold flex gap-4'> <button onClick={()=>setPlanPageStep(1)} className='cursor-pointer'><i className="ri-arrow-left-line"></i></button> Req to Upgrade Your plan</div>
             {PlanPageStep===1?(
             <div className='flex gap-8'>
-              <PlanCard title={"Basic"} image={"/images/basic.jpg"} id={2} onCardClick={handleSelectPlan} corporate={false} />
+              <PlanCard title={"Basic"} image={"/images/basic.jpg"} id={2} onCardClick={handleSelectPlan} corporate={false} recruiter={user} />
               <PlanCard title ={"Corporate"} image={"/images/corporate.jpg"} id={2} onCardClick={handleSelectPlan} corporate={true}/>
             </div>
             ):(

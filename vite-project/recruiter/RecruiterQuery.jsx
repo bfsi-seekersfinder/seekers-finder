@@ -4,6 +4,7 @@ import axios from "axios";
 
 export default function RecruiterQuery() {
   const url = import.meta.env.VITE_API_URI
+  const [message, setmessage] = useState('')
   
   const initialQuery ={
     recruiterName:'',
@@ -32,7 +33,8 @@ const handleSubmitQuery = async ()=>{
       })
 
       if(response.data.success){
-        alert("data sumbitted successfully")
+        setmessage('Thank You ❤️ For Choosing TalentX')
+        setTimeout(()=>setmessage(''), 5000)
         setqueryMessage(initialQuery)
       }
     
@@ -43,7 +45,7 @@ const handleSubmitQuery = async ()=>{
 
     return (
       <div className=" h-[100vh] overflow-y-hidden flex bg-gray-100 p-8">
-        {/* Left Section - TalentX Info */}
+        <div className={` ${message.length? "": "hidden"} text-sm w-[400px] py-2 px-2 text-slate-600 font-semibold  border border-slate-300 bg-slate-200 rounded absolute bottom-8 left-50 `}>{message}</div>
         <div className="w-1/2 p-6">
           <h2 className="text-2xl font-bold text-gray-800">Talent<span className="text-orange-500">X</span></h2>
           <p className="mt-4 text-slate-700 font-sans">
@@ -55,8 +57,9 @@ const handleSubmitQuery = async ()=>{
         </div>
         
         {/* Right Section - User Form */}
-        <div className="w-1/2 p-6 text-slate-600  shadow-lg ml-8 overflow-y-auto h-screen pb-18" >
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Recruiter Query</h2>
+        <div className="w-1/2 p-6 text-slate-600  shadow-lg ml-8 overflow-y-auto h-screen pb-18" style={{scrollbarWidth:"none"}} >
+          <h2 className="text-2xl font-bold text-gray-800 ">Request for Service</h2>
+          <h4 className="mb-4 text-cyan-700">Kindly fill the valid details. Our Team will contact you!</h4>
             <div className="mb-4">
               <label className="block text-gray-700">Your Name</label>
               <input type="text" name="recruiterName" value={queryMessage.recruiterName ?? ""} onChange={handleChange} placeholder="Your name" className="w-full px-4 py-2 border border-slate-300 focus:outline-none required" />

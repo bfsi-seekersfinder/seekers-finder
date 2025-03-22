@@ -21,6 +21,10 @@ const adminSchema = new mongoose.Schema({
             type:mongoose.Schema.Types.ObjectId,
             ref:"newtesting2"
         },
+        refrenceAnother:[{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Candidate"
+        }],
         details: { 
             recruiterName: String,
             contactNo: String,
@@ -28,6 +32,10 @@ const adminSchema = new mongoose.Schema({
             companyName: String,
             designation: String,
             location: String
+        },
+        seen:{
+            type:Boolean,
+            default:false
         },
         createdAt:{
             type:Date,

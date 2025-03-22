@@ -7,12 +7,13 @@ import isEmpty from "../../Generators/isEmptyObject";
 import Navbar from "../searchcomponent/Nav";
 import InternetStatus from "../../Generators/InterNet";
 import { UserContext } from "../../Global/userContext";
+import ExpirePage from "../FailedPages/ExpirePage";
 
 
 const FilteredProfiles = () => {
   const isOnline = InternetStatus()
     const url = import.meta.env.VITE_API_URI;
-    const {user} = useContext(UserContext)
+    const {user, isPlanActive} = useContext(UserContext)
     const [Candidate, setCandidate] = useState([])
     const [candidateLenght, setCandidatelength] = useState(0)
     const [remainingData, setRemainingData] = useState()
@@ -42,7 +43,14 @@ const FilteredProfiles = () => {
     const [UG, setUG] = useState([])
     const [PG, setPG] = useState([])
     let loadedCandidate = useRef(null)
+    const [isProfileComplete, setisProfileComplete] = useState(false)
 
+    
+    
+
+    
+    
+    // console.log(Candidate.fullName, Candidate.mobileNo, Candidate.email, Array.isArray(Candidate.workExperience) && Candidate.workExperience[0].name)
 
     const handleSearch = () =>{
       if(allEmpty) {
@@ -336,7 +344,6 @@ const saveSearchHistory = async () => {
   }
 };
 
-
 const handleApplyHistory = (id) => {
   const historyItemId = id;
   if (!historyItemId) {
@@ -461,7 +468,6 @@ const removeSingleHistory = async (id) =>{
       { withCredentials:true, 
         headers: {"Content-Type": "application/json"} 
       })
-      console.log(response.data)
     if(response.data.success){
       setShowHistory(prev=>!prev)
       setFailedMessage(response.data.message)
@@ -1007,8 +1013,8 @@ useEffect(()=>{
           <ProfileCard key={candidates._id} Candidate={candidates} />
           ))
           ) : (
-          <div className="h-screen w-full flex justify-center select-none items-center">
-          <img src="../../public\images\Not-available-image.jpg" alt="" />    
+          <div className=" h-[70vh] w-full flex justify-center select-none items-center drop-shadow-xl">
+          <img src="../../public\images\nodatafound.png" alt="" />
       </div>
       )}
 {/* <<----------------------------------------< Success messages & Failed message >---------------------------------------->> */}
@@ -1039,7 +1045,12 @@ useEffect(()=>{
       </div>
 
       </div>
-      </div> 
+      </div>
+        {!isPlanActive && <div className="absolute top-0 left-0 z-10 ">
+                <ExpirePage/>
+        </div>
+        }
+
     </div>
     </>
   );

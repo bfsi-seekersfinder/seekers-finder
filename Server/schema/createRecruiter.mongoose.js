@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import Candidate from "./userdata.mongoose.js";
+import User from "./user.mongoose.js";
 
 const recruiterSchema = new mongoose.Schema({
     role: { 
@@ -45,6 +47,10 @@ const recruiterSchema = new mongoose.Schema({
     plan:{
         type:String
     },
+    planActive:{
+        type:Boolean,
+        default:false
+    },
     limit:{
         type:Number,
         required:true,
@@ -76,6 +82,10 @@ const recruiterSchema = new mongoose.Schema({
     savedProfile:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"newtesting2"
+    }],
+    savedProfileAnother:[{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Candidate'
     }],
     savedSearches:[{
         header:String,

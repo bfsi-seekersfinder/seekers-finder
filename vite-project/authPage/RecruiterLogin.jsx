@@ -25,8 +25,13 @@ export default function LoginPage() {
       headers: { "Content-Type": "application/json" }
     })
 
+    if (response.data.user.block || response.data.user.suspend) {
+      navigate("/redirect/block");
+      return
+    }
+
     const user = response.data.user;
-    console.log(user)
+    
     if(!user) return navigate("/account/login")
     setUser(user);
     sessionStorage.setItem("userId", user.id)

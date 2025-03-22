@@ -2,7 +2,10 @@ import React, {useState, useContext, useEffect} from 'react';
 import { UserContext } from '../../Global/userContext';
 import axios from 'axios';
 import SuccesMessage from '../../Global/SuccesMessage';
+
+
 const PasswordChange = () => {
+    const url = import.meta.env.VITE_API_URI
     const {user} = useContext(UserContext)
     const [Succes, setSuccess] = useState('')
     const [Loading, setLoading] = useState(false)
@@ -27,9 +30,6 @@ const PasswordChange = () => {
     };
     
     
-    const handleVisiblePassword = () =>{
-    setisPasswordVisible(prev => !prev)
-    }
 
     const handlePassword = (e) => {
         const { name, value } = e.target; 
@@ -39,7 +39,7 @@ const PasswordChange = () => {
     const handleChangePassword = async ()=>{
         setLoading(true)
         try {
-           const response = await axios.put('/api/account/password/update', 
+           const response = await axios.put(url+'/api/account/password/update', 
             {newPassword:Password.newPassword, 
             password:Password.oldPassword, 
             recruiterId:user.id},{
@@ -49,12 +49,13 @@ const PasswordChange = () => {
             setSuccess(response.data.message)
             setTimeout(()=>setSuccess(''), 3000)
         } catch (error) {
-            
+            console.log(error.message)
         }finally{
             setLoading(false)
             setPassword({oldPassword:"", newPassword:"", reEnterPassword:""})
         }
     }
+
   return (
     <>
     <div className='h-screen w-full flex relative'>
@@ -91,8 +92,8 @@ const PasswordChange = () => {
             </div >
             </div>
             </div>
-            <div className='absolute bottom-4 '>
-                <SuccesMessage message={Succes}/>
+            <div className='absolute bottom-10 left-[50%]'>
+               <span className={`${Succes?.length?'px-4 rounded-full py-1 bg-slate-200 border border-slate-300 text-slate-700 font-semibold':'hidden'}`}>{Succes}</span>
             </div>
             </>
   )

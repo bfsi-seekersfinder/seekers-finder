@@ -9,6 +9,11 @@ import mongooseDb from './schema/mongoose.config.js'
 import session from 'express-session'
 import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
+import checkAndUpdateExpiredUsers from "./controlers/cronCheckExpire.js";
+import User from "./schema/user.mongoose.js";
+import Candidate from "./schema/userdata.mongoose.js";
+
+
 
 const app = express()
 dotenv.config()
