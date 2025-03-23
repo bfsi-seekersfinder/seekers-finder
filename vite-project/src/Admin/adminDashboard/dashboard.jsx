@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import CreateRecruiter from "../template/CreateRecruiter";
 import axios from "axios";
-import { Link } from "react-router-dom";
 import Notification from "../template/Notification/Notification";
-import CreateCandidate from "../candidate/CreateCandidate";
-import CandidateUpdateForm from "../candidate/candidateUpdate";
+import CreateCandidate from "../candidate/createCandidate";
 import CandidateList from "../candidate/candidateList";
 import RecruiterList from "../template/RecruiterList";
 import { AdminContext } from "../../../Global/AdminUserContext";

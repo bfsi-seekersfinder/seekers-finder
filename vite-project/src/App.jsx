@@ -2,7 +2,7 @@ import React from "react";
 import Home from "./Home";
 import { Routes, Route } from "react-router-dom";
 import AdminDashboard from "./Admin/adminDashboard/dashboard";
-import CreateCandidate from "./Admin/candidate/CreateCandidate";
+import CreateCandidate from "./Admin/candidate/createCandidate";
 import LoginPage from "../authPage/RecruiterLogin";
 import HomePage from "../authPage/Landing";
 import RecruiterQuery from "../recruiter/RecruiterQuery";
