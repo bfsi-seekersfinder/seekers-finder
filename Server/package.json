@@ -4,7 +4,6 @@
   "description": "this is a backend ",
   "main": "app.js",
   "type": "module",
-  
     "scripts": {
       "start": "node app.js",
       "build": "echo 'No build step needed for backend'"
