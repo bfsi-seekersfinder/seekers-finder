@@ -44,13 +44,8 @@ const FilteredProfiles = () => {
     const [PG, setPG] = useState([])
     let loadedCandidate = useRef(null)
     const [isProfileComplete, setisProfileComplete] = useState(false)
-
-    
-    console.log(user)
-
     
     
-    // console.log(Candidate.fullName, Candidate.mobileNo, Candidate.email, Array.isArray(Candidate.workExperience) && Candidate.workExperience[0].name)
 
     const handleSearch = () =>{
       if(allEmpty) {
