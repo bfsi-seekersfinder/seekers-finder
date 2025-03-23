@@ -46,7 +46,7 @@ const FilteredProfiles = () => {
     const [isProfileComplete, setisProfileComplete] = useState(false)
 
     
-    
+    console.log(user)
 
     
     
@@ -1046,7 +1046,7 @@ useEffect(()=>{
 
       </div>
       </div>
-        {!isPlanActive && <div className="absolute top-0 left-0 z-10 ">
+        {!user?.planActive && <div className="absolute top-0 left-0 z-10 ">
                 <ExpirePage/>
         </div>
         }

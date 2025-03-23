@@ -96,7 +96,7 @@ const RecruiterProfiles = () => {
         </div>
         <div>
         <h2 className="text-2xl font-semibold capitalize text-slate-700">{recruiter.recruiterName? recruiter.recruiterName:'' }</h2>
-        <p className=" text-cyan-500"><span><i className="ri-building-line "></i> </span>{recruiter.currentCompany? recruiter.currentCompany:"not available"}</p>
+        <p className=" text-cyan-500"><span><i className="ri-building-line "></i> </span>{recruiter.currentCompany? recruiter.currentCompany:"Not available"}</p>
         </div>
         </div>
         <div className='p-4'>
@@ -154,7 +154,7 @@ const RecruiterProfiles = () => {
           <CompanyDetails user={user}/>
         ):Step === 3?(
           <div className='w-full px-8 flex flex-col gap-4 pt-8 h-screen overflow-y-auto' style={{scrollbarWidth:'none'}}>
-            <button onClick={()=>setisAlias(false)} className='text-2xl text-slate-600 cursor-pointer flex items-center justify-normal '><i className="ri-arrow-left-line"></i></button>
+            <button onClick={()=>setisAlias(false)} className='text-2xl text-slate-600 cursor-pointer flex items-center justify-center  hover:bg-slate-300 w-12 h-8 rounded-2xl  '><i className="ri-arrow-left-line"></i></button>
             {!isAlias?(
               <>
               {AliasUsers.length>0? (

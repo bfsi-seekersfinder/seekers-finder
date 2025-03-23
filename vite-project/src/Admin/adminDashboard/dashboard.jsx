@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import CreateRecruiter from "../template/CreateRecruiter";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -7,6 +7,7 @@ import CreateCandidate from "../candidate/CreateCandidate";
 import CandidateUpdateForm from "../candidate/candidateUpdate";
 import CandidateList from "../candidate/candidateList";
 import RecruiterList from "../template/RecruiterList";
+import { AdminContext } from "../../../Global/AdminUserContext";
 
 
 const AdminDashboard = () => {
@@ -14,16 +15,17 @@ const url = import.meta.env.VITE_API_URI
 const [Step, setStep] = useState(0)
 const [Recruiter, setRecruiter] = useState()
 const [SearchRecruiter, setSearchRecruiter] = useState()
-const [admin, setAdmin] = useState()
-const [isSidebar, setisSidebar] = useState(false)
+const {admin} = useContext(AdminContext)
+const [Admin, setAdmin] = useState()
 const [popMessage, setpopMessage] = useState()
 const [isNotificationDelete, setisNotificationDelete] = useState(false)
 const [Candidates, setCandidates] = useState([])
 const [limit, setLimit] = useState(25)
 const [Loading, setLoading] = useState(false)
+const [isSidebar, setisSidebar] = useState(false)
 const [Page, setPage] = useState(1)
 const [isCandidateSkip, setisCandidateSkip] = useState(false)
-const [totalCandidates, settotalCandidates] = useState()
+const [totalCandidates, settotalCandidates] = useState(admin?.totalUser)
 const [totalRecruiter, settotalRecruiter] = useState()
 const [toalInactivePlan, settoalInactivePlan] = useState()
 
@@ -115,6 +117,7 @@ const handleSetSearchQuery = (query) =>{
 }
 
 
+
   return (
     <div className="flex ">
       <div onClick={handleSideBar} id="sidebar" className={`${isSidebar? "max-lg:translate-x-[400px]":"max-lg:translate-x-0 absolute h-[80px] w-2 bg-slate-700 top-[40%] left-4 z-50 cursor-pointer rounded-2xl"}`}></div>
@@ -192,7 +195,7 @@ const handleSetSearchQuery = (query) =>{
             <div>page 5</div>
             ):Step===6?(
               <>
-              <Notification notification={admin.notification} adminId={admin._id} setChanges={setisNotificationDelete}/>
+              <Notification notification={Admin.notification} AdminId={Admin._id} setChanges={setisNotificationDelete}/>
               </>
             ):(
               <p>page 7</p>

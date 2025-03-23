@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { BarLoader } from 'react-spinners'
 
-const CandidateList = ({ sendValue,}) => {
+const CandidateList = ({ sendValue}) => {
   const url = import.meta.env.VITE_API_URI
     const [popMessage, setpopMessage] = useState('')
     const [Query, setquery] = useState('')
@@ -37,6 +37,9 @@ const CandidateList = ({ sendValue,}) => {
       }
     
     };
+    useEffect(()=>{
+      handleFetchUsers()
+    },[])
 
     useEffect(()=>{
       
@@ -61,7 +64,8 @@ const CandidateList = ({ sendValue,}) => {
       setPage(Page-1)
     }
 
-    // if(Loading) return 
+
+
 
 
   return (

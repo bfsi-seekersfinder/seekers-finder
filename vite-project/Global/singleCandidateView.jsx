@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
+import { ClipLoader } from "react-spinners";
 
 export const SingleCandidateContext = createContext();
 
@@ -30,7 +31,7 @@ export const SingleCandidateProvider = ({ children }) => {
     getUserProfile();
   }, [candidateId]);
 
-  if(Loading) return <p> Loading...</p>
+  if(Loading) return <div className="flex items-center justify-center h-screen w-full"> <ClipLoader color="#2a9487"/> </div>
 
   return (
     <SingleCandidateContext.Provider value={{ setCandidateId, candidate, Loading }}>

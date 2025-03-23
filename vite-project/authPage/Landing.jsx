@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import Footer from "./Footer";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="border h-screen overflow-y-auto" style={{scrollbarWidth:"none"}}>
+    <div className="min-h-screen bg-gray-100 " style={{scrollbarWidth:"none"}}>
       {/* Navbar */}
       <nav className="flex justify-between items-center p-4 bg-white shadow-md">
         <h1 className="text-2xl font-bold text-gray-800">Talent<span className="text-orange-500">X</span></h1>
@@ -11,7 +13,7 @@ export default function HomePage() {
                 <button className="px-4 py-2 bg-blue-500 text-white rounded-md mr-2 hover:bg-blue-600">Login</button>
             </Link>
             <Link to="/req for query" className="text-blue-500 underline inline-block">
-              <button className="px-4 py-2 bg-emerald-400 text-white rounded-md hover:bg-green-600">Request Access</button>
+              <button className="px-4 py-2 bg-emerald-400 text-white rounded-md hover:bg-green-600">Request for Access</button>
             </Link>
 
         </div>
@@ -28,6 +30,10 @@ export default function HomePage() {
         <h3 className="text-xl font-semibold text-gray-700">Let's Start With Us</h3>
         <Link to="/req for query" className="text-blue-500 underline mt-2 inline-block">Request for Service</Link>
       </div>
+
+    </div>
+    <Footer/>
+
     </div>
   );
 }

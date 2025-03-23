@@ -34,11 +34,16 @@ router.post("/api/login", async (req, res) => {
             return res.status(400).json({ message: "Wrong credentials" });
         }
 
+        const totalUserDocs = await User.countDocuments()
+        const totalCandidateDocs = await Candidate.countDocuments()
+        const combineLength = totalUserDocs + totalCandidateDocs
+
         req.session.admin = {
             _id: admin._id,
             adminName: admin.adminName,
             adminEmail: admin.adminEmail,
             adminContact: admin.adminContact,
+            totalUser: combineLength
         };
 
 

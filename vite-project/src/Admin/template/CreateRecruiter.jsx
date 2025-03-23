@@ -28,6 +28,11 @@ const CreateRecruiter = ({recruiter}) => {
     const [startDate, setstartDate] = useState(null)
     const [endDate, setendDate] = useState(null)
     const [isLimitCustomize, setisLimitCustomize] = useState(false)
+    const [isPasswordVisible, setisPasswordVisible] = useState(false)
+
+    const handlePasswordVisible = () =>{
+        setisPasswordVisible(!isPasswordVisible)
+    }
 
 const handleCustomizeLimit = () =>{
 setisLimitCustomize(!isLimitCustomize)
@@ -324,7 +329,7 @@ return (
         </div>
         
         <div className="flex flex-col gap-1">
-            <label for="name">Contact No </label>
+            <label htmlFor="name">Contact No </label>
             <input 
             type="number" 
             name="number"
@@ -336,7 +341,7 @@ return (
         </div>
 
         <div className="flex flex-col gap-1">
-            <label for="name">Recruiter email:</label>
+            <label htmlFor="name">Recruiter email:</label>
             <input 
             type="email" 
             id="email" 
@@ -390,16 +395,22 @@ return (
             />
             </div>
             <div className="flex flex-col gap-1">
-            <label for="password">Password:</label>
+            <label htmlFor="password">Password:</label>
+            <div 
+            className="border flex items-center bg-slate-200 border-slate-300 rounded w-[400px] px-1 "
+            >
             <input 
-            type="password" 
+            type={isPasswordVisible? 'text':'password'}
             id="password" 
             name="password"
             placeholder="recruiter password"
             value={InputData.password}
             onChange={(e)=>setInputData(prev=>({...prev, password:e.target.value}))}
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className=" h-full w-full   px-1 py-2 focus:outline-none"
             />
+            <div onClick={()=> handlePasswordVisible()} className='cursor-pointer flex items-center justify-center h-6 w-6 hover:bg-slate-700 hover:text-white rounded-2xl'>{isPasswordVisible? <i className="ri-eye-line"></i> : <i className="ri-eye-off-line"></i> }</div>
+            </div>
+
             </div>
             </div>
     </div>
@@ -409,7 +420,7 @@ return (
     <div className='flex flex-wrap gap-4 py-4'>
 
         <div className="flex flex-col gap-1">
-            <label for="name">Current Company </label>
+            <label htmlFor="name">Current Company </label>
             <input 
             type="text" 
             name="currentCompany"
@@ -420,7 +431,7 @@ return (
             />
         </div>
         <div className="flex flex-col gap-1">
-            <label for="name">Current Designation </label>
+            <label htmlFor="name">Current Designation </label>
             <input 
             type="text" 
             name="currentDesignation"
@@ -432,7 +443,7 @@ return (
         </div>
 
         <div className="flex flex-col gap-1">
-            <label for="name">PAN Card:</label>
+            <label htmlFor="name">PAN Card:</label>
             <input 
             type="text" 
             name="PAN"
@@ -451,7 +462,7 @@ return (
             />
         </div>
         <div className="flex flex-col gap-1">
-            <label for="name">GST No.</label>
+            <label htmlFor="name">GST No.</label>
             <input 
             type="text" 
             name="GST"
@@ -470,7 +481,7 @@ return (
             />
         </div>
         <div className="flex flex-col gap-1">
-            <label for="name">TAN No.</label>
+            <label htmlFor="name">TAN No.</label>
             <input 
             type="text" 
             name="TAN"
@@ -527,7 +538,7 @@ return (
         </div>
         
         <div className="flex flex-col gap-1">
-            <label for="name">Contact No </label>
+            <label htmlFor="name">Contact No </label>
             <input 
             type="number" 
             name="number"
@@ -544,7 +555,7 @@ return (
         </div>
 
         <div className="flex flex-col gap-1">
-            <label for="name">email:</label>
+            <label htmlFor="name">email:</label>
             <input 
             type="email"
             name='aliasEmail'
@@ -560,7 +571,7 @@ return (
             />
         </div>
         <div className="flex flex-col gap-1">
-            <label for="name">Password:</label>
+            <label htmlFor="name">Password:</label>
             <input 
             type="password"
             name='aliasPassword'

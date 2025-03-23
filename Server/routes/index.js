@@ -331,7 +331,9 @@ router.post("/api/recruiters/create-recruiter",  async (req, res) => {
     } catch (error) {
         res.json({ message: "Try after an Hours", error: error.message });
     }
+
 });
+
 
 router.put("/api/recruiters/update/:recruiterId", async (req, res) => {
     try {
@@ -653,7 +655,13 @@ router.post("/api/account/login", async (req, res) => {
                 suspend:user.suspend
             }
 
+            user.loginHistory.unshift(Date.now())
+            user.logoutHistory = user.logoutHistory.slice(0, 10);
+            await user.save()
+
         }
+
+
 
         res.json({ message: "Login successful!", user:req.session.user});
 
@@ -670,24 +678,39 @@ router.get("/api/account/me/", async (req, res) => {
         res.json({ success: true, user: req.session.user });
 });
 
-router.get("/api/account/checkplan", async (req, res)=>{
+router.get("/api/account/checkplan", async (req, res) => {
     try {
-        if(!req.session.user){
-            return res.status(404).json({message: "Login again"})
+        if (!req.session.user) {
+            return res.status(401).json({ message: "Login again" });
         }
 
-        const recruiter = await recruiterModule.findById(req.session.user.id)
-        if(!recruiter){
-            return res.status(401).json({message: "unauthorize"})
+        let planActive = null;
+        let recruiter = await recruiterModule.findById(req.session.user.id);
+
+        if (!recruiter) {
+            recruiter = await aliasUserModel.findById(req.session.user.id);
+            if (recruiter) {
+                const rootRecruiter = await recruiterModule.findById(recruiter.recruiterId);
+                if (rootRecruiter) {
+                    planActive = rootRecruiter.planActive;
+                }
+            }
+        } else {
+            planActive = recruiter.planActive;
         }
 
-        res.json({success:true, user : recruiter.planActive})
-        
+        if (!recruiter) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        res.json({ success: true, user: planActive });
+
     } catch (error) {
-        console.log(error.message)
+        console.error("Error in /api/account/checkplan:", error.message);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 
-})
+});
 
 router.get("/api/account/getview",  async (req, res) => {
     try {
@@ -699,7 +722,7 @@ router.get("/api/account/getview",  async (req, res) => {
         let user = await recruiterModule.findById(recruiterId);
 
         if(!user){
-            user = await aliasUserModel.findById(recruiterId).populate("recruiterId");
+            user = await aliasUserModel.findById(recruiterId);
         }
 
         if (!user) {
@@ -716,7 +739,7 @@ router.get("/api/account/getview",  async (req, res) => {
 
 
         if(user.aliasRole === 'alias'){
-            const rootRecruiter = await findById(user.recruiterId._id)
+            const rootRecruiter = await findById(user.recruiterId)
             rootRecruiter.totalView = viewCount
 
             await rootRecruiter.save()
@@ -1144,6 +1167,7 @@ router.put('/api/account/password/update', async (req, res) => {
     }
 });
 
+
 router.post("/api/forgot/password", forgotPassword )
 router.post("/api/verify/otp", verifyOTP)
 router.post("/api/reset/password", resetPassword )
@@ -1185,15 +1209,33 @@ router.get("/api/alias/:id", isAuthenticated, async (req, res) => {
     }
 });
 
-router.post("/api/account/logout", (req, res) => {
-    req.session.destroy((err) => {
-    if (err) {
-    return res.status(500).json({ message: "Logout failed", error: err.message });
+router.post("/api/account/logout", async (req, res) => {
+    try {
+        if (req.session.user && req.session.user.role === "alias") {
+
+            const user = await aliasUserModel.findById(req.session.user.id);
+            if (user) {
+                user.logoutHistory.unshift(Date.now());
+                user.logoutHistory = user.logoutHistory.slice(0, 10);
+                await user.save();
+            }
+
+        }
+
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).json({ message: "Logout failed", error: err.message });
+            }
+            res.clearCookie("connect.sid");
+            res.json({ success: true, message: "Logged out successfully" });
+        });
+
+    } catch (error) {
+        console.error("Logout Error:", error.message);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
-    res.clearCookie("connect.sid");
-    res.json({ success: true, message: "Logged out successfully" });
-    });
 });
+
 
 
 

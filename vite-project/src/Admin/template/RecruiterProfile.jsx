@@ -6,21 +6,7 @@ const RecruiterProfile = ({user}) => {
     const url = import.meta.env.VITE_API_URI 
     const [loading, setLoading] = useState(true);
 
-    // useEffect(() => {
-    //     const fetchUserProfile = async () => {
-    //     try {
-    //     const response = await axios.get(url+"/api/account/me", { withCredentials: true });
-    //     setUser(response.data.user);
-    //     setLoading(false);
-    //     } catch (error) {
-    //     console.error("Error fetching profile:", error);
-    //     setLoading(false);
-    //     }
-    //     };
-    //     fetchUserProfile();
-    // }, [setUser]);
-
-    // if (loading) return <div className="text-center text-gray-600">Loading Profile...</div>;
+    
     if (!user) return <div className="text-center text-red-500">User not found.</div>;
 
     return (
