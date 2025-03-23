@@ -26,9 +26,9 @@ app.set('views', path.join(__dirname, 'views'))
 app.use(express.static(path.join(__dirname, 'public')))
 
 const corsOptions = {
-    origin: "https://talentx.onrender.com",
+    origin: ["https://talentx.onrender.com", "http://localhost:5173"],
     methods: ["GET","POST","PUT","DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"]
     credentials:true 
   };
 
@@ -45,7 +45,7 @@ app.use(session({
        ttl: 24 * 60 * 60 
    }),
    cookie: {       
-       secure: true,
+       secure: process.env.NODE_ENV === 'production',
        httpOnly: true, 
        sameSite: "None", 
        maxAge: 1000 * 60 * 60 * 24, 
