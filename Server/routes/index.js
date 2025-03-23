@@ -679,7 +679,7 @@ router.post("/api/account/login", async (req, res) => {
 
 
 
-        res.json({ message: "Login successful!", user:req.session.user});
+       return res.json({ message: "Login successful!", user:req.session.user});
 
     } catch (error) {
         res.status(500).json({ message: "something went wrong", error: error.message });
@@ -691,7 +691,7 @@ router.get("/api/account/me/", async (req, res) => {
         return res.status(401).json({ success: false, message: "Not logged in" });
         }
 
-        res.json({ success: true, user: req.session.user });
+        return res.json({ success: true, user: req.session.user });
 });
 
 router.get("/api/account/checkplan", async (req, res) => {
