@@ -28,8 +28,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 const corsOptions = {
     origin: ["https://talentx.onrender.com", "http://localhost:5173"],
     methods: ["GET","POST","PUT","DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"]
-    credentials:true 
+    allowedHeaders: ["Content-Type", "Authorization", "Set-Cookie"],
+    credentials:true ,
   };
 
 app.use(cors(corsOptions));
