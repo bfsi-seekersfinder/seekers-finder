@@ -37,16 +37,21 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser()); 
 app.use(session({
-  secret: process.env.SECRET_SESSION || "defaultsecret",
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-  cookie: {
-      secure: false, 
-      httpOnly: true, 
-      maxAge: 1000 * 60 * 60 * 24,
-  }
+   secret: process.env.SECRET_SESSION || "defaultsecret",
+   resave: false,
+   saveUninitialized: false,
+   store: MongoStore.create({ 
+       mongoUrl: process.env.MONGO_URI,
+       ttl: 24 * 60 * 60 
+   }),
+   cookie: {       
+       secure: process.env.NODE_ENV === "production",
+       httpOnly: true, 
+       sameSite: "lax", 
+       maxAge: 1000 * 60 * 60 * 24, 
+   }
 }));
+
 
 app.use("/uploads", express.static("uploads"));
 app.use('/', index);
