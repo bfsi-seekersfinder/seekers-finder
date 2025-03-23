@@ -641,6 +641,14 @@ router.post("/api/account/login", async (req, res) => {
                 planActive:user.planActive,
                 
             };
+            req.session.save(err => {
+                if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).json({ message: "Session save failed" });
+    }
+    res.json({ message: "Login successful!", user: req.session.user });
+});
+
 
         }else if(user.aliasRole === "alias"){
 
@@ -650,10 +658,18 @@ router.post("/api/account/login", async (req, res) => {
                 role:user.aliasRole,
                 recruiterName:user.aliasName,
                 contactNo:user.aliasContactNo,
-                recruiter:user.limit,
+                limit:user.limit,
                 block:user.block,
                 suspend:user.suspend
             }
+            req.session.save(err => {
+                if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).json({ message: "Session save failed" });
+    }
+    res.json({ message: "Login successful!", user: req.session.user });
+});
+
 
             user.loginHistory.unshift(Date.now())
             user.logoutHistory = user.logoutHistory.slice(0, 10);
