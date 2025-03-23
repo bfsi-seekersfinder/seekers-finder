@@ -8,6 +8,7 @@ export default defineConfig({
     tailwindcss()
   ],
   server:{
+    allowedHosts: ["talentx.onrender.com"],
     host: true,
     port: 5173,  
     strictPort: true,  
