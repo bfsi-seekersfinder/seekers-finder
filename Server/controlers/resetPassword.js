@@ -15,9 +15,9 @@ const resetPassword = async (req, res) => {
         const mail = 'Your TalentX Password is Reset Succesfully'
        await sendOTPEmail(email, mail)
 
-        res.json({ message: "Password reset successful" });
+       return res.json({ message: "Password reset successful" });
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+       return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
