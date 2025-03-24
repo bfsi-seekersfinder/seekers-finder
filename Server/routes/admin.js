@@ -13,7 +13,7 @@ const isAdmin = (req, res, next) => {
     if (req.session.admin) {
         return next();
     }
-    res.status(403).json({ message: "Forbidden: Admin session required" });
+   return res.status(403).json({ message: "Forbidden: Admin session required" });
 };
 
 router.get("/api/session", async (req, res) =>{
