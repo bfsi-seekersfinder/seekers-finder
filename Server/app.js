@@ -1,12 +1,12 @@
 import express from "express";
 import index from "./routes/index.js";
 import admin from './routes/admin.js'
-import path from 'path'
-import cors from 'cors'
+import path from 'path';
+import cors from 'cors';
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import mongooseDb from './schema/mongoose.config.js'
-import session from 'express-session'
+import session from 'express-session';
 import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
 import checkAndUpdateExpiredUsers from "./controlers/cronCheckExpire.js";
@@ -30,7 +30,7 @@ const corsOptions = {
     methods: ["GET","POST","PUT","DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials:true ,
-  };
+  }
 
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -45,7 +45,7 @@ app.use(session({
        ttl:  24 * 60 * 60 ,
    }),
    cookie: {       
-       secure: process.env.NODE_ENV === 'production',
+       secure: process.env.NODE_ENV === 'production'? true : false,
        httpOnly: true, 
        sameSite: "None",
        maxAge: 1000 * 60 * 60 * 24, 
