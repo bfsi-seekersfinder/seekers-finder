@@ -603,7 +603,7 @@ router.post("/api/account/login", async (req, res) => {
         }
 
         req.session = null;
-        )}
+        });
              
         let user = await recruiterModule.findOne({ email: username }).populate(["savedProfile", "aliasUsers"])
 
