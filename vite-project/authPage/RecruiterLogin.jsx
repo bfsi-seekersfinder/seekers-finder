@@ -29,7 +29,7 @@ export default function LoginPage() {
       navigate("/redirect/block");
       return
     }
-
+      sessionStorage.setItem("isUser", JSON.stringify(response.data.user))
     const user = response.data.user;
     
     if(!user) return navigate("/account/login")

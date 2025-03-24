@@ -14,19 +14,30 @@ export const UserProvider = ({ children }) => {
     const [userId, setuserId] = useState()
     const [savedProfile, setsavedProfile] = useState([])
     
-    useEffect(() => {
-      axios.get(url+`/api/account/me/`, { 
-        withCredentials: true,         
-        headers: { "Content-Type": "application/json" }
-      })
-          .then(response => {
+  //   useEffect(() => {
+  //     axios.get(url+`/api/account/me/`, { 
+  //       withCredentials: true,         
+  //       headers: { "Content-Type": "application/json" }
+  //     })
+  //         .then(response => {
 
-              setUser(response.data.user);
-              setisPlanActive(response.data.user.planActive)
-          })
-          .catch(() => setUser(null)); 
+  //             setUser(response.data.user);
+  //             setisPlanActive(response.data.user.planActive)
+  //         })
+  //         .catch(() => setUser(null)); 
         
-  }, []);
+  // }, []);
+
+  useEffect(()=>{
+    const user = sessionStorage.getItem("isUser")
+    if(user){
+      setUser(JSON.parse(user))
+
+      console.log("from browser session : ",JSON.parse(user))
+    }
+
+    setisPlanActive(JSON.parse(user).planActive)
+    },[])
 
 
     return (
