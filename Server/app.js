@@ -26,7 +26,7 @@ app.set('views', path.join(__dirname, 'views'))
 app.use(express.static(path.join(__dirname, 'public')))
 
 const corsOptions = {
-    origin: ["http://localhost:5173", "https://talentx.onrender.com",],
+    origin: ["http://localhost:5173", "https://talentx.onrender.com"],
     methods: ["GET","POST","PUT","DELETE"],
     allowedHeaders: ["Content-Type","Authorization"],
     credentials:true 
