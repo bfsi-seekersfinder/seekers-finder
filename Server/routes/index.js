@@ -1226,7 +1226,7 @@ router.post("/api/account/logout", async (req, res) => {
             if (err) {
                 return res.status(500).json({ message: "Logout failed", error: err.message });
             }
-            return res.clearCookie("connect.sid");
+             res.clearCookie("connect.sid");
             return res.json({ success: true, message: "Logged out successfully" });
         });
 
