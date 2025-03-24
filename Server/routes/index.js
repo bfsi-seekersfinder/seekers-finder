@@ -194,8 +194,8 @@ router.get("/api/product", async (req, res) => {
         pg
       });
     } catch (error) {
+     console.error(error.message);
      return res.status(500).json({ error: "Error fetching products" });
-      console.error(error.message);
     }
 });
 
@@ -217,6 +217,7 @@ router.get('/api/recruiter',  async (req, res) => {
         const totalRecruiter = await recruiterModule.countDocuments()
         const activePlan = await recruiterModule.find({planActive:true})
         const totalActives = activePlan.length
+        
         if (!recruiters.length) {
         return res.json({ message: "No recruiters found!" });
         }
