@@ -9,6 +9,7 @@ export default defineConfig({
   ],
   server:{
     host: true,
+    allowedHosts: ["talentx.onrender.com"],
     port: 5173,  
     strictPort: true,  
     cors: true,
