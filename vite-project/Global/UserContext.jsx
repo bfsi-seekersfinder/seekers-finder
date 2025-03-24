@@ -33,7 +33,6 @@ export const UserProvider = ({ children }) => {
     if(user){
       setUser(JSON.parse(user))
 
-      console.log("from browser session : ",JSON.parse(user))
     }
 
     setisPlanActive(JSON.parse(user).planActive)

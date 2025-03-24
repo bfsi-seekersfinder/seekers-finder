@@ -835,27 +835,28 @@ try {
 }
 });
 
-router.post("/api/recruiter/history/delete/:id", async (req, res)=>{
+router.post("/api/recruiter/history/delete/:id/:recruiterId", async (req, res)=>{
 try {
-const {id} = req.params
+const {id, recruiterId} = req.params
 
 if(!id) return res.status(400).json({message:"history id not found"})
 
-if(!req.session.user || !req.session.user.id){
+if(!recruiterId){
     return res.status(400).json({message: "Login again user"})
 }
-const recruiterid = req.session.user
+
+let recruiterUser = await recruiterModule.findById(recruiterId)
 
 let recruiter = null
-if(recruiterid.role === 'recruiter'){
-    recruiter = await recruiterModule.findByIdAndUpdate(recruiterid.id, 
+if(recruiterUser.role === 'recruiter'){
+    recruiter = await recruiterModule.findByIdAndUpdate(recruiterId, 
     {$pull: {savedSearches:{_id:id}}},
     {new:true }
     )
     
 }else{
 
-    recruiter = await aliasUserModel.findByIdAndUpdate(recruiterid.id, 
+    recruiter = await aliasUserModel.findByIdAndUpdate(recruiterId, 
     {$pull: {savedSearches:{_id:id}}},
     {new:true }
     )
@@ -869,31 +870,33 @@ return res.status(404).json({ message: "Recruiter not found" });
 return res.json({ success: true, message: "Search history deleted successfully", recruiter });
     
 } catch (error) {
-    return res.status(500).json({message:"history not delete"})
     console.log(error.message)
+    return res.status(500).json({message:"history not delete"})
 }    
 
 })
 
-router.post("/api/recruiter/history/clear", async (req, res) => {
+router.post("/api/recruiter/history/clear/:recruiterId", async (req, res) => {
     try {
-      if (!req.session.user || !req.session.user.id) {
+        const {recruiterId} = req.params
+
+      if (!recruiterId) {
         return res.status(401).json({ message: "Login again user" });
       }
-  
-      const recruiterId = req.session.user;
 
+      const recruiterUser = await recruiterModule.findById(recruiterId)
+  
       let recruiter = null
-      if(recruiterId.role === "recruiter"){
+      if(recruiterUser.role === "recruiter"){
         recruiter = await recruiterModule.findByIdAndUpdate(
-            recruiterId.id,
+            recruiterId,
             { $set: { savedSearches: [] } }, 
             { new: true }
           );
           
         }else{
           recruiter = await aliasUserModel.findByIdAndUpdate(
-              recruiterId.id,
+              recruiterId,
               { $set: { savedSearches: [] } }, 
               { new: true }
             );

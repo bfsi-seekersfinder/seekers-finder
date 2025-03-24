@@ -151,8 +151,7 @@ const ProfileCard = ({Candidate}) => {
             setTimeout(() => setFailedMessage(""), 3000);
             return;
         }
-        console.log(savedProfiles)
-        console.log(candidateId)
+       
         
         const recruiterID = user.id;
         const isAlreadySaved = savedProfiles.some((item) => item._id === candidateId);

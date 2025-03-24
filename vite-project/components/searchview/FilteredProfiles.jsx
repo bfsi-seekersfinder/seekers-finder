@@ -46,9 +46,6 @@ const FilteredProfiles = () => {
     const [isProfileComplete, setisProfileComplete] = useState(false)
 
     
-    console.log(user)
-
-    
     
     // console.log(Candidate.fullName, Candidate.mobileNo, Candidate.email, Array.isArray(Candidate.workExperience) && Candidate.workExperience[0].name)
 
@@ -464,7 +461,8 @@ const handleApplyHistory = (id) => {
 
 const removeSingleHistory = async (id) =>{
   try {
-    const response = await axios.post(`${url}/api/recruiter/history/delete/${id}`, {}, 
+    const recruiterId = user.id
+    const response = await axios.post(`${url}/api/recruiter/history/delete/${id}/${recruiterId}`, {}, 
       { withCredentials:true, 
         headers: {"Content-Type": "application/json"} 
       })
@@ -482,7 +480,8 @@ const removeSingleHistory = async (id) =>{
 
 const clearHistory = async () => {
   try {
-    const response = await axios.post(`${url}/api/recruiter/history/clear`, {}, {
+    const recruiterId = user.id
+    const response = await axios.post(`${url}/api/recruiter/history/clear/${recruiterId}`, {}, {
     withCredentials: true,
     headers: { "Content-Type": "application/json" },
     });
