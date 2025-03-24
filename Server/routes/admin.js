@@ -31,6 +31,14 @@ router.post("/api/login", async (req, res) => {
             return res.status(400).json({ message: "Enter email and password" });
         }
 
+         req.session.destroy((err) => {
+        if (err) {
+            console.error("Error destroying session:", err);
+            return res.status(500).json({ message: "Error resetting session" });
+        }
+
+        req.session = null;
+
         const admin = await adminModule.findOne({ adminEmail: email });
         if (!admin) {
             return res.status(404).json({ message: "Admin not Found" });
@@ -62,7 +70,7 @@ router.post("/api/login", async (req, res) => {
 
            return res.json({ success: true, message: "Login successful", admin: req.session.admin });
         });
-
+    });
     } catch (error) {
         console.log(error.message);
        return res.status(500).json({ message: "Server error" });
