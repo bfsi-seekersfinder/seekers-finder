@@ -28,7 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 const corsOptions = {
     origin: ["https://talentx.onrender.com", "http://localhost:5173"],
     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE"    
-    allowedHeaders: "Content-Type, Authorization",
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials:true ,
   };
 
