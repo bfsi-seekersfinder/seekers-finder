@@ -36,6 +36,7 @@ router.post("/api/login", async (req, res) => {
             console.error("Error destroying session:", err);
             return res.status(500).json({ message: "Error resetting session" });
         }
+         });
 
         req.session = null;
 
@@ -69,7 +70,6 @@ router.post("/api/login", async (req, res) => {
             }
 
            return res.json({ success: true, message: "Login successful", admin: req.session.admin });
-        });
     });
     } catch (error) {
         console.log(error.message);
