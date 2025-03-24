@@ -15,7 +15,10 @@ export const UserProvider = ({ children }) => {
     const [savedProfile, setsavedProfile] = useState([])
     
     useEffect(() => {
-      axios.get(url+`/api/account/me/`, { withCredentials: true })
+      axios.get(url+`/api/account/me/`, { 
+        withCredentials: true,         
+        headers: { "Content-Type": "application/json" }
+      })
           .then(response => {
 
               setUser(response.data.user);
@@ -25,7 +28,6 @@ export const UserProvider = ({ children }) => {
         
   }, []);
 
-    
 
     return (
         <UserContext.Provider 

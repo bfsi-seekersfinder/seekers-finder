@@ -660,7 +660,12 @@ router.post("/api/account/login", async (req, res) => {
 
         }
 
-
+        res.cookie("connect.sid", req.session.id, {
+            httpOnly: true,
+            secure: true, 
+            sameSite: "None",
+            maxAge: 1000 * 60 * 60 * 24,
+        });
 
         return res.json({ message: "Login successful!", user:req.session.user});
 
