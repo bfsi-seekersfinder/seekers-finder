@@ -20,6 +20,7 @@ const isAuthenticated = (req, res, next) => {
 };
 
 
+
 router.get('/api/user',  async (req, res) => {
     try {
         const { 
@@ -593,6 +594,14 @@ router.post("/api/account/login", async (req, res) => {
         if (!username || !password) {
         return res.status(400).json({ message: "All fields are required." });
         }
+         req.session.destroy((err) => {
+        if (err) {
+            console.error("Error destroying session:", err);
+            return res.status(500).json({ message: "Error resetting session" });
+        }
+
+        req.session = null;
+             
         let user = await recruiterModule.findOne({ email: username }).populate(["savedProfile", "aliasUsers"])
 
         if(!user){
