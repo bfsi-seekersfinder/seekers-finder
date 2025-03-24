@@ -43,7 +43,8 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
   cookie: {
       secure: process.env.NODE_ENV === 'production'? true : false, 
-      httpOnly: true, 
+      httpOnly: true,
+      sameSite:"none", 
       maxAge: 1000 * 60 * 60 * 24,
   }
 }));

@@ -334,7 +334,6 @@ router.post("/api/recruiters/create-recruiter",  async (req, res) => {
 
 });
 
-
 router.put("/api/recruiters/update/:recruiterId", async (req, res) => {
     try {
         const { recruiterId } = req.params;
@@ -1166,7 +1165,6 @@ router.put('/api/account/password/update', async (req, res) => {
         return res.status(500).json({ message: "Server error", error: error.message });
     }
 });
-
 
 router.post("/api/forgot/password", forgotPassword )
 router.post("/api/verify/otp", verifyOTP)
