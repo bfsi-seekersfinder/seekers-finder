@@ -12,13 +12,13 @@ import verifyOTP from "../controlers/verifyOTP.js";
 const router = express.Router()
 
 
-
 const isAuthenticated = (req, res, next) => {
     if (!req.session.user) {
         return res.status(401).json({ message: "Unauthorized: Please log in" });
     }
     next();
 };
+
 
 
 router.get('/api/user',  async (req, res) => {
@@ -173,10 +173,10 @@ router.get('/api/user',  async (req, res) => {
         const totalDocument = totalUserDocs + totalCandidates
         const combinedData = [...paginatedData, ...paginatedCandidateData]
 
-        res.json({success:true, newData: combinedData, totalDocument });
+       return res.json({success:true, newData: combinedData, totalDocument });
     } catch (err) {
         console.error("Error:", err.message);
-        res.status(500).json({ message: "Server error", error: err.message });
+       return res.status(500).json({ message: "Server error", error: err.message });
     }
 });
 
@@ -187,15 +187,15 @@ router.get("/api/product", async (req, res) => {
       const ug = await productModule.find({ type: "ug" }); 
       const pg = await productModule.find({ type: "pg" }); 
   
-      res.json({
+     return res.json({
         products,
         funcArea,
         ug,
         pg
       });
     } catch (error) {
-      res.status(500).json({ error: "Error fetching products" });
-      console.error(error.message);
+     console.error(error.message);
+     return res.status(500).json({ error: "Error fetching products" });
     }
 });
 
@@ -217,14 +217,15 @@ router.get('/api/recruiter',  async (req, res) => {
         const totalRecruiter = await recruiterModule.countDocuments()
         const activePlan = await recruiterModule.find({planActive:true})
         const totalActives = activePlan.length
+        
         if (!recruiters.length) {
         return res.json({ message: "No recruiters found!" });
         }
 
-        res.json({ recruiters, totalRecruiter, totalActives });
+       return res.json({ recruiters, totalRecruiter, totalActives });
     } catch (error) {
         console.error("Error:", error.message);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+       return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 
 });
@@ -326,12 +327,12 @@ router.post("/api/recruiters/create-recruiter",  async (req, res) => {
         await newRecruiter.save();
     }
 
-    res.json({ success: true, message: "New User Created" });
+   return res.json({ success: true, message: "New User Created" });
 
     } catch (error) {
-        res.json({ message: "Try after an Hours", error: error.message });
+       return res.json({ message: "Try after an Hours", error: error.message });
     }
-
+    
 });
 
 
@@ -436,11 +437,11 @@ router.put("/api/recruiters/update/:recruiterId", async (req, res) => {
 
         await recruiter.save();
 
-        res.json({ success: true, message: "Recruiter updated successfully" });
+       return res.json({ success: true, message: "Recruiter updated successfully" });
 
     } catch (error) {
         console.log(error.message)
-        res.status(500).json({ message: "Something went wrong", error: error.message });
+       return res.status(500).json({ message: "Something went wrong", error: error.message });
     }
 });
 
@@ -482,10 +483,10 @@ router.post("/api/create/candidate",  async (req, res) => {
   
       await newCandidate.save();
   
-      res.status(201).json({ success: true, message: "Candidate created successfully!" });
+     return res.status(201).json({ success: true, message: "Candidate created successfully!" });
     } catch (error) {
       console.error("Error creating candidate:", error.message);
-      res.status(500).json({ success: false, message: "Server error", error: error.message });
+     return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
   });
 
@@ -544,10 +545,10 @@ router.post("/api/create/candidate",  async (req, res) => {
 
         const updatedCandidate = await existingCandidate.save();
 
-        res.status(200).json({ success: true, message: "Candidate updated successfully!", data: updatedCandidate });
+       return res.status(200).json({ success: true, message: "Candidate updated successfully!", data: updatedCandidate });
     } catch (error) {
         console.error("Error updating candidate:", error.message);
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
+       return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 
 
@@ -580,11 +581,11 @@ router.get("/api/get/candidate", async (req, res) => {
         return res.status(404).json({ success: false, message: "No candidates found" });
       }
   
-      res.status(200).json({ success: true, candidates });
+      return res.status(200).json({ success: true, candidates });
   
     } catch (error) {
       console.error("Error fetching candidates:", error.message);
-      res.status(500).json({ success: false, message: "Server error", error: error.message });
+      return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
   });
 
@@ -594,6 +595,17 @@ router.post("/api/account/login", async (req, res) => {
         if (!username || !password) {
         return res.status(400).json({ message: "All fields are required." });
         }
+        
+        await new Promise((resolve, reject) => {
+            req.session.destroy((err) => {
+            if (err) {
+            console.error("Error destroying session:", err);
+            return reject(res.status(500).json({ message: "Error resetting session" }));
+            }
+            resolve();
+            });
+        });
+             
         let user = await recruiterModule.findOne({ email: username }).populate(["savedProfile", "aliasUsers"])
 
         if(!user){
@@ -641,6 +653,14 @@ router.post("/api/account/login", async (req, res) => {
                 planActive:user.planActive,
                 
             };
+            req.session.save(err => {
+                if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).json({ message: "Session save failed" });
+        }
+       return res.json({ message: "Login successful!", user: req.session.user });
+        });
+
 
         }else if(user.aliasRole === "alias"){
 
@@ -650,10 +670,19 @@ router.post("/api/account/login", async (req, res) => {
                 role:user.aliasRole,
                 recruiterName:user.aliasName,
                 contactNo:user.aliasContactNo,
-                recruiter:user.limit,
+                limit:user.limit,
                 block:user.block,
                 suspend:user.suspend
             }
+            req.session.save(err => {
+                if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).json({ message: "Session save failed" });
+                }
+                
+       return res.json({ message: "Login successful!", user: req.session.user });
+        });
+
 
             user.loginHistory.unshift(Date.now())
             user.logoutHistory = user.logoutHistory.slice(0, 10);
@@ -663,10 +692,10 @@ router.post("/api/account/login", async (req, res) => {
 
 
 
-        res.json({ message: "Login successful!", user:req.session.user});
-
+       return res.json({ message: "Login successful!", user:req.session.user});
+    
     } catch (error) {
-        res.status(500).json({ message: "something went wrong", error: error.message });
+       return res.status(500).json({ message: "something went wrong", error: error.message });
     }
 });
 
@@ -676,7 +705,7 @@ router.get("/api/account/me/", async (req, res) => {
         return res.status(401).json({ success: false, message: "Not logged in" });
         }
 
-        res.json({ success: true, user: req.session.user });
+        return res.json({ success: true, user: req.session.user });
 });
 
 
@@ -705,11 +734,11 @@ router.get("/api/account/checkplan", async (req, res) => {
             return res.status(401).json({ message: "Unauthorized" });
         }
 
-        res.json({ success: true, user: planActive });
+       return res.json({ success: true, user: planActive });
 
     } catch (error) {
         console.error("Error in /api/account/checkplan:", error.message);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+       return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 
 });
@@ -751,7 +780,7 @@ router.get("/api/account/getview",  async (req, res) => {
 
         await user.save();
 
-        res.json({ 
+       return res.json({ 
             success: true, 
             view: {
             viewedProfiles: user.role === 'recruiter'? user.viewedProfile : user.recruiterId?.viewedProfile || [], 
@@ -761,7 +790,7 @@ router.get("/api/account/getview",  async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching view data:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+       return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 
@@ -774,13 +803,13 @@ router.get("/api/account/user/:userEmail", async (req, res) => {
         if (!user) return res.status(404).json({ message: "User not found." });
           
 
-        res.json({
+        return res.json({
             message: "User fetched successfully",
             user,
         });
     } catch (error) {
         console.error("🚨 Error Fetching User:", error.message);
-        res.status(500).json({ message: "Server error", error: error.message });
+       return res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 
@@ -806,11 +835,11 @@ router.post('/api/recruiter/save-history',  async (req, res) => {
   
       await recruiter.save();
       
-      res.json({ success: true, message: "Search history saved successfully" });
+     return res.json({ success: true, message: "Search history saved successfully" });
   
     } catch (error) {
       console.error("Error saving search history:", error);
-      res.status(500).json({ success: false, message: "Internal Server Error" });
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 
@@ -826,10 +855,10 @@ try {
     return res.status(404).json({ success: false, message: "Recruiter not found" });
     }
 
-    res.json({ success: true, searchHistory: recruiter.savedSearches });
+   return res.json({ success: true, searchHistory: recruiter.savedSearches });
 } catch (error) {
     console.error("Error fetching search history:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+   return res.status(500).json({ success: false, message: "Internal Server Error" });
 }
 });
 
@@ -864,10 +893,10 @@ if (!recruiter) {
 return res.status(404).json({ message: "Recruiter not found" });
 }
 
-res.json({ success: true, message: "Search history deleted successfully", recruiter });
+return res.json({ success: true, message: "Search history deleted successfully", recruiter });
     
 } catch (error) {
-    res.status(500).json({message:"history not delete"})
+  return  res.status(500).json({message:"history not delete"})
     console.log(error.message)
 }    
 
@@ -902,11 +931,11 @@ router.post("/api/recruiter/history/clear", async (req, res) => {
         return res.status(404).json({ message: "Recruiter not found" });
       }
     
-      res.json({ success: true, message: "All search history cleared", recruiter });
+    return res.json({ success: true, message: "All search history cleared", recruiter });
   
     } catch (error) {
       console.error(error.message);
-      res.status(500).json({ message: "Failed to clear history", error: error.message });
+      return res.status(500).json({ message: "Failed to clear history", error: error.message });
     }
 });
 
@@ -962,11 +991,11 @@ router.put("/api/recruiter/view-profile",  async (req, res) => {
         
         
 
-        res.json({ success: true});
+       return res.json({ success: true});
 
     } catch (error) {
         console.error("Error updating viewedProfile:", error);
-        res.status(500).json({ success: false, message: "Server error" });
+       return res.status(500).json({ success: false, message: "Server error" });
     }
 });
 
@@ -987,9 +1016,9 @@ router.get("/api/candidate/profile", async (req, res) => {
     return res.status(404).json({ message: "Candidate not found" });
     }
 
-    res.json({ candidate });
+   return res.json({ candidate });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      return  res.status(500).json({ message: error.message });
     }
 
 });
@@ -1067,7 +1096,7 @@ router.put("/api/account/profile/save", async (req, res) => {
 
     } catch (error) {
         console.error("Error in PUT /api/account/profile/save:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+       return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 
 });
@@ -1104,7 +1133,7 @@ router.get("/api/account/profile/saved/:id", async (req, res) => {
 
     } catch (error) {
         console.error("Error in GET /api/account/profile/saved/:id:", error);
-        res.status(500).json({ success: false, message: error.message });
+       return res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -1161,11 +1190,11 @@ router.put('/api/account/password/update', async (req, res) => {
         return res.status(404).json({ message: "Recruiter not found" });
         }
 
-        res.json({ success: true, message: "Password changed successfully" });
+        return res.json({ success: true, message: "Password changed successfully" });
 
     } catch (error) {
         console.error("Error updating password:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+       return res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 
@@ -1187,14 +1216,14 @@ router.post("/api/block/:id", isAuthenticated, async (req, res) => {
             { new: true }
         );
 
-        res.json({
+       return res.json({
             success: true,
             message: updatedUser.block ? "User blocked successfully" : "User unblocked successfully",
             user: updatedUser
         });
 
     } catch (error) {
-        res.status(500).json({ message: error.message });
+       return res.status(500).json({ message: error.message });
     }
 });
 
@@ -1205,9 +1234,9 @@ router.get("/api/alias/:id", isAuthenticated, async (req, res) => {
 
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        res.json({ message: "User unblocked successfully", user:user.aliasUsers });
+       return res.json({ message: "User unblocked successfully", user:user.aliasUsers });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+      return  res.status(500).json({ message: error.message });
     }
 });
 
@@ -1229,12 +1258,12 @@ router.post("/api/account/logout", async (req, res) => {
                 return res.status(500).json({ message: "Logout failed", error: err.message });
             }
             res.clearCookie("connect.sid");
-            res.json({ success: true, message: "Logged out successfully" });
+           return res.json({ success: true, message: "Logged out successfully" });
         });
 
     } catch (error) {
         console.error("Logout Error:", error.message);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+       return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 });
 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react'
 import Home from './Home'
 import { Routes, Route, Link } from 'react-router-dom'
@@ -18,6 +19,28 @@ import AdminLogin from './Admin/AdinLogin/AdminLogin'
 import AdminProtected from './Admin/AdminAuthentication/AdminProtected'
 import { AdminProvider } from '../Global/AdminUserContext'
 import UserBlocked from '../components/FailedPages/SuspendOrBlockPage'
+=======
+import React from "react";
+import Home from "./Home";
+import { Routes, Route } from "react-router-dom";
+import AdminDashboard from "./Admin/adminDashboard/dashboard";
+import CreateCandidate from "./Admin/candidate/CreateCandidate";
+import LoginPage from "../authPage/RecruiterLogin";
+import HomePage from "../authPage/Landing";
+import RecruiterQuery from "../recruiter/RecruiterQuery";
+import ProtectedRoute from "../authPage/ProtectedRout";
+import RecruiterProfiles from "../recruiter/RecruiterProfile";
+import RecruiterProfile from "./Admin/template/RecruiterProfile";
+import ViewProfile from "../Candidates/candidateViewProfile";
+import { SingleCandidateProvider } from "../Global/singleCandidateView";
+import OpenSavedProfile from "../recruiter/OpenSavedProfile";
+import ForgotPassword from "../passwordReset/ForgotPassword";
+import ResetPassword from "../passwordReset/ResetPassword";
+import AdminLogin from "./Admin/AdinLogin/AdminLogin";
+import AdminProtected from "./Admin/AdminAuthentication/AdminProtected";
+import AdminContextWrapper from "../Global/AdminContextWrapper"; // Import wrapper
+import UserBlocked from "../components/FailedPages/SuspendOrBlockPage";
+>>>>>>> 2b4c021b7689085988337584cff37e300cbccebc
 
 const App = () => {
   return (

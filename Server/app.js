@@ -1,12 +1,12 @@
 import express from "express";
 import index from "./routes/index.js";
 import admin from './routes/admin.js'
-import path from 'path'
-import cors from 'cors'
+import path from 'path';
+import cors from 'cors';
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import mongooseDb from './schema/mongoose.config.js'
-import session from 'express-session'
+import session from 'express-session';
 import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
 import checkAndUpdateExpiredUsers from "./controlers/cronCheckExpire.js";
@@ -26,10 +26,17 @@ app.set('views', path.join(__dirname, 'views'))
 app.use(express.static(path.join(__dirname, 'public')))
 
 const corsOptions = {
+<<<<<<< HEAD
     origin: ["http://localhost:5173", "https://api.raltgroup.com", "https://www.banksterindia.com/"],
     methods: ["GET","POST","PUT","DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials:true 
+=======
+    origin: ["https://talentx.onrender.com", "http://localhost:5173"],
+    "methods": ["GET","HEAD","PUT","PATCH","POST","DELETE"],   
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials:true ,
+>>>>>>> 2b4c021b7689085988337584cff37e300cbccebc
   };
 
 app.use(cors(corsOptions));
@@ -37,16 +44,21 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser()); 
 app.use(session({
-  secret: process.env.SECRET_SESSION || "defaultsecret",
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-  cookie: {
-      secure: false, 
-      httpOnly: true, 
-      maxAge: 1000 * 60 * 60 * 24,
-  }
+   secret: process.env.SECRET_SESSION || "defaultsecret",
+   resave: false,
+   saveUninitialized: false,
+   store: MongoStore.create({ 
+       mongoUrl: process.env.MONGO_URI,
+       ttl:  24 * 60 * 60 ,
+   }),
+   cookie: {       
+       secure: process.env.NODE_ENV === 'production'? true : false,
+       httpOnly: true, 
+       sameSite: "None",
+       maxAge: 1000 * 60 * 60 * 24, 
+   }
 }));
+
 
 app.use("/uploads", express.static("uploads"));
 app.use('/', index);

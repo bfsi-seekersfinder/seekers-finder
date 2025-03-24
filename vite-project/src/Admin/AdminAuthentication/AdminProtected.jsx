@@ -20,7 +20,7 @@ const AdminProtected = ({ children }) => {
         } 
     }, [admin, navigate, location.pathname]);
 
-    if (loading) return <div onClick={()=> window.location.replace('/admin login')} className="h-screen w-full flex items-center justify-center text-blue-700 underline"><ClipLoader  color="#2a9487" /></div>;
+    if (loading) return <div  className="h-screen w-full flex items-center justify-center text-blue-700 underline"><ClipLoader  color="#2a9487" /></div>;
 
     return children;
 };

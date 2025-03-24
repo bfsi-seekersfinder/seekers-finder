@@ -8,13 +8,14 @@ export default defineConfig({
     tailwindcss()
   ],
   server:{
+    allowedHosts: ["talentx.onrender.com"],
     host: true,
     port: 5173,  
     strictPort: true,  
     cors: true,
     proxy:{
       '/api':{
-        target:'http://localhost:4000',
+        target:'https://seekers-finder-server.onrender.com',
         changeOrigin:true,
         secure:false
       },

@@ -9,12 +9,19 @@ import Candidate from '../schema/userdata.mongoose.js';
 
 const router = express.Router()
 
-// const isAdmin = (req, res, next) => {
-//     if (req.session.admin) {
-//         return next();
-//     }
-//     res.status(403).json({ message: "Forbidden: Admin session required" });
-// };
+const isAdmin = (req, res, next) => {
+    if (req.session.admin) {
+        return next();
+    }
+   return res.status(403).json({ message: "Forbidden: Admin session required" });
+};
+
+router.get("/api/session", async (req, res) =>{
+    if(!req.session.admin){
+        return res.json({messge:"session not available"})
+    }
+    return res.json({admin: req.session.admin})
+});
 
 
 router.post("/api/login", async (req, res) => {
@@ -23,6 +30,17 @@ router.post("/api/login", async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: "Enter email and password" });
         }
+
+        // ✅ Properly destroy existing session before creating a new one
+        await new Promise((resolve, reject) => {
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error("Error destroying session:", err);
+                    return reject(res.status(500).json({ message: "Error resetting session" }));
+                }
+                resolve();
+            });
+        });
 
         const admin = await adminModule.findOne({ adminEmail: email });
         if (!admin) {
@@ -34,9 +52,9 @@ router.post("/api/login", async (req, res) => {
             return res.status(400).json({ message: "Wrong credentials" });
         }
 
-        const totalUserDocs = await User.countDocuments()
-        const totalCandidateDocs = await Candidate.countDocuments()
-        const combineLength = totalUserDocs + totalCandidateDocs
+        const totalUserDocs = await User.countDocuments();
+        const totalCandidateDocs = await Candidate.countDocuments();
+        const combineLength = totalUserDocs + totalCandidateDocs;
 
         req.session.admin = {
             _id: admin._id,
@@ -46,31 +64,34 @@ router.post("/api/login", async (req, res) => {
             totalUser: combineLength
         };
 
-
-        req.session.save((err) => {
-            if (err) {
-                console.error("Session save error:", err);
-                return res.status(500).json({ message: "Session error" });
-            }
-
-            res.json({ success: true, message: "Login successful", admin: req.session.admin });
+        await new Promise((resolve, reject) => {
+            req.session.save((err) => {
+                if (err) {
+                    console.error("Session save error:", err);
+                    return reject(res.status(500).json({ message: "Session error" }));
+                }
+                resolve();
+            });
         });
 
+        return res.json({ success: true, message: "Login successful", admin: req.session.admin });
+
     } catch (error) {
-        console.log(error.message);
-        res.status(500).json({ message: "Server error" });
+        console.error(error.message);
+        return res.status(500).json({ message: "Server error" });
     }
 });
+
 
 router.get('/api/me',  async (req, res) => {
     try {
         if (!req.session.admin) {
             return res.status(401).json({ message: "Login Again" });
         }
-        res.json({ success: true, admin: req.session.admin });
+      return  res.json({ success: true, admin: req.session.admin });
     } catch (error) {
         console.error("Error in /me:", error.message);
-        res.status(500).json({ message: "Server error" });
+       return res.status(500).json({ message: "Server error" });
     }
 
 });
@@ -92,11 +113,11 @@ router.get("/api/admin/:id", async (req, res) => {
             return res.status(404).json({ message: "Unauthorized access denied" });
         }
 
-        res.json({ success: true, admin });
+       return res.json({ success: true, admin });
 
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({ message: "Server error" });
+       return res.status(500).json({ message: "Server error" });
     }
 
 });
@@ -193,11 +214,11 @@ router.post("/api/recruiter/getsuggestion", async (req, res) => {
         
             }
 
-        res.json({ success: true, message: "Thank You ❤️ for Your Suggestion" });
+       return res.json({ success: true, message: "Thank You ❤️ for Your Suggestion" });
 
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({ success: false, message: "Server error" });
+       return res.status(500).json({ success: false, message: "Server error" });
     }
 });
 
@@ -218,10 +239,10 @@ router.delete("/api/delete/notification/:adminId/:notificationId",  async (req, 
             return res.status(404).json({ success: false, message: "Notification not found" });
         }
 
-        res.json({ success: true, message: "Notification deleted successfully" });
+       return res.json({ success: true, message: "Notification deleted successfully" });
     } catch (error) {
         console.error("Error deleting notification:", error);
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
+       return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 });
 
@@ -243,10 +264,10 @@ router.put('/api/update/seen/:adminId/:notificationId',  async (req, res) => {
             return res.status(404).json({ success: false, message: "Notification not found" });
         }
 
-        res.json({ success: true, message: "Notification marked as seen", admin: updatedAdmin });
+      return res.json({ success: true, message: "Notification marked as seen", admin: updatedAdmin });
     } catch (error) {
         console.error("Error updating notification:", error);
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
+       return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 });
 
@@ -270,11 +291,11 @@ router.get("/api/users", async (req, res) => {
     const totalCandidates1 = await User.countDocuments()
     const totalCandidates2 = await Candidate.countDocuments()
     const totalCandidates = totalCandidates1 + totalCandidates2
-    res.json({ success: true, users , totalCandidates});
+   return res.json({ success: true, users , totalCandidates});
 
     } catch (error) {
     console.error("Error fetching users:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+   return res.status(500).json({ success: false, message: "Server error" });
     }
 
 });
@@ -291,7 +312,7 @@ router.post("/api/logout", (req, res) => {
             return res.status(500).json({ message: "Logout failed", error: err.message });
         }
         res.clearCookie("connect.sid");
-        res.json({ success: true, message: "Logged out successfully" });
+       return res.json({ success: true, message: "Logged out successfully" });
     });
 });
 
