@@ -31,14 +31,16 @@ router.post("/api/login", async (req, res) => {
             return res.status(400).json({ message: "Enter email and password" });
         }
 
-         req.session.destroy((err) => {
-        if (err) {
-            console.error("Error destroying session:", err);
-            return res.status(500).json({ message: "Error resetting session" });
-        }
-         });
-
-        req.session = null;
+        // ✅ Properly destroy existing session before creating a new one
+        await new Promise((resolve, reject) => {
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error("Error destroying session:", err);
+                    return reject(res.status(500).json({ message: "Error resetting session" }));
+                }
+                resolve();
+            });
+        });
 
         const admin = await adminModule.findOne({ adminEmail: email });
         if (!admin) {
@@ -50,9 +52,9 @@ router.post("/api/login", async (req, res) => {
             return res.status(400).json({ message: "Wrong credentials" });
         }
 
-        const totalUserDocs = await User.countDocuments()
-        const totalCandidateDocs = await Candidate.countDocuments()
-        const combineLength = totalUserDocs + totalCandidateDocs
+        const totalUserDocs = await User.countDocuments();
+        const totalCandidateDocs = await Candidate.countDocuments();
+        const combineLength = totalUserDocs + totalCandidateDocs;
 
         req.session.admin = {
             _id: admin._id,
@@ -62,20 +64,24 @@ router.post("/api/login", async (req, res) => {
             totalUser: combineLength
         };
 
+        await new Promise((resolve, reject) => {
+            req.session.save((err) => {
+                if (err) {
+                    console.error("Session save error:", err);
+                    return reject(res.status(500).json({ message: "Session error" }));
+                }
+                resolve();
+            });
+        });
 
-        req.session.save((err) => {
-            if (err) {
-                console.error("Session save error:", err);
-                return res.status(500).json({ message: "Session error" });
-            }
+        return res.json({ success: true, message: "Login successful", admin: req.session.admin });
 
-           return res.json({ success: true, message: "Login successful", admin: req.session.admin });
-    });
     } catch (error) {
-        console.log(error.message);
-       return res.status(500).json({ message: "Server error" });
+        console.error(error.message);
+        return res.status(500).json({ message: "Server error" });
     }
 });
+
 
 router.get('/api/me',  async (req, res) => {
     try {
