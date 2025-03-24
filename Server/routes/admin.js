@@ -21,7 +21,7 @@ router.get("/api/session", async (req, res) =>{
         return res.json({messge:"session not available"})
     }
     return res.json({admin: req.session.admin})
-}
+});
 
 
 router.post("/api/login", async (req, res) => {
