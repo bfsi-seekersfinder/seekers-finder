@@ -501,7 +501,7 @@ return (
         </div>
 {/* <<-------------------------------  Alias User Adding ---------------------------------->> */}
     {InputData.alias.map((alias, index)=>(
-        <div key={alias.id} className={`${isCorporate?'flex flex-wrap gap-4 mb-8':"hidden"}`}>
+        <div key={index} className={`${isCorporate?'flex flex-wrap gap-4 mb-8':"hidden"}`}>
         <div className="flex flex-col gap-1 ">
             <label htmlFor="password">Select role</label>
             <select
@@ -648,8 +648,8 @@ return (
             <button type="submit" className="cursor-pointer bg-slate-600 w-[26rem] px-4 py-2 rounded text-white">{isRecruiterUpdate? "Update Recruiter" : "Create Reacruiter"}</button>
             </div>
     </div>
-    <div className={`${Success.length>0?'absolute bottom-4 px-8 rounded-2xl py-1 bg-emerald-400 text-white': "hidden"}`}>{Success}</div>
-    <div className={`${Failed.length>0?'absolute bottom-4 px-8 rounded-2xl py-0.5 bg-orange-500 text-white':"hidden"}`}>{Failed}</div>
+    <div className={`${Success.length>0?'absolute bottom-4 left-8 px-8 rounded-2xl py-1 bg-emerald-400 text-white': "hidden"}`}>{Success}</div>
+    <div className={`${Failed.length>0?'absolute bottom-4 left-8 px-8 rounded-2xl py-0.5 bg-orange-500 text-white':"hidden"}`}>{Failed}</div>
 </form>
 </div>
 <div className={`${Loading?'absolute justify-center items-center flex top-0 left-0 w-full h-screen': 'hidden'}`}><MoonLoader/></div>

@@ -15,11 +15,12 @@ const [notificationDetails, setnotificationDetails] = useState(null)
 
 const handleDeleteNotification = async (notificationId) => {
     if (!notificationId) {
-      alert("Notification ID is required.");
+      alert("Notification not available");
       return;
     }
 
     try {
+
       const response = await axios.delete(`${url}/admin/api/delete/notification/${adminId}/${notificationId}`,{withCredentials:true, headers:{'Content-Type': 'application/json'} });
 
       if (response.data.success) {
@@ -39,7 +40,6 @@ const handleDeleteNotification = async (notificationId) => {
 const handleMarkAsSeen = async (adminId, notificationId) => {
   try {
       const response = await axios.put(`${url}/admin/api/update/seen/${adminId}/${notificationId}`, {withCredentials:true, headers:{'Content-Type': 'application/json'} });
-      console.log(response.data.message); 
   } catch (error) {
       console.error("Error updating notification:", error.message);
   }
@@ -49,7 +49,7 @@ const handleMarkAsSeen = async (adminId, notificationId) => {
 
 
   return (
-    <div className='parent cursor-pointer h-screen overflow-y-auto' style={{scrollbarWidth:'none'}}>
+    <div className='parent cursor-pointer  py-8 h-screen overflow-y-auto' style={{scrollbarWidth:'none'}}>
         <div className='container px-8'>
             {step === 1 ?(<div className='content gap-1 flex flex-col py-10'>
               {notification.length>0 && notification.map((item)=>(
@@ -71,7 +71,7 @@ const handleMarkAsSeen = async (adminId, notificationId) => {
             ):(
               <div className='pt-4 px-4'>
                 <div>
-                <button onClick={()=>setstep(1)} className='cursor-pointer mb-4 hover:bg-slate-300 rounded-2xl px-4 '><i className="ri-arrow-left-line font-bold text-2xl"></i></button>
+                <button onClick={()=>setstep(1)} className='cursor-pointer mb-4  mt-12 hover:bg-slate-300 rounded-2xl px-4 '><i className="ri-arrow-left-line font-bold text-2xl"></i></button>
                 </div>
                {notificationDetails && ( <div>
                   <div className='shadow w-full border border-slate-300 bg-white flex flex-col gap-4 p-4 rounded '>

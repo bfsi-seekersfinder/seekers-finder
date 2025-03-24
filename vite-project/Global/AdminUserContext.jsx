@@ -8,21 +8,30 @@ export const AdminProvider = ({ children }) => {
     const [admin, setAdmin] = useState(null);
 
     
-    useEffect(() => {
-        const fetchAdmin = async () => {
-            try {
-                const response = await axios.get(url + "/admin/api/me", { 
-                    withCredentials: true,         
-                    headers: { "Content-Type": "application/json" }
-                  });  
-                setAdmin(response.data.admin);
-            } catch (error) {
-                // console.log("Error fetching admin:", error.message);
-            }
-        };
-    fetchAdmin()
+    // useEffect(() => {
+    //     const fetchAdmin = async () => {
+    //         try {
+    //             const response = await axios.get(url + "/admin/api/me", { 
+    //                 withCredentials: true,         
+    //                 headers: { "Content-Type": "application/json" }
+    //               }); 
 
-    }, []);
+    //             setAdmin(response.data.admin);
+    //         } catch (error) {
+    //             console.log(error.message)
+    //         }
+    //     };
+    // fetchAdmin()
+
+    // }, []);
+
+    useEffect(()=>{
+        const admin = JSON.parse(sessionStorage.getItem("isAdmin"))
+        if(admin){
+            setAdmin(admin)
+        }
+        
+    },[])
 
     return (
         <AdminContext.Provider value={{ admin }}>

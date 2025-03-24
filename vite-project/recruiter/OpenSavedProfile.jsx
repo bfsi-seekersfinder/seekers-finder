@@ -64,11 +64,11 @@ const OpenSavedProfile = ({profile, title, searchTerm}) => {
             <button data-field="number"  
             className={` text-white transition-all duration-300  w-60 max-lg:w-40 py-1 pl-2 flex items-center justify-center rounded-sm overflow-y-hidden  bg-slate-600 border border-slate-300 text-sm cursor-pointer px-1`} 
             style={{scrollbarWidth:"none"}}>
-            {Array.isArray(getViewedUser) && getViewedUser.includes(user?._id)? `${user.mobileNo? typeof user.mobileNo === "string"? `+91 ${user.mobileNo.slice(0,4)+"XXXXXX"}`: `+91 ${user.mobileNo.toString().slice(0,4)+"XXXXXX"}` : "Open Profile"}`: "Open Profile"}</button>
+            {Array.isArray(getViewedUser) && getViewedUser.includes(user?._id)? `${user.mobileNo? typeof user.mobileNo === "string"? `+91 ${user.mobileNo.slice(0,4)+"XXXXXX"}`: `+91 ${user.mobileNo.toString().slice(0,4)+"XXXXXX"}` : " "}`: `+91 ${user.mobileNo.toString().slice(0,4)+"XXXXXX"}`}</button>
             <button data-field="email" 
             className={` text-white w-60 max-lg:w-40 py-1 pl-2 flex overflow-y-hidden rounded-sm bg-slate-600 items-center justify-center  border border-slate-300 text-sm cursor-pointer lowercase px-2`} 
             style={{scrollbarWidth:"none"}}>
-            {Array.isArray(getViewedUser) && getViewedUser.includes(user?._id)? `${user.email? user.email.toLowerCase() : user.email.toLowerCase().charAt(0)+"xxxxxx"+user.email.slice(-10)}` : "Open Profile" }</button>
+            {Array.isArray(getViewedUser) && getViewedUser.includes(user?._id)? `${user.email? user.email.toLowerCase() : user.email.toLowerCase().charAt(0)+"xxxxxx"+user.email.slice(-10)}` : user.email.toLowerCase().charAt(0)+"xxxxxx"+user.email.slice(-10) }</button>
             </div>
 
             </div>

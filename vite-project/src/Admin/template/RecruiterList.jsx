@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import { Link } from 'react-router-dom'
 import RecruiterProfile from './RecruiterProfile'
 
@@ -6,7 +6,12 @@ const RecruiterList = ({Recruiter, pageValue, setQuery}) => {
     const [SelectedRecruiter, setSelectedRecruiter] = useState()
     const [isSelectedUser, setisSelectedUser] = useState(false)
     const [setSearchRecruiter, setsetSearchRecruiter] = useState('')
-    setQuery(setSearchRecruiter)
+
+    
+    useEffect(()=>{
+        setQuery(setSearchRecruiter)
+
+    },[])
 
     const handleOpenProfile = ()=>{
         setisSelectedUser(!isSelectedUser)

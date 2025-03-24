@@ -18,7 +18,7 @@ const AdminLogin = () => {
         );
 
         sessionStorage.setItem('adminId', response.data.admin._id)
-
+        sessionStorage.setItem('isAdmin', JSON.stringify( response.data.admin))
         if (response.data.success) {
           window.location.href = "/admin-dashboard"; 
         } else {
@@ -30,6 +30,7 @@ const AdminLogin = () => {
     } finally {
         setLoading(false);
     }
+    
 };
 
 

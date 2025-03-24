@@ -85,7 +85,8 @@ router.get('/api/me',  async (req, res) => {
 router.get("/api/admin/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        if(!req.session.admin){
+
+        if(!id){
             return res.status(401).json({message:"Unathourized User"})
         }
 
@@ -93,7 +94,7 @@ router.get("/api/admin/:id", async (req, res) => {
             return res.status(400).json({ message: "Invalid User ID" });
         }
 
-        const admin = await adminModule.findById(req.session.admin._id).populate(["notification.refrence","notification.refrenceAnother", "notification.sender"]);
+        const admin = await adminModule.findById(id).populate(["notification.refrence","notification.refrenceAnother", "notification.sender"]);
         
         if (!admin) {
             return res.status(404).json({ message: "Unauthorized access denied" });
@@ -241,8 +242,8 @@ router.put('/api/update/seen/:adminId/:notificationId',  async (req, res) => {
         }
 
         const updatedAdmin = await adminModule.findOneAndUpdate(
-            { _id: adminId, "notification._id": notificationId }, // Find admin with matching notificationId
-            { $set: { "notification.$.seen": true } }, // Update the seen field to true
+            { _id: adminId, "notification._id": notificationId }, 
+            { $set: { "notification.$.seen": true } }, 
             { new: true }
         );
         
@@ -300,6 +301,7 @@ router.post("/api/logout", (req, res) => {
          res.clearCookie("connect.sid");
         return res.json({ success: true, message: "Logged out successfully" });
     });
+    
 });
 
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import CreateRecruiter from "../template/CreateRecruiter";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, replace } from "react-router-dom";
 import Notification from "../template/Notification/Notification";
 import CreateCandidate from "../candidate/CreateCandidate";
 import CandidateUpdateForm from "../candidate/candidateUpdate";
@@ -56,16 +56,19 @@ useEffect(() => {
 
   const fetchAdmin = async () =>{
     try {
-      const adminId = sessionStorage.getItem('adminId')
-      const response = await axios.get(url+`/admin/api/admin/${adminId}`, {
+      const id = sessionStorage.getItem('adminId')
+      const response = await axios.get(url+`/admin/api/admin/${id}`, {
       withCredentials: true,
       headers: { "Content-Type": "application/json" },
       })
-      setAdmin(response.data.admin)
+      setAdmin(response?.data?.admin)
     } catch (error) {
       console.log(error)
     }
+    
   }
+  
+  // console.log("Admin data",Admin?._id)
 
   useEffect(()=>{
     fetchAdmin()
@@ -90,18 +93,17 @@ useEffect(() => {
   return () => document.removeEventListener("click", handleClickOutside);
 }, [isSidebar]);
 
-const handleLogout = async () =>{
-  try {
-    const {data} = await axios.post(url+"/admin/api/logout", {}, {withCredentials:true})
+// const handleLogout = async () =>{
+//   try {
+//     const {data} = await axios.post(url+"/admin/api/logout", {}, {withCredentials:true})
 
-    if(data.success){
-      window.location.replace('/admin login');
-    }
-    console.log(data.message)
-  } catch (error) {
-    console.log(error.message)
-  }
-}
+//     if(data.success){
+//       window.location.replace('/admin login');
+//     }
+//   } catch (error) {
+//     console.log(error.message)
+//   }
+// }
 
 const handleUpdateState = (value)=>{
   setStep(value)
@@ -115,6 +117,20 @@ const handleSetPage = (value) =>{
 const handleSetSearchQuery = (query) =>{
   setSearchRecruiter(query)
 }
+
+const handleLogoutAdmin = async () => {
+  try {
+    const admin = JSON.parse(sessionStorage.getItem("isAdmin"));
+    
+    if (admin) {
+    sessionStorage.removeItem("isAdmin");
+    window.location.replace("/admin login");
+    }
+  } catch (error) {
+    console.error("Logout error:", error.message);
+  }
+
+};
 
 
 
@@ -137,7 +153,7 @@ const handleSetSearchQuery = (query) =>{
         <button onClick={()=>setStep(1)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-user-add-line text-xl"></i>Create Candidate</button>
         </div>
         <div className="absolute bottom-0 left-0 w-full">
-        <button onClick={()=> handleLogout()} className="bg-gray-500 py-2 cursor-pointer w-full"><i className="ri-logout-box-r-line"></i> <span>Logout</span></button>  
+        <button onClick={()=> handleLogoutAdmin()} className="bg-gray-500 py-2 cursor-pointer w-full"><i className="ri-logout-box-r-line"></i> <span>Logout</span></button>  
         </div>
         </div>
         <div className="bg-gray-100 w-full h-screen ">
@@ -195,7 +211,10 @@ const handleSetSearchQuery = (query) =>{
             <div>page 5</div>
             ):Step===6?(
               <>
-              <Notification notification={Admin.notification} AdminId={Admin._id} setChanges={setisNotificationDelete}/>
+              <div className=" absolute  top-0 py-6 px-4">
+                <button onClick={()=>setStep(0)} className="flex items-center justify-center cursor-pointer font-semibold text-2xl hover:bg-slate-300 rounded-full px-4 py-1"><i className="ri-arrow-left-line"></i></button>
+              </div>
+              <Notification notification={Admin?.notification} adminId={Admin?._id} setChanges={setisNotificationDelete}/>
               </>
             ):(
               <p>page 7</p>
