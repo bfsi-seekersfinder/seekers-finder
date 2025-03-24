@@ -32,10 +32,9 @@ export const UserProvider = ({ children }) => {
     const user = sessionStorage.getItem("isUser")
     if(user){
       setUser(JSON.parse(user))
-
+      setisPlanActive(JSON.parse(user)?.planActive)
     }
 
-    setisPlanActive(JSON.parse(user).planActive)
     },[])
 
 

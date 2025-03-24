@@ -22,6 +22,7 @@ import UserBlocked from "../components/FailedPages/SuspendOrBlockPage";
 const App = () => {
   return (
     <div className="tracking-wider">
+
       <SingleCandidateProvider>
         <Routes>
           {/* Public and Client Routes */}
