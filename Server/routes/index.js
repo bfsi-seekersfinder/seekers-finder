@@ -671,12 +671,14 @@ router.post("/api/account/login", async (req, res) => {
 });
 
 router.get("/api/account/me/", async (req, res) => {
+    
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: "Not logged in" });
         }
 
         res.json({ success: true, user: req.session.user });
 });
+
 
 router.get("/api/account/checkplan", async (req, res) => {
     try {
