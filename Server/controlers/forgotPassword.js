@@ -21,9 +21,9 @@ import { generateOTP } from "../generator/otpGen.js";
         const otpMessage = `Your Talentx Password Reset OTP is ${otp}. This OTP is valid for 5 min, Don't share with anyone`
         await sendOTPEmail(email, otpMessage);
 
-        res.json({ message: "OTP sent to email", success:true });
+        return res.json({ message: "OTP sent to email", success:true });
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+        return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
