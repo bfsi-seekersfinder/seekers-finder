@@ -49,9 +49,16 @@ router.post("/api/login", async (req, res) => {
 
         req.session.save((err) => {
             if (err) {
-                console.error("Session save error:", err);
-                return res.status(500).json({ message: "Session error" });
+            console.error("Session save error:", err);
+            return res.status(500).json({ message: "Session error" });
             }
+
+        res.cookie("connect.sid", req.session.id, {
+            httpOnly: true,
+            secure: true, 
+            sameSite: "None",
+            maxAge: 1000 * 60 * 60 * 24,
+        });
 
             return res.json({ success: true, message: "Login successful", admin: req.session.admin });
         });

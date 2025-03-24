@@ -40,7 +40,11 @@ app.use(session({
   secret: process.env.SECRET_SESSION || "defaultsecret",
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    autoRemove: 'native',
+    stringify: false, 
+  }),
   cookie: {
       secure: true, 
       httpOnly: true,

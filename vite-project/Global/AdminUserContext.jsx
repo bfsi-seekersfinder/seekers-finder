@@ -11,7 +11,10 @@ export const AdminProvider = ({ children }) => {
     useEffect(() => {
         const fetchAdmin = async () => {
             try {
-                const response = await axios.get(url + "/admin/api/me", { withCredentials: true });  
+                const response = await axios.get(url + "/admin/api/me", { 
+                    withCredentials: true,         
+                    headers: { "Content-Type": "application/json" }
+                  });  
                 setAdmin(response.data.admin);
             } catch (error) {
                 // console.log("Error fetching admin:", error.message);

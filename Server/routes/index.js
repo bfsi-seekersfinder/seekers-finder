@@ -679,7 +679,7 @@ router.get("/api/account/me/", async (req, res) => {
         return res.status(401).json({ success: false, message: "Not logged in" });
         }
 
-        return res.json({ success: true, user: req.session.user });
+    return res.json({ success: true, user: req.session.user });
 });
 
 router.get("/api/account/checkplan", async (req, res) => {
