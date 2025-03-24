@@ -596,13 +596,14 @@ router.post("/api/account/login", async (req, res) => {
         return res.status(400).json({ message: "All fields are required." });
         }
         
-        req.session.destroy((err) => {
-        if (err) {
+        await new Promise((resolve, reject) => {
+            req.session.destroy((err) => {
+            if (err) {
             console.error("Error destroying session:", err);
-            return res.status(500).json({ message: "Error resetting session" });
-        }
-
-        req.session = null;
+            return reject(res.status(500).json({ message: "Error resetting session" }));
+            }
+            resolve();
+            });
         });
              
         let user = await recruiterModule.findOne({ email: username }).populate(["savedProfile", "aliasUsers"])
