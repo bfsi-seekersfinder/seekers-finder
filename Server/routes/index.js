@@ -332,7 +332,7 @@ router.post("/api/recruiters/create-recruiter",  async (req, res) => {
     } catch (error) {
        return res.json({ message: "Try after an Hours", error: error.message });
     }
-
+    
 });
 
 
@@ -603,6 +603,7 @@ router.post("/api/account/login", async (req, res) => {
         }
 
         req.session = null;
+        )}
              
         let user = await recruiterModule.findOne({ email: username }).populate(["savedProfile", "aliasUsers"])
 
@@ -676,7 +677,8 @@ router.post("/api/account/login", async (req, res) => {
                 if (err) {
                 console.error("Session save error:", err);
                 return res.status(500).json({ message: "Session save failed" });
-        }
+                }
+                
        return res.json({ message: "Login successful!", user: req.session.user });
         });
 
@@ -690,7 +692,7 @@ router.post("/api/account/login", async (req, res) => {
 
 
        return res.json({ message: "Login successful!", user:req.session.user});
-    })
+    
     } catch (error) {
        return res.status(500).json({ message: "something went wrong", error: error.message });
     }
