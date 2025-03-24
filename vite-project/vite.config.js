@@ -14,7 +14,7 @@ export default defineConfig({
     cors: true,
     proxy:{
       '/api':{
-        target:'http://localhost:4000',
+        target:'https://seekers-finder-server.onrender.com',
         changeOrigin:true,
         secure:false
       },
