@@ -8,20 +8,20 @@ import Candidate from '../schema/userdata.mongoose.js';
 
 
 const router = express.Router()
-router.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "https://talentx.onrender.com");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-    next();
-});
 
-// const isAdmin = (req, res, next) => {
-//     if (req.session.admin) {
-//         return next();
-//     }
-//     res.status(403).json({ message: "Forbidden: Admin session required" });
-// };
+const isAdmin = (req, res, next) => {
+    if (req.session.admin) {
+        return next();
+    }
+    res.status(403).json({ message: "Forbidden: Admin session required" });
+};
+
+router.get("/api/session", async (req, res) =>{
+    if(!req.session.admin){
+        return res.json({messge:"session not available"})
+    }
+    return res.json({admin: req.session.admin})
+}
 
 
 router.post("/api/login", async (req, res) => {
