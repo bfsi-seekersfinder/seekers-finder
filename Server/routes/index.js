@@ -594,7 +594,8 @@ router.post("/api/account/login", async (req, res) => {
         if (!username || !password) {
         return res.status(400).json({ message: "All fields are required." });
         }
-         req.session.destroy((err) => {
+        
+        req.session.destroy((err) => {
         if (err) {
             console.error("Error destroying session:", err);
             return res.status(500).json({ message: "Error resetting session" });
@@ -653,9 +654,9 @@ router.post("/api/account/login", async (req, res) => {
                 if (err) {
                 console.error("Session save error:", err);
                 return res.status(500).json({ message: "Session save failed" });
-    }
-   return res.json({ message: "Login successful!", user: req.session.user });
-});
+        }
+       return res.json({ message: "Login successful!", user: req.session.user });
+        });
 
 
         }else if(user.aliasRole === "alias"){
@@ -674,9 +675,9 @@ router.post("/api/account/login", async (req, res) => {
                 if (err) {
                 console.error("Session save error:", err);
                 return res.status(500).json({ message: "Session save failed" });
-    }
-   return res.json({ message: "Login successful!", user: req.session.user });
-});
+        }
+       return res.json({ message: "Login successful!", user: req.session.user });
+        });
 
 
             user.loginHistory.unshift(Date.now())
@@ -688,7 +689,7 @@ router.post("/api/account/login", async (req, res) => {
 
 
        return res.json({ message: "Login successful!", user:req.session.user});
-
+    })
     } catch (error) {
        return res.status(500).json({ message: "something went wrong", error: error.message });
     }
