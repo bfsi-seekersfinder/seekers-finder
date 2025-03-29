@@ -20,7 +20,6 @@ const isAuthenticated = (req, res, next) => {
     next();
 };
 
-
 router.get('/api/user',  async (req, res) => {
     try {
         const { 
@@ -28,7 +27,7 @@ router.get('/api/user',  async (req, res) => {
             minExperience, maxExperience,
             state, city, profileName, ug, pg,
             Compony, Product, designation, noticePeriod, 
-            gender, minSalary, maxSalary,
+            gender, minSalary, functionalArea, maxSalary,
             limit, skip 
         } = req.query;
 
@@ -101,9 +100,13 @@ router.get('/api/user',  async (req, res) => {
             query["userLocation.city"] = { $regex: new RegExp(city, "i") };       
         }
 
-        if (Product && Product.length > 0) {
-            query.product = { $in: Product };
-        }
+    if (Product && Product.length > 0) {
+        query.product = { $in: [Product] };
+    }
+    if (functionalArea && functionalArea.length > 0) {
+        query.functionalArea = { $in: [functionalArea] };
+    }
+
 
         if (noticePeriod) {
             query.noticePeriod = { $regex: new RegExp(noticePeriod, "i") };
@@ -1174,10 +1177,6 @@ router.put('/api/account/password/update', async (req, res) => {
     }
 });
 
-router.post("/api/forgot/password", forgotPassword )
-router.post("/api/verify/otp", verifyOTP)
-router.post("/api/reset/password", resetPassword )
-
 router.post("/api/block/:id", isAuthenticated, async (req, res) => {
     try {
         const { id } = req.params;
@@ -1214,6 +1213,10 @@ router.get("/api/alias/:id", isAuthenticated, async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 });
+
+router.post("/api/forgot/password", forgotPassword )
+router.post("/api/verify/otp", verifyOTP)
+router.post("/api/reset/password", resetPassword )
 
 router.post("/api/account/logout", async (req, res) => {
     try {

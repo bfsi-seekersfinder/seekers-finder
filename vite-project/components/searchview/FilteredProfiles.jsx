@@ -880,11 +880,11 @@ useEffect(()=>{
           </div>
 {/* <<-------------------------------------------< Functional Area >-------------------------------------------------->> */}
           <div className="">
-            <p className="font-semibold text-slate-600 mb-2">Functional Area</p>
-            <select 
+            <p className="font-semibold text-slate-400 mb-2">Functional Area</p>
+            <select disabled
             value={FilterData.FunctionalArea} 
             onChange={(e)=> setFilterData({...FilterData, FunctionalArea:e.target.value})}
-            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-400"
             >
             <option className="bg-gray-100 text-slate-400">select Functional Area</option>
             { Array.isArray(FunctionalArea) && FunctionalArea.length && FunctionalArea.map((product)=>(
