@@ -349,6 +349,7 @@ router.delete("/api/delete/recruiter/:id", async (req, res) => {
         console.error("Error deleting candidate:", error);
         res.status(500).json({ success: false, message: "Server error" });
     }
+    
 });
 
 router.post("/api/logout", (req, res) => {

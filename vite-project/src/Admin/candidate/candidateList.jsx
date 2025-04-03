@@ -15,7 +15,7 @@ const CandidateList = ({ sendValue}) => {
     const [candidate, setcandidate] = useState()
     const [totalCandidates, settotalCandidates] = useState()
     const [Loading, setLoading] = useState(false)
-    const [DeletecandidateId, setDeletecandidateId] = useState('')
+    const [DeletecandidateId, setDeletecandidateId] = useState(null)
 
     const handleFetchUsers = async () => {
       try {
