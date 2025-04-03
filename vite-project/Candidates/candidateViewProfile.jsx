@@ -54,12 +54,12 @@ const ViewProfile = () => {
         <div className="flex gap-4 py-4">
         <div  onClick={() =>
                 window.open(
-                  `mailto:${candidate.email}?subject=Your%20subject&body=Your%20message`,
+                  `mailto:${candidate.email?? candidate.Email?? 'not available'}?subject=Your%20subject&body=Your%20message`,
                   "_blank"
                 )
               }  
-        className="flex justify-center cursor-pointer items-center px-2 py-1 bg-emerald-600 rounded border border-gray-200"><span className="text-white font-semibold text-[14px] ">{candidate.email? candidate.email : "not available"}</span></div>
-        <div className="flex justify-center items-center px-2 py-1 bg-emerald-600 rounded border border-gray-200"><span className="text-white font-semibold text-[14px] ">{candidate.mobileNo? `+91 ${candidate.mobileNo}`: "not available"}</span></div>
+        className="flex justify-center cursor-pointer items-center px-2 py-1 bg-emerald-600 rounded border border-gray-200"><span className="text-white font-semibold text-[14px] ">{candidate.email?? candidate.Email?? "not available"}</span></div>
+        <div className="flex justify-center items-center px-2 py-1 bg-emerald-600 rounded border border-gray-200"><span className="text-white font-semibold text-[14px] ">{ `+91 ${candidate.mobileNo?? candidate['mobile no']?? 'not available'}`}</span></div>
         </div>
         
         </div>
@@ -136,7 +136,7 @@ const ViewProfile = () => {
             <div className=" border-b pb-4 flex justify-between">
             <div>
               <h1 className="text-3xl font-bold">{candidate.fullName}</h1>
-              <p className="text-gray-600 text-sm font-semibold py-0.5">{candidate.workExperience? `${candidate.workExperience[0].designation} at ${candidate.workExperience[0].name}`:"Fresher"}</p>  
+             {candidate.workExperience[0].designation && candidate.workExperience[0].name && <p className="text-gray-600 text-sm font-semibold py-0.5">{ `${candidate.workExperience[0].designation?? ''} at ${candidate.workExperience[0].name?? ''}`}</p>  }
             </div>
             <div>
             <div 

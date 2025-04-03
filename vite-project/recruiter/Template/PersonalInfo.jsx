@@ -14,7 +14,7 @@ const PersonalInfo = ({user}) => {
                 <span className='bg-white shadow py-4 px-4 text-slate-600 font-semibold flex justify-between'>Your Designation <span className='flex gap-12 cursor-pointer'>{user?.currentDesignation}</span></span>
                 <span className='bg-white shadow py-4 px-4 text-slate-600 font-semibold flex justify-between'>Email <span className='flex gap-12 cursor-pointer'>{user?.email}</span></span>
                 <span className='bg-white shadow py-4 px-4 text-slate-600 font-semibold flex justify-between'>Contact No <span className='flex gap-12 cursor-pointer'>{user?.contactNo}</span></span>
-                <span className='bg-white shadow py-4 px-4 text-slate-600 font-semibold flex justify-between'>Account Limit <span className='flex gap-12 cursor-pointer'>{user?.limit}</span></span>
+                <span className='bg-white shadow py-4 px-4 text-slate-600 font-semibold flex justify-between'>Credit Limit <span className='flex gap-12 cursor-pointer'>{user?.limit}</span></span>
                 <span className='bg-white shadow py-4 px-4 text-slate-600 font-semibold flex justify-between'>Account Plan <span className='flex gap-12 cursor-pointer'>{user?.plan}</span></span>
                 <span onClick={()=>setStep(2)} className='bg-white shadow py-4 px-4 text-slate-600 font-semibold flex justify-between cursor-pointer hover:bg-slate-200'>Password <span className='flex gap-12 cursor-pointer'>Change Password<i className="ri-arrow-right-wide-line"></i></span></span>
             </div>

@@ -309,15 +309,18 @@ const ProfileCard = ({Candidate}) => {
                     className={`text-white transition-all duration-300 w-60 max-lg:w-40 py-1 pl-2 flex items-center rounded-sm overflow-y-hidden bg-slate-600 border border-slate-300 text-sm cursor-pointer`} 
                     style={{ scrollbarWidth: "none" }}
                     >
-                    {candidate.mobileNo 
-                        ? `91+ ${VeiwNumberAndEmail ? candidate.mobileNo : String(candidate.mobileNo).slice(0, 4) + "XXXXXX"}`
-                        : candidate["mobile number"]
-                        ? `91+ ${VeiwNumberAndEmail ? String(candidate["mobile number"]) : String(candidate["mobile number"]).slice(0, 4) + "XXXXXX"}`
-                        : "Contact Unavailable"}
+                   {candidate?.mobileNo
+                    ? `+91 ${VeiwNumberAndEmail ? candidate.mobileNo : candidate.mobileNo.toString().slice(0, 4) + "XXXXXX"}`
+                    : candidate?.["mobile number"]
+                    ? `+91 ${VeiwNumberAndEmail ? candidate["mobile number"] : candidate["mobile number"].toString().slice(0, 4) + "XXXXXX"}`
+                    : candidate?.["mobile no"]
+                    ? VeiwNumberAndEmail? `+91 ${candidate["mobile no"]}` : `+91 ${candidate["mobile no"].toString().slice(0, 4)}XXXXXX` 
+                    : "Not available"
+                    }
                     </button>
 
 
-                    <button data-field="email" onClick={()=>handleCopy('email')} className={` text-white w-60 max-lg:w-40 py-1 pl-2 flex overflow-y-hidden rounded-sm bg-slate-600  border border-slate-300 text-sm cursor-pointer lowercase `} style={{scrollbarWidth:"none"}}>{candidate.email? `${VeiwNumberAndEmail? candidate.email.toLowerCase() : candidate.email.toLowerCase().charAt(0)+"xxxxxx"+candidate.email.slice(-10)}` : "Email not Available" }</button>
+                    <button data-field="email" onClick={()=>handleCopy('email')} className={` text-white w-60 max-lg:w-40 py-1 pl-2 flex overflow-y-hidden rounded-sm bg-slate-600  border border-slate-300 text-sm cursor-pointer lowercase `} style={{scrollbarWidth:"none"}}>{candidate.email? `${VeiwNumberAndEmail? candidate.email.toLowerCase() : candidate.email.toLowerCase().charAt(0)+"xxxxxx"+candidate.email.slice(-10)}` : candidate.Email? VeiwNumberAndEmail? candidate.Email : `${candidate.Email.toLowerCase().charAt(0)+"xxxxxx"+candidate.Email.slice(-10)}` : 'Email not' }</button>
                     </div>
         
                     <div className='flex flex-col '>
@@ -334,9 +337,9 @@ const ProfileCard = ({Candidate}) => {
             </div>
             <span className=' --verticle-line-- border border-gray-200 w-[0.5px] min-h-full'/>
             <div className='flex flex-col gap-2 text-sm w-full h-full text'>
-                <div className='flex gap-4 max-lg:justify-between'><span className=' text-slate-600 font-semibold w-[180px] flex justify-between'>Current Designation </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px] max-lg:text-end'>{candidate.workExperience? `${candidate.workExperience[0]?.designation}` : "not provide"}</span></div>
-                <div className='flex gap-4 max-lg:justify-between'><span className=' text-slate-600 font-semibold w-[180px] flex justify-between'>Current Company </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{candidate.workExperience? candidate.workExperience[0]?.name : ""}</span></div>
-                <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Notice Period </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{candidate.noticePeriod? candidate.noticePeriod :""}</span></div>
+                <div className='flex gap-4 max-lg:justify-between'><span className=' text-slate-600 font-semibold w-[180px] flex justify-between'>Current Designation </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px] max-lg:text-end'>{candidate.workExperience? `${candidate.workExperience[0]?.designation?? 'Not available'}` : "Not provide"}</span></div>
+                <div className='flex gap-4 max-lg:justify-between'><span className=' text-slate-600 font-semibold w-[180px] flex justify-between'>Current Company </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{candidate.workExperience[0]?.name?? 'Not available' }</span></div>
+                <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Notice Period </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{ candidate.noticePeriod?? 'Not available'}</span></div>
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Product </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{candidate.product? candidate.product.length>40? candidate.product.slice(0, 40)+"...": Candidate.product: "Not available"}</span></div>
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Degree </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]  max-lg:text-end '>{candidate.education? candidate.education.map((edu, i)=>( <p key={i}>{edu.name}</p> )) :""}</span></div>
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>University </span> <span className=' font-semibold tracking-wider text-slate-800 max-lg:text-[12px]  max-lg:text-end '>{candidate.education? candidate.education.map((edu, i)=>( <p key={i}>{edu.universityName? edu.universityName.length>40?edu.universityName.slice(0,44)+"...":edu.universityName :"" }</p> )):""}</span></div>
@@ -366,8 +369,7 @@ const ProfileCard = ({Candidate}) => {
                         handleSuggetionBox()
                     }} className='cursor-pointer text-xl'><i className="ri-pen-nib-fill"></i></button>
                     <button onClick={()=>{
-                        setcandidateWhatsAppName(candidate.fullName)
-                        setisWhatsAppOpen(true)
+                        redirectToWhatsApp(candidate.mobileNo?? candidate['mobile no']?? '', WhatsAppMessage)
                         }} 
                         className='cursor-pointer text-xl'><i className="ri-whatsapp-line"></i>
                     </button>
@@ -390,7 +392,7 @@ const ProfileCard = ({Candidate}) => {
             <div className='absolute top-20 left-40 z-100 border'>
             </div>
 
-            <div className={`${isWhatsAppOpen? "absolute":"hidden"} z-10 bottom-8 right-4 rounded-md overflow-hidden w-[280px] h-[200px] bg-slate-300`}>
+            {/* <div className={`${isWhatsAppOpen? "absolute":"hidden"} z-10 bottom-8 right-4 rounded-md overflow-hidden w-[280px] h-[200px] bg-slate-300`}>
                 <div className='bg-emerald-500 px-4 py-2 text-white flex justify-between'>
                     <div className='flex flex-col'>
                     <span className='font-semibold'>WhatsApp</span> 
@@ -406,7 +408,7 @@ const ProfileCard = ({Candidate}) => {
 
                 <button onClick={()=>redirectToWhatsApp(candidate.mobileNo, WhatsAppMessage)} className='px-4 py-0.5 rounded bg-slate-600 w-full text-white'>Send</button>
                 </div>
-            </div>  
+            </div>   */}
     </div>
   )
 }

@@ -1,11 +1,15 @@
 import React, {useEffect, useState} from 'react'
-import { Link } from 'react-router-dom'
 import RecruiterProfile from './RecruiterProfile'
+import { Modal, message } from 'antd';
+import axios from 'axios';
+
 
 const RecruiterList = ({Recruiter, pageValue, setQuery}) => {
+    const url = import.meta.env.VITE_API_URI
     const [SelectedRecruiter, setSelectedRecruiter] = useState()
     const [isSelectedUser, setisSelectedUser] = useState(false)
     const [setSearchRecruiter, setsetSearchRecruiter] = useState('')
+    const [deleteRecruiterId, setdeleteRecruiterId] = useState(null)
 
     
     useEffect(()=>{
@@ -20,6 +24,31 @@ const RecruiterList = ({Recruiter, pageValue, setQuery}) => {
     const handleAddSelectedUser = (user) =>{
         setSelectedRecruiter(user)
     }
+
+    const handleDeleteRecruiter = async () =>{
+          try {
+            const {data} = await axios.delete(url+`/admin/api/delete/recruiter/${deleteRecruiterId}`)
+            message.success(data.message)
+          } catch (error) {
+            console.log(error.message)
+          }
+        }
+
+     const showDeleteConfirm = (onConfirm) => {
+          Modal.confirm({
+            title: 'Are you sure you want to delete this Candidate?',
+            content: 'This action cannot be undone.',
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            onOk() {
+              handleDeleteRecruiter();
+            },
+            onCancel() {
+              console.log('Cancel clicked');
+            },
+          });
+        };
 
 
   return (
@@ -49,12 +78,16 @@ const RecruiterList = ({Recruiter, pageValue, setQuery}) => {
             <span className=" flex justify-center border-l border-gray-300 w-[200px] px-1 tracking-wider text-slate-500">{recruiter.currentDesignation}</span>
             <span className=" flex justify-center border-l border-gray-300 w-[200px] px-1 tracking-wider  text-slate-500">{recruiter.currentCompany} </span>
             <span className=" flex justify-center border-l border-gray-300 w-[200px] px-1 tracking-wider text-slate-500">{recruiter.contactNo}</span>
-            <Link to="">
+            <div className='flex gap-4 border-l border-gray-300 px-2.5 '>
             <span onClick={()=>{
                 handleAddSelectedUser(recruiter)
                 handleOpenProfile()}}
-                className=" flex justify-center border-l border-gray-300 w-[80px] px-1 tracking-wider text-orange-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
-            </Link>
+                className=" flex justify-center  tracking-wider text-orange-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
+            <span onClick={()=>{
+                showDeleteConfirm()
+                setdeleteRecruiterId(recruiter._id)
+            }} className='h-6 w-6 cursor-pointer flex items-center justify-center rounded-full hover:bg-gray-400 hover:text-red-500' ><i className="ri-delete-bin-2-line"></i></span>
+            </div>
             </div>
             ))}
 

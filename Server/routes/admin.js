@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import upload from "../middleware/multer.js";
 import User from "../schema/user.mongoose.js"
 import Candidate from '../schema/userdata.mongoose.js';
+import Recruiter from '../schema/createRecruiter.mongoose.js';
 
 
 const router = express.Router()
@@ -260,7 +261,9 @@ router.put('/api/update/seen/:adminId/:notificationId',  async (req, res) => {
 
 router.get("/api/users", async (req, res) => {
     try {
-    const {limit, skip} = req.query
+    const {limit, skip, Query} = req.query
+
+    console.log(Query)
 
     const parsedLimit = parseInt(limit);
     const parsedSkip = parseInt(skip)
@@ -269,8 +272,29 @@ router.get("/api/users", async (req, res) => {
         return res.status(400).json({ success: false, message: "Invalid limit or skip value" });
     }
 
+    let query = {};
+    if (Query) {
+        // Check if the query contains only numbers
+        const isNumeric = !isNaN(Query);
 
-    const users = await User.find()
+        query = {
+            $or: [
+                { name: { $regex: Query, $options: "i" } },
+                { email: { $regex: Query, $options: "i" } },
+                { currentCompany: { $regex: Query, $options: "i" } }
+            ]
+        };
+
+        if (isNumeric) {
+            query.$or.push(
+                { mobileNo: Query },
+            );
+        }
+    }
+
+
+
+    const users = await User.find(query)
     .sort({ createdAt: -1 })
     .limit(parsedLimit)
     .skip(parsedSkip);
@@ -287,6 +311,45 @@ router.get("/api/users", async (req, res) => {
 
 });
 
+router.delete("/api/delete/candidate/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let candidate = await Candidate.findByIdAndDelete(id);
+
+        if (!candidate) {
+            candidate = await User.findByIdAndDelete(id);
+        }
+
+        if (!candidate) {
+            return res.status(404).json({ success: false, message: "Candidate not found" });
+        }
+
+        res.json({ success: true, message: "Candidate deleted successfully" });
+
+    } catch (error) {
+        console.error("Error deleting candidate:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
+router.delete("/api/delete/recruiter/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let candidate = await Recruiter.findByIdAndDelete(id);
+
+        if (!candidate) {
+            return res.status(404).json({ success: false, message: "Recruiter not found" });
+        }
+
+        res.json({ success: true, message: "Recruiter deleted" });
+
+    } catch (error) {
+        console.error("Error deleting candidate:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
 
 router.post("/api/logout", (req, res) => {
 

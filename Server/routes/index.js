@@ -12,7 +12,6 @@ import verifyOTP from "../controlers/verifyOTP.js";
 const router = express.Router()
 
 
-
 const isAuthenticated = (req, res, next) => {
     if (!req.session.user) {
         return res.status(401).json({ message: "Unauthorized: Please log in" });
@@ -216,6 +215,7 @@ router.get('/api/recruiter',  async (req, res) => {
         ]
             };
         }
+        
         const recruiters = await recruiterModule.find(query);
         const totalRecruiter = await recruiterModule.countDocuments()
         const activePlan = await recruiterModule.find({planActive:true})

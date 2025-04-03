@@ -7,7 +7,7 @@ const RecruiterProfile = ({user}) => {
     const [loading, setLoading] = useState(true);
 
     
-    if (!user) return <div className="text-center text-red-500">User not found.</div>;
+    if (!user) return <div className="text-center text-red-500">Log in Again.</div>;
 
     return (
         <div className="w-[500px] p-6 rounded-md">

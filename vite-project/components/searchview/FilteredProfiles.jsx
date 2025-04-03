@@ -17,7 +17,8 @@ const FilteredProfiles = () => {
     const [Candidate, setCandidate] = useState([])
     const [candidateLenght, setCandidatelength] = useState(0)
     const [remainingData, setRemainingData] = useState()
-    const [page, setPage] = useState(1);
+    const pageNo = Number(sessionStorage.getItem('page'))
+    const [page, setPage] = useState(pageNo ? pageNo : 1);
     const [limit, setLimit] = useState(20)
     const [isResponse, setisResponse] = useState(false)
     const [navClose, setNavClose] = useState(true)
@@ -45,7 +46,10 @@ const FilteredProfiles = () => {
     let loadedCandidate = useRef(null)
     const [isProfileComplete, setisProfileComplete] = useState(false)
 
-    
+    useEffect(()=>{
+        sessionStorage.setItem('page', page)
+    },[page])
+
     
     // console.log(Candidate.fullName, Candidate.mobileNo, Candidate.email, Array.isArray(Candidate.workExperience) && Candidate.workExperience[0].name)
 
@@ -59,6 +63,7 @@ const FilteredProfiles = () => {
       setLoader(true)
       setisResponse(true)
       fetchCandidates();
+      setPage(1)
     }
     
 const isPopUp = () =>{
@@ -232,7 +237,7 @@ const resetSearch = () =>{
   }
   setFilterData(initialData)
   setisResponse(false)
-  setSuccessMessage("all search clear")
+  setSuccessMessage("All search clear")
   setTimeout(()=>setSuccessMessage(''), 3000)
 }
 
@@ -256,7 +261,7 @@ const fetchCandidates = async () => {
       setRemainingData(data.totalDocument - (page * limit))
       
     } catch (err) {
-      setFailedMessage("Server err, Try next time !");
+      setFailedMessage("Server problem !");
       setTimeout(() => setFailedMessage(""), 3500);
     } finally {
       setLoader(false);
@@ -466,12 +471,10 @@ const removeSingleHistory = async (id) =>{
       { withCredentials:true, 
         headers: {"Content-Type": "application/json"} 
       })
-    if(response.data.success){
+      
       setShowHistory(prev=>!prev)
       setFailedMessage(response.data.message)
       setTimeout(()=>setFailedMessage(""), 2000)
-    }
-    
   } catch (error) {
     console.log(error.message)
   }
@@ -538,9 +541,9 @@ return () => {
 }
 }, [navClose])
 
-useEffect(()=>{
-  setPage(1)
-}, [FilterData])
+// useEffect(()=>{
+//   setPage(1)
+// }, [FilterData])
 
 useEffect(()=>{
   if(allEmpty){
@@ -588,7 +591,7 @@ useEffect(()=>{
       </div>
 
 {/* <---------------------------------------------------< Filter search page card is here >-----------------------------> */}
-        <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border shadow-lg max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[400px]`} style={{scrollbarWidth:"none", scrollBehavior:"smooth"}}>
+        <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border shadow-lg max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[400px]`} style={{scrollbarWidth:"thin", scrollBehavior:"smooth"}}>
             <div className={` transition-all duration-700 max-lg:bg-white  flex flex-col gap-4 bg-gray-10 px-1.5 py-2 rounded-2xl borde  border-gray-200 border-t-0`}>
 
             <div className="select-none flex gap-4 px-1 items-center bg-white">
@@ -620,7 +623,6 @@ useEffect(()=>{
               <p className="  bg-slate-600 text-gray-200 w-full py-2 text-center rounded font-semibold tracking-widest">No Search is Here</p>
               )
               }
-
               <div className={` ${SerchHistory.length > 0 ? "flex" : "hidden"} w-full flex justify-end mt-1`}><span onClick={clearHistory} className=" shadow border border-slate-300 bg-slate-200 text-gray-600 rounded-2xl px-4 py-0 text-[12px] cursor-pointer">clear</span></div>
               </div>
               </div>

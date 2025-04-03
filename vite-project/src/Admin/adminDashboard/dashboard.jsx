@@ -4,7 +4,6 @@ import axios from "axios";
 import { Link, replace } from "react-router-dom";
 import Notification from "../template/Notification/Notification";
 import CreateCandidate from "../candidate/CreateCandidate";
-import CandidateUpdateForm from "../candidate/candidateUpdate";
 import CandidateList from "../candidate/candidateList";
 import RecruiterList from "../template/RecruiterList";
 import { AdminContext } from "../../../Global/AdminUserContext";
@@ -68,7 +67,6 @@ useEffect(() => {
     
   }
   
-  // console.log("Admin data",Admin?._id)
 
   useEffect(()=>{
     fetchAdmin()
@@ -147,7 +145,11 @@ const handleLogoutAdmin = async () => {
         </div>
 
         <div className="w-full flex flex-col gap-4 mt-10  text-white">
-        <button onClick={()=>setStep(3)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-list-check text-xl"></i> Recuruiter List</button>
+        <button onClick={()=>{
+          setStep(3)
+          fetchRecruiters()
+          }} 
+        className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-list-check text-xl"></i> Recuruiter List</button>
         <button onClick={()=>setStep(4)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-settings-line text-xl"></i>Update Recuruiter</button>
         <button onClick={()=>setStep(2)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-settings-6-line text-xl"></i>Candidate List</button>
         <button onClick={()=>setStep(1)} className=" text-slate-700 items-center font-semibold tracking-wider active:bg-emerald-600 py-2 shadow cursor-pointer flex justify-start gap-4 px-4"><i className="ri-user-add-line text-xl"></i>Create Candidate</button>

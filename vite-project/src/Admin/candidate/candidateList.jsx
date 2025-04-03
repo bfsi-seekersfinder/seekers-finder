@@ -2,6 +2,8 @@ import React, {useEffect, useState} from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { BarLoader } from 'react-spinners'
+import { Modal, message } from 'antd';
+
 
 const CandidateList = ({ sendValue}) => {
   const url = import.meta.env.VITE_API_URI
@@ -13,6 +15,7 @@ const CandidateList = ({ sendValue}) => {
     const [candidate, setcandidate] = useState()
     const [totalCandidates, settotalCandidates] = useState()
     const [Loading, setLoading] = useState(false)
+    const [DeletecandidateId, setDeletecandidateId] = useState('')
 
     const handleFetchUsers = async () => {
       try {
@@ -22,6 +25,7 @@ const CandidateList = ({ sendValue}) => {
             params:{
               limit,
               skip,
+              Query,
             }
           }, {
               withCredentials: true,
@@ -37,6 +41,11 @@ const CandidateList = ({ sendValue}) => {
       }
     
     };
+
+    useEffect(()=>{
+      handleFetchUsers()
+    }, [Query])
+
     useEffect(()=>{
       handleFetchUsers()
     },[])
@@ -64,6 +73,33 @@ const CandidateList = ({ sendValue}) => {
       setPage(Page-1)
     }
 
+    const handleDeleteCandidate = async () =>{
+      try {
+        const {data} = await axios.delete(url+`/admin/api/delete/candidate/${DeletecandidateId}`)
+        message.success(data.message)
+      } catch (error) {
+        console.log(error.message)
+      }finally{
+        handleFetchUsers() 
+      }
+    }
+
+
+    const showDeleteConfirm = (onConfirm) => {
+      Modal.confirm({
+        title: 'Are you sure you want to delete this Candidate?',
+        content: 'This action cannot be undone.',
+        okText: 'Yes, Delete',
+        okType: 'danger',
+        cancelText: 'Cancel',
+        onOk() {
+          handleDeleteCandidate();
+        },
+        onCancel() {
+          console.log('Cancel clicked');
+        },
+      });
+    };
 
 
 
@@ -74,7 +110,7 @@ const CandidateList = ({ sendValue}) => {
             <nav className="w-full h-14 shadow justify-end flex items-center px-12 ">
             <div className="flex gap-4">
             <span className="w-[300px] border border-gray-300 rounded px-2 flex items-center ">
-            <input type="text" onChange={(e)=>setquery(e.target.value)} placeholder="Find recruiter..." className="w-full focus:outline-none"/>
+            <input type="text" onChange={(e)=>setquery(e.target.value)} placeholder="Find candidate..." className="w-full focus:outline-none"/>
             <button  className="border-l border-gray-300 px-2 text-gray-500 font-bold cursor-pointer"><i className="ri-search-2-line"></i></button>
             </span>
             <button onClick={()=>sendValue(1)} className="bg-slate-600 px-4 py-1 cursor-pointer rounded text-white">Create Candidate</button>
@@ -92,14 +128,19 @@ const CandidateList = ({ sendValue}) => {
             {Loading && <div>
               <div className='flex items-center justify-center h-[75vh]  '><BarLoader/></div>
             </div>}
-            {!Loading && Array.isArray(candidate) && candidate.length && candidate.map((recruiter)=>(
-            <div key={recruiter._id} className="bg-gray-200 shadow  py-1.5 px-2 rounded flex justify-between  text-[14px]">
-            <span className="  flex  items-center   w-[250px] px-1 tracking-wider text-slate-700">{recruiter.fullName? recruiter.fullName:"_"}</span>
-            <span className=" flex items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider text-slate-700">{recruiter.workExperience? recruiter.workExperience[0]?.designation: ''}</span>
-            <span className=" flex  items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider  text-slate-700">{recruiter.workExperience? recruiter.workExperience[0]?.name: ''} </span>
-            <span className=" flex  items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider text-slate-700">{recruiter.mobileNo}</span>
-            <Link to="">
-            <span className=" flex items-center justify-center border-l border-gray-300 w-[80px] px-1 tracking-wider text-orange-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
+            {!Loading && Array.isArray(candidate) && candidate.length && candidate.map((candidate)=>(
+            <div key={candidate._id} className="bg-gray-200 shadow  py-1.5 px-2 rounded flex justify-between  text-[14px]">
+            <span className="  flex  items-center   w-[250px] px-1 tracking-wider text-slate-700">{candidate.fullName? candidate.fullName:"_"}</span>
+            <span className=" flex items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider text-slate-700">{candidate.workExperience? candidate.workExperience[0]?.designation: ''}</span>
+            <span className=" flex  items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider  text-slate-700">{candidate.workExperience? candidate.workExperience[0]?.name: ''} </span>
+            <span className=" flex  items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider text-slate-700">{candidate.mobileNo}</span>
+            <Link to="" className='flex border-l border-gray-300 px-3 items-center gap-2'>
+            <span className=" flex items-center justify-center  px-1 tracking-wider text-orange-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
+            <span onClick={()=> {
+              showDeleteConfirm()
+              setDeletecandidateId(candidate._id)
+            }} className='h-6 w-6 cursor-pointer flex items-center justify-center rounded-full hover:bg-gray-400 hover:text-red-500' ><i className="ri-delete-bin-2-line"></i></span>
+
             </Link>
             </div>
             ))}

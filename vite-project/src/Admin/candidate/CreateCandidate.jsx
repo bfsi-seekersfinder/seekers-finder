@@ -483,7 +483,7 @@ const UserForm = () => {
 
 
       {/* Submit Button */}
-      <button type="submit" onClick={handleUpload} className="bg-green-500 text-white p-2 rounded w-full mt-4 mb-4 cursor-pointer">Create Candidate</button>
+      <button type="submit" onClick={handleUpload} className="bg-green-500 text-white p-2 rounded w-full mt-4 mb-4 cursor-pointer">{isCandidateUpdate? 'Update Candidate' : 'Create Candidate'}</button>
     </form>
 
 
