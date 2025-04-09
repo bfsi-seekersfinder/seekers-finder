@@ -9,13 +9,13 @@ export default defineConfig({
   ],
   server:{
     host: true,
-    allowedHosts: ["talentx.onrender.com"],
+    allowedHosts: ["talento.banksterindia.com"],
     port: 5173,  
     strictPort: true,  
     cors: true,
     proxy:{
       '/api':{
-        target:'https://seekers-finder-server.onrender.com',
+        target:'https://api.talanto.banksterindia.com',
         changeOrigin:true,
         secure:false
       },
