@@ -46,9 +46,7 @@ useEffect(()=>{
     <nav className="bg-none shadow  py-2 max-lg:pl-20 px-6 flex justify-between items-center fixed z-10 w-full">
       {/* Logo */}
       <div className="flex gap-2 items-center">
-        <div  className="text-2xl font-bold text-slate-500">Talent<span className="text-orange-500">o</span></div> 
-          <span className="flex items-center"> <img src="../public/Logo/banksterIndia.png" className="h-12 w-12" /> </span>
-          
+        <div  className="text-2xl font-bold text-slate-500">Talent<span className="text-orange-500">O</span></div>           
         <div>
           {isOnline? (
           <p></p>
