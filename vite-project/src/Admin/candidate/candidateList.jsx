@@ -135,11 +135,11 @@ const CandidateList = ({ sendValue}) => {
             <span className=" flex  items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider  text-slate-700">{candidate.workExperience? candidate.workExperience[0]?.name: ''} </span>
             <span className=" flex  items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider text-slate-700">{candidate.mobileNo}</span>
             <Link to="" className='flex border-l border-gray-300 px-3 items-center gap-2'>
-            <span className=" flex items-center justify-center  px-1 tracking-wider text-orange-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
+            <span className=" flex items-center justify-center  px-1 tracking-wider text-emerald-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
             <span onClick={()=> {
               showDeleteConfirm()
               setDeletecandidateId(candidate._id)
-            }} className='h-6 w-6 cursor-pointer flex items-center justify-center rounded-full hover:bg-gray-400 hover:text-red-500' ><i className="ri-delete-bin-2-line"></i></span>
+            }} className='h-6 w-6 cursor-pointer flex items-center justify-center rounded-full hover:bg-gray-400 text-red-700' ><i className="ri-delete-bin-2-line"></i></span>
 
             </Link>
             </div>

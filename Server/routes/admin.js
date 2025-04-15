@@ -95,7 +95,10 @@ router.get("/api/admin/:id", async (req, res) => {
             return res.status(400).json({ message: "Invalid User ID" });
         }
 
-        const admin = await adminModule.findById(id).populate(["notification.refrence","notification.refrenceAnother", "notification.sender"]);
+        const admin = await adminModule.findById(id)
+        .populate(["notification.refrence","notification.refrenceAnother", "notification.sender"])
+        .sort({ createdAt: -1 });
+        
         
         if (!admin) {
             return res.status(404).json({ message: "Unauthorized access denied" });
@@ -202,7 +205,7 @@ router.post("/api/recruiter/getsuggestion", async (req, res) => {
         
             }
 
-        return res.json({ success: true, message: "Thank You ❤️ for Your Suggestion" });
+        return res.json({ success: true, message: "Update will be reflect in few days" });
 
     } catch (error) {
         console.error(error.message);
@@ -263,7 +266,6 @@ router.get("/api/users", async (req, res) => {
     try {
     const {limit, skip, Query} = req.query
 
-    console.log(Query)
 
     const parsedLimit = parseInt(limit);
     const parsedSkip = parseInt(skip)

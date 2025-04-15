@@ -125,6 +125,11 @@ const handleMarkAsSeen = async (adminId, notificationId) => {
             )
             }
         </div>
+        {notification.length === 0 && (
+          <div className='flex items-center justify-center h-full'>
+            <span className='text-slate-500 font-semibold text-2xl'>No Notification</span>
+          </div>
+        )}
     </div>
   )
 }

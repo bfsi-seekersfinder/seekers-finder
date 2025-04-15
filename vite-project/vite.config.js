@@ -15,7 +15,7 @@ export default defineConfig({
     cors: true,
     proxy:{
       '/api':{
-        target:'https://api.talanto.banksterindia.com',
+        target:'https://api.talanto.banksterindia.com' || 'http://localhost:4000',
         changeOrigin:true,
         secure:false
       },

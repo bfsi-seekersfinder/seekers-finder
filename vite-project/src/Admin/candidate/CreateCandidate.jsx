@@ -276,6 +276,13 @@ const UserForm = () => {
   setisCandidateSelect(true)
   setfindCandidatedInput('')
   setfilterCandidates([])
+
+ setUG( UG[id.education.map((item) => item.name)] ? id.education.map((item) => item.name) : [])
+ setPG( PG[id.education.map((item) => item.name)] ? id.education.map((item) => item.name) : [])
+setFormData({
+  ...id
+})
+  
   }
 
   const handleRemoveSelectedCandidate = () =>{
@@ -283,6 +290,7 @@ const UserForm = () => {
   setisCandidateSelect(false)
   setfindCandidatedInput('')
   setfilterCandidates([])
+  setFormData(initialData)
   }
 
 
@@ -471,7 +479,7 @@ const UserForm = () => {
 
   <div>
   <label className="cursor-pointer bg-gray-200 px-4 py-2 rounded-md text-gray-700 w-full text-center">
-      {formData.cv.length>0 ? formData.cv.map((file) => file.name ) : <> upload resume <i className="ri-file-upload-fill"></i></>}
+      {formData.cv?.length>0 ? formData.cv.map((file) => file.name ) : <> upload resume <i className="ri-file-upload-fill"></i></>}
       <input
         type="file"
         onChange={handleFileChange}
@@ -536,6 +544,7 @@ const UserForm = () => {
         </div>
       </div>
 
+     
     </div>
       ))
     }

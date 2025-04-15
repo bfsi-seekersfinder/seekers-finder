@@ -139,7 +139,7 @@ const handleLogoutAdmin = async () => {
         <div className={`${isSidebar?"max-lg:translate-x-0":" max-lg:translate-x-[-100%]"} z-50 min-w-[400px] max-2xl:min-w-[250px] transition-all ease-in-out duration-300 relative bg-gray-300 h-screen max-lg:absolute`}>
         <div className=" border border-slate-300 flex items-center gap-8 shadow px-4 py-2">
         <i onClick={handleSideBar} className="ri-side-bar-fill text-2xl text-emerald-900 "></i>
-        <button onClick={()=> setStep(0)}  className="text-gray-700 cursor-pointer py-2 text-2xl font-bold w-full">Talent<span className="text-orange-400">X</span></button>
+        <button onClick={()=> setStep(0)}  className="text-gray-700 cursor-pointer py-2 text-2xl font-bold w-full">Talent<span className="text-orange-400">o</span></button>
         </div>
         <div className="w-full flex flex-col gap-4 mt-10  text-slate-600 font-semibold tracking-widest text-2xl">
         </div>

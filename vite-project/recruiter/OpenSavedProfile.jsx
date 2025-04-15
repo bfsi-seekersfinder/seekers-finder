@@ -44,14 +44,14 @@ const OpenSavedProfile = ({profile, title, searchTerm}) => {
         <button className={`${FaildMessage?'absolute bottom-4 rounded-full bg-orange-500 px-5 py-0.5 text-white':'hidden'}`}>{FaildMessage}</button>
 
         {filteredData.length>0 && filteredData.map((user, i) => (
-        <div key={i} className='bg-white min-h-[235px] shadow-md  w-full'>
+        <div key={i} className='bg-white h-[235px] shadow-md  w-full'>
             <div  className="w-full flex justify-between flex-wrap border-gray-400 px-4 py-4  ">
             <div className="flex gap-4 mb-4">
             <div>
             <p onClick={()=>handleSeeSingleCandidateProfile(user._id)} className="text-slate-600 text-2xl hover:text-cyan-700 font-semibold cursor-pointer">{user.fullName? user.fullName : "loading"}</p>
             <div className="text-cyan-500 flex items-center gap-2">
             <i className="ri-building-line"></i>
-            <p className="text-[14px] font-semibold font-sans capitalize">{user.workExperience? user.workExperience[0].name:"not available"}</p>
+            <p className="text-[14px] font-semibold font-sans capitalize">{user.workExperience? user.workExperience[0]?.name:"not available"}</p>
             </div>
             <div className="pt-4 flex flex-col">
             <div>
@@ -105,6 +105,14 @@ const OpenSavedProfile = ({profile, title, searchTerm}) => {
             </div>
         </div>
         ))}
+
+        {filteredData.length === 0 && (
+        <div className='flex justify-center items-center h-full w-full'>
+            <p className='text-gray-500 text-lg font-semibold'>No Profiles are Saved</p>
+            </div>
+
+            )}
+
     </div>
   )
 }

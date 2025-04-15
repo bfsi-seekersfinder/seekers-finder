@@ -23,7 +23,7 @@ const PersonalInfo = ({user}) => {
       ):Step === 2?(
         <>
         <div>
-          <button onClick={()=>setStep(1)} className='px-8  py-0.5  text-slate-600 font-bold text-2xl cursor-pointer'><i className="ri-arrow-left-line"></i></button>
+          <button onClick={()=>setStep(1)} className='px-4  py-0.5 hover:bg-slate-300 rounded-3xl  text-slate-600 font-bold text-2xl cursor-pointer'><i className="ri-arrow-left-line"></i></button>
         </div>
         <PasswordChange/>
         </>

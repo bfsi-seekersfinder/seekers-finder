@@ -50,7 +50,7 @@ const FilteredProfiles = () => {
         sessionStorage.setItem('page', page)
     },[page])
 
-    
+    // console.log('candidate', Candidate)
     // console.log(Candidate.fullName, Candidate.mobileNo, Candidate.email, Array.isArray(Candidate.workExperience) && Candidate.workExperience[0].name)
 
     const handleSearch = () =>{
@@ -585,29 +585,36 @@ useEffect(()=>{
     <>
     <Navbar  />
     <div className="w-full pt-16 px-1.5  flex max-md:flex-col ">
-      <div className="hidden max-[580px]:flex  justify-center items-center max-[580px]:pt-28 text-orange-400">This website is not support in mobile layout !</div>
+      <div className="hidden max-[580px]:flex  justify-center items-center max-[580px]:pt-28 text-orange-400 capitalize">This website is not support in mobile layout ! Select your browser in Desktop Mode</div>
+      
       <div className="px-2  max-lg:block hidden max-lg:fixed top-1 left-0 max-lg:z-100  rounded-r-xl max-sm:hidden">
         <span className={`text-[30px] ${navClose ? '' : 'hidden'} duration-500`} onClick={handleNav}><i className="ri-menu-line"></i></span>
       </div>
 
 {/* <---------------------------------------------------< Filter search page card is here >-----------------------------> */}
-        <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border shadow-lg max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[400px]`} style={{scrollbarWidth:"thin", scrollBehavior:"smooth"}}>
+        <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border shadow-lg max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[300px]`}  style={{scrollbarWidth:"thin", scrollBehavior:"smooth"}}>
             <div className={` transition-all duration-700 max-lg:bg-white  flex flex-col gap-4 bg-gray-10 px-1.5 py-2 rounded-2xl borde  border-gray-200 border-t-0`}>
 
-            <div className="select-none flex gap-4 px-1 items-center bg-white">
-              <button ref={buttonRef}  onClick={handleShowHistorySearch} className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded "><i className="ri-history-line"></i> Recent Searches </button>
-              <button onClick={isPopUp} disabled={!initialData}  className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded "><i className="ri-bookmark-fill"></i>Save Search</button>
+            <div className="select-none flex gap-6 px-1 items-center bg-white">
+              <button ref={buttonRef}  onClick={handleShowHistorySearch} className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded ">
+                <i className="ri-history-line"></i> Recent Searches 
+                </button>
+              <button onClick={isPopUp} disabled={!initialData}  className="border text-white border-gray-100 py-1 px-8 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded ">
+                <i className="ri-bookmark-fill"></i>Save Search
+                </button>
               
              
 {/*<<------------------------------------< show history data form server Storage >-------------------------->> */}
               <div ref={wrapperRef}
               style={{scrollbarWidth:"thin"}} 
               className={` ${SerchHistory.length>0? "border-r  border-slate-300": ""} overflow-y-auto overflow-x-hidden absolute top-18 max-lg:top-14 left-0 select-none text-[12px] w-[300px] h-[88vh] max-lg:fixed bg-white  px-2 py-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${!ShowHistory ? "w-[400px] border-r border-slate-300 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-[-100%] overflow-hidden"}`}>
-              <div className="flex items-center justify-between pr-2">
+              
+              <div className="flex items-center justify-between  ">
               <h1 className="text-xl text-slate-600 font-semibold">Recent Searches</h1>
-              <p className="text-slate-600"> saved searches {SerchHistory.length}</p>
+              <p className="text-slate-600 "> saved searches {SerchHistory.length}</p>
               </div>
-              <p className="text-gray-400 font-semibold mt-[-10px]">only last 25 searches will be show</p>
+
+              <p className="text-gray-400 font-semibold mt-[-10px]">only last 10 searches will be show</p>
               {Array.isArray(SerchHistory) && SerchHistory.length > 0 ?
               SerchHistory.map((item, i)=>(
               <div key={i}
@@ -644,7 +651,7 @@ useEffect(()=>{
 {/* <<----------------------------------------< KeyWords input >------------------------------------------->> */}
             <div>
                 <div className="flex items-center w-full px-2  mb-2">
-                <p className="text-center tracking-wider font-bold text-slate-700">Add Keywords</p>
+                <p className="text-center tracking-wider font-bold text-slate-700">Add Keywords</p> <i title={` press enter to add keywords ( Do not use comma seprated e.g. 'key' or "key" ) `} className="ri-information-line cursor-pointer text-slate-500"></i>
               </div>
 
               <form className="flex flex-col gap-4 px-2">
@@ -652,6 +659,7 @@ useEffect(()=>{
               <div key={key} className="flex flex-col gap-2">
               <input
               type="text"
+              title="press enter to add keywords"
               placeholder={placeholder}
               onKeyDown={(e) => handleKeyDown(e, key)}
               className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
@@ -671,6 +679,25 @@ useEffect(()=>{
               </div>
               ))}
             </form>
+          </div>
+
+          <div>
+            <p className="font-semibold text-slate-600 mb-2">Select Product</p>
+            <select 
+            value={FilterData.currentProduct} 
+            onChange={(e)=> setFilterData({...FilterData, currentProduct:e.target.value})}
+            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
+            >
+            <option className="bg-gray-100 text-slate-400">select products</option>
+            { Array.isArray(Product) && Product.length && Product.map((product)=>(
+            <option 
+            value={product.name}
+            key={product._id}>
+            {product.name}
+            </option>
+            )) 
+            }
+            </select>
           </div>
 
 {/* <<--------------------------------- Experience ---<  CTC , N/P >---------------------------------------->>> */}
@@ -734,11 +761,14 @@ useEffect(()=>{
           </div>
 {/* <<-------------------------------------------< salary >------------------------------------------------>> */}
           <div className="flex flex-col gap-2">
-            <h2 className=" tracking-wider font-semibold text-slate-700">Salary</h2>
-            <div className="flex gap-2">
+          <div className="flex items-center w-full px-2 mb-2 gap-2"> 
+              <h2 className="font-semibold tracking-wider text-slate-700">Salary</h2> 
+              <i title="e.g. 4 or 400,000 in (Lac) or (LPA)" className="ri-information-line cursor-pointer text-slate-500"></i>
+            </div>            <div className="flex gap-2">
             { ["Min","Max"].map((jobType, i)=>(
             <div key={i}>
             <input 
+            title="e.g. 4 or 400,000 in (Lac) or (LPA)"
             type="number"
             id={jobType}
             min={0}
@@ -807,8 +837,11 @@ useEffect(()=>{
           <div className="select-none flex flex-col gap-1 justify-between  border-slate-300  bg-white  px-2 py-3  ">
 {/* <<----------------------------------< search by profile >------------------------------------------------->> */}
           <div className="min-w-full gap-4 flex flex-col bg-white  border-slate-300   px-2   py-3">
-          <h2 className=" font-semibold tracking-wider text-slate-700">Serch by Profile</h2>
-          <input type="text" placeholder="search by name or number"
+          <div className="flex items-center w-full px-2 gap-2"> 
+              <h2 className="font-semibold tracking-wider text-slate-700">Search By Profile</h2> 
+              <i title="Paste candidate name, email or contact and go to search" className="ri-information-line cursor-pointer text-slate-500"></i>
+            </div>         
+            <input type="text" title="Paste & Search" placeholder="e.g. email, number, name"
           value={FilterData.profileName}
           onChange={(e)=> setFilterData({...FilterData ,profileName: e.target.value})}
           className="border-b bg-slate-100 text-slate-700 border-slate-300 px-5 py-0.5 "
@@ -816,7 +849,10 @@ useEffect(()=>{
           </div>
 {/* <<----------------------------------< search by company >------------------------------------------------->> */}
             <div className="select-none  flex flex-col gap-4 border-slate-300 bg-white   px-2 py-3  ">
-            <h2 className="font-semibold tracking-wider text-slate-700">Search By Company</h2>
+            <div className="flex items-center w-full px-2 gap-2"> 
+              <h2 className="font-semibold tracking-wider text-slate-700">Search By Company</h2> 
+              <i title="press enter to add multiple companies name and designation" className="ri-information-line cursor-pointer text-slate-500"></i>
+            </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {componyInput.map(({ key, placeholder }, i) => (
             <div key={i} className="flex items-center gap-2">
@@ -837,6 +873,7 @@ useEffect(()=>{
               />
             </div>
             ))}
+
             <div className={`${Array.isArray(FilterData.currentCompony) && FilterData.currentCompony.length>0 || Array.isArray(FilterData.designation) && FilterData.designation.length>0 ? "": "hidden"}`}>
               <h3 className="font-semibold text-gray-600">Company Details</h3>
               <div className="flex gap-1 flex-wrap">
@@ -861,26 +898,9 @@ useEffect(()=>{
           </form>
           </div>
 {/* <<-------------------------------------------< product & Functional Area >------------------------------>> */}
-          <div className="flex flex-col gap-4 px-2">
-            <div>
-            <p className="font-semibold text-slate-600 mb-2">Select Product</p>
-            <select 
-            value={FilterData.currentProduct} 
-            onChange={(e)=> setFilterData({...FilterData, currentProduct:e.target.value})}
-            className="border-b w-full border-gray-300 bg-slate-100 pl-2  focus:outline-none h-8 text-gray-600"
-            >
-            <option className="bg-gray-100 text-slate-400">select products</option>
-            { Array.isArray(Product) && Product.length && Product.map((product)=>(
-            <option 
-            value={product.name}
-            key={product._id}>
-            {product.name}
-            </option>
-            )) 
-            }
-            </select>
-          </div>
 {/* <<-------------------------------------------< Functional Area >-------------------------------------------------->> */}
+          <div className="flex flex-col gap-4 px-2">
+           
           <div className="">
             <p className="font-semibold text-slate-400 mb-2">Functional Area</p>
             <select disabled
@@ -946,11 +966,11 @@ useEffect(()=>{
           </div>
           </div>
 {/* <<---------------------------------------------< reset serches >--------------------------------------->> */}
-          <div className="w-full justify-between  flex gap-4 px-4 pb-12 pt-2">
-          <button onClick={resetSearch} className="border w-full border-gray-100 py-0.5 px-6 text-[14px] font-semibold tracking-wider active:bg-gray-200 cursor-pointer rounded flex items-center justify-center gap-1  bg-orange-700 text-white shadow-md" ><span>Reset Searches</span> </button>
+          <div className="w-full justify-between  flex gap-4 px-2 pb-12 pt-2">
+          <button onClick={resetSearch} className="border w-full border-gray-100 py-0.5 px-6 text-[14px]  tracking-wider active:bg-gray-300 hover:bg-slate-200 cursor-pointer rounded flex items-center justify-center gap-1  text-orange-600 " ><span><i class="ri-reset-left-fill"></i> Reset Searches</span> </button>
           <button 
           onClick={()=>handleSearch()}
-          className=" cursor-pointer w-full py-1 px-10 rounded border border-emerald-300 bg-emerald-800 text-gray-100"
+          className=" cursor-pointer w-full py-1 px-4 rounded border border-emerald-300 bg-emerald-800 text-gray-100"
           >
           Search
           </button>
@@ -1007,6 +1027,7 @@ useEffect(()=>{
           ):!isOnline? (
           <div className="flex h-[70vh] w-full justify-center items-center flex-col text-gray-400">
           <i className="ri-cloud-off-line text-3xl"></i>
+          
           <span>No Internet Connection </span>
           </div>
           ) : Array.isArray(Candidate) && Candidate.length > 0 ? (
@@ -1048,7 +1069,7 @@ useEffect(()=>{
       </div>
       </div>
         {!user?.planActive && <div className="absolute top-0 left-0 z-10 ">
-                <ExpirePage/>
+                 <ExpirePage/>
         </div>
         }
 

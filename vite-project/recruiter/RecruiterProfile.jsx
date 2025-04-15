@@ -163,7 +163,10 @@ const RecruiterProfiles = () => {
               
                 </>
               ):(
-                <p className='px-4 py-2 shadow rounded text-slate-600'>No Accounts Available</p>
+                <div className='w-full h-screen flex items-center justify-center'>
+            <p className='text-gray-500 text-lg font-semibold'>No Alias Accounts</p>
+
+                </div>
               )}
               </>
 

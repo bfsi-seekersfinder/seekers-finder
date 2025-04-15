@@ -9,6 +9,7 @@ import DateSelector from '../../../Global/DateSelector'
 
 
 const CreateRecruiter = ({recruiter}) => {
+    const url = import.meta.env.VITE_API_URI
     const navigate = useNavigate()
     const [States, setStates] = useState(Object.keys(India))
     const [City, setCity] = useState()
@@ -94,7 +95,7 @@ const initiaData = {
 const [InputData, setInputData] = useState(initiaData)
 // console.log(InputData)
 const userFormValue = {
-    role:InputData.role,
+    role:'recruiter',
     plan:isCorporate?"corporate" : "Basic",
     recruiterName:InputData.userName,
     email:InputData.email,
@@ -112,7 +113,7 @@ const userFormValue = {
     expireDate:endDate,
     password:InputData.password,
     aliasUsers: InputData.alias.map((alias) => ({
-        aliasRole: alias.aliasRole || null,
+        aliasRole: alias.aliasRole || 'alias',
         aliasName: alias.aliasName || null,
         aliasEmail: alias.aliasEmail || null,
         aliasContactNo: alias.aliasContactNo || null,
@@ -135,6 +136,7 @@ setendDate(endDate)
 
 const handleUpdate =() =>{
     setisRecruiterUpdate(prev => !prev)
+    setInputData(initiaData)
 }
 
 const findRecruiter = () => {
@@ -169,12 +171,38 @@ const selectRecruiterData = (id) =>{
    setSearchQuery('')
    setisFilterInput(false)
    setisSelectedUser(true)
+
+   setInputData({
+    role:rec.role,
+    userName:rec.recruiterName || '',
+    contactNo:rec.contactNo || '',
+    location:{
+        state:rec.state || '',
+        city:rec.city || "",
+        landMark:rec.landMark || "",
+    },
+    currentCompany:rec.currentCompany || "",
+    currentDesignation:rec.currentDesignation || "",
+    panNo:rec.PAN || "",
+    GSTNo:rec.GST || "",
+    TANNo:rec.TAN || "",
+    email:rec.email || "",
+    limit:rec.limit || "",
+    alias:rec.aliasUsers.map((alias) => ({
+        aliasRole: alias.aliasRole || 'alias',
+        aliasName: alias.aliasName || null,
+        aliasEmail: alias.aliasEmail || null,
+        aliasContactNo: alias.aliasContactNo || null,
+        aliasPassword: alias.aliasPassword || null,
+    })),
+    })
 }
 
 const handleRemoveSelectedRec = () =>{
     setisFilterInput(true)
     setSelectedRecruiter(null)
     setisSelectedUser(false)
+    setInputData(initiaData)
 }
 
 //<<---------------- handle submitting recruiter data and create user ------------>>
@@ -187,7 +215,7 @@ const handleSubmit = async (e) => {
         );
         setLoading(true)
         try {
-        const response = await axios.post("/api/recruiters/create-recruiter", cleanedData, {
+        const response = await axios.post(url+"/api/recruiters/create-recruiter", cleanedData, {
         headers: { "Content-Type": "application/json" }
         });
       
@@ -209,7 +237,7 @@ const handleSubmit = async (e) => {
 
         setLoading(true)
         try {
-        const response = await axios.put(`/api/recruiters/update/${recruitrId}`, userFormValue, {
+        const response = await axios.put(url+`/api/recruiters/update/${recruitrId}`, userFormValue, {
         headers: { "Content-Type": "application/json" }
         });
       
@@ -260,7 +288,7 @@ return (
         placeholder='find candidate'
         value={searchQuery}
         onChange={(e)=>setSearchQuery(e.target.value)}
-        className={`${isFilterInput?'border border-slate-400 rounded px-4 py-0.5 w-[400px]' : 'hidden'}`}
+        className={`${isFilterInput?'border border-slate-400 rounded px-4 py-1.5 w-[400px]' : 'hidden'}`}
         />
 
     {selectedRecruiter && (
@@ -308,9 +336,8 @@ return (
             value={InputData.role}
             onChange={(e)=> setInputData((prev)=>({...prev, role:e.target.value}))}
             name="role" 
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none" 
+            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-1.5  focus:outline-none" 
             >
-            <option value="">select role</option>
             <option value="recruiter">Recruiter</option>
             </select>
         </div>
@@ -324,7 +351,7 @@ return (
             value={InputData.userName}
             onChange={(e)=>setInputData(prev=>({...prev, userName:e.target.value}))}
             placeholder="recruiter name" 
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
         
@@ -336,7 +363,7 @@ return (
             value={InputData.contactNo}
             onChange={(e)=>setInputData(prev=>({...prev, contactNo:e.target.value}))}
             placeholder="contact no" 
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
 
@@ -349,7 +376,7 @@ return (
             value={InputData.email}
             onChange={(e)=>setInputData(prev=>({...prev, email:e.target.value}))}
             placeholder="email" 
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
     </div>
@@ -362,7 +389,7 @@ return (
             name="state" 
             value={InputData.location.state}
             onChange={(e)=>setInputData((prev)=>({...prev, location:{...prev.location, state: e.target.value, city:""}}))}
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none text-slate-800" 
+            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none text-slate-800" 
             >
             <option value="">select State</option>
             {
@@ -375,7 +402,7 @@ return (
             name="city" 
             value={InputData.location.city}
             onChange={(e)=>setInputData((prev)=>({...prev, location:{...prev.location, city: e.target.value}}))}
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none text-slate-800" 
+            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none text-slate-800" 
             >
             <option value="">select cities</option>
             {
@@ -389,9 +416,9 @@ return (
             type="text" 
             name="landMark"
             value={InputData.landMark}
-            onChange={(e)=>setInputData(prev=>({...prev, landMark:e.target.value}))}
+            onChange={(e)=>setInputData(prev=>({...prev, location:{...prev.location, landMark:e.target.value}}))}
             placeholder="Full Address..." 
-            className="border w-[60vw] border-slate-300 rounded bg-slate-200 max-h-[50px] px-1 py-0.5 focus:outline-none"
+            className="border w-[60vw] border-slate-300 rounded bg-slate-200 max-h-[50px] px-1 py-1.5 focus:outline-none"
             />
             </div>
             <div className="flex flex-col gap-1">
@@ -427,7 +454,7 @@ return (
             value={InputData.currentCompany}
             onChange={(e)=>setInputData(prev=>({...prev, currentCompany:e.target.value}))}
             placeholder="current company" 
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
         <div className="flex flex-col gap-1">
@@ -438,7 +465,7 @@ return (
             value={InputData.currentDesignation}
             onChange={(e)=>setInputData(prev=>({...prev, currentDesignation:e.target.value}))}
             placeholder="current designation" 
-            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border bg-slate-200 border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
 
@@ -513,9 +540,8 @@ return (
             )
             }))}  
             name="alias" 
-            className="border border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none" 
+            className="border border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none" 
             >
-            <option value="">select role</option>
             <option value="alias">Alias user</option>
             </select>
         </div>
@@ -533,7 +559,7 @@ return (
             )
             }))}
             placeholder="alias name" 
-            className="border border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
         
@@ -550,7 +576,7 @@ return (
             )
             }))}                 
             placeholder="contact number" 
-            className="border border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
 
@@ -567,7 +593,7 @@ return (
             )
             }))}                
             placeholder="email" 
-            className="border border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
         <div className="flex flex-col gap-1">
@@ -583,7 +609,7 @@ return (
             )
             }))}                
             placeholder="password" 
-            className="border border-slate-300 rounded w-[400px] px-1 py-0.5 focus:outline-none"
+            className="border border-slate-300 rounded w-[400px] px-1 py-1.5 focus:outline-none"
             />
         </div>
         <div className='w-full'>
@@ -641,7 +667,7 @@ return (
                 </div>
                  )}
 
-                <DateSelector selectDate={handleSelectDates}/>
+                <DateSelector selectDate={handleSelectDates} />
             </div>
             </div>
             <div className='py-4 '>
@@ -649,7 +675,7 @@ return (
             </div>
     </div>
     <div className={`${Success.length>0?'absolute bottom-4 left-8 px-8 rounded-2xl py-1 bg-emerald-400 text-white': "hidden"}`}>{Success}</div>
-    <div className={`${Failed.length>0?'absolute bottom-4 left-8 px-8 rounded-2xl py-0.5 bg-orange-500 text-white':"hidden"}`}>{Failed}</div>
+    <div className={`${Failed.length>0?'absolute bottom-4 left-8 px-8 rounded-2xl py-1.5 bg-orange-500 text-white':"hidden"}`}>{Failed}</div>
 </form>
 </div>
 <div className={`${Loading?'absolute justify-center items-center flex top-0 left-0 w-full h-screen': 'hidden'}`}><MoonLoader/></div>

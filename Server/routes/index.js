@@ -216,7 +216,7 @@ router.get('/api/recruiter',  async (req, res) => {
             };
         }
         
-        const recruiters = await recruiterModule.find(query);
+        const recruiters = await recruiterModule.find(query).sort({ createdAt: -1 });
         const totalRecruiter = await recruiterModule.countDocuments()
         const activePlan = await recruiterModule.find({planActive:true})
         const totalActives = activePlan.length
@@ -258,6 +258,8 @@ router.post("/api/recruiters/create-recruiter",  async (req, res) => {
         if (!role || !recruiterName || !email || !password || !limit) {
             return res.status(400).json({ message: "All fields are required!" });
         }
+
+        // console.log("Recruiter data:", req.body);
 
         // Check if email already exists
         const existingEmail = await recruiterModule.findOne({ email });

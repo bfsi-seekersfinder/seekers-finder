@@ -35,6 +35,8 @@ const ProfileCard = ({Candidate}) => {
     const [candidateWhatsAppName, setcandidateWhatsAppName] = useState('')
 
 
+    // console.log("Candidate", Candidate)
+
     const handleViewMore = ()=>{
         setisViewMore(prev =>!prev)
     }
@@ -337,8 +339,8 @@ const ProfileCard = ({Candidate}) => {
             </div>
             <span className=' --verticle-line-- border border-gray-200 w-[0.5px] min-h-full'/>
             <div className='flex flex-col gap-2 text-sm w-full h-full text'>
-                <div className='flex gap-4 max-lg:justify-between'><span className=' text-slate-600 font-semibold w-[180px] flex justify-between'>Current Designation </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px] max-lg:text-end'>{candidate.workExperience? `${candidate.workExperience[0]?.designation?? 'Not available'}` : "Not provide"}</span></div>
-                <div className='flex gap-4 max-lg:justify-between'><span className=' text-slate-600 font-semibold w-[180px] flex justify-between'>Current Company </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{candidate.workExperience[0]?.name?? 'Not available' }</span></div>
+                <div className='flex gap-4 max-lg:justify-between'><span className=' text-slate-600 font-semibold w-[180px] flex justify-between'>Current Designation </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px] max-lg:text-end'>{`${Array.isArray(candidate?.workExperience) && candidate.workExperience[0]?.designation? candidate.workExperience[0]?.designation : 'Not available'}`}</span></div>
+                <div className='flex gap-4 max-lg:justify-between'><span className=' text-slate-600 font-semibold w-[180px] flex justify-between'>Current Company </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{Array.isArray(candidate?.workExperience) && candidate.workExperience[0]?.name ? candidate.workExperience[0].name : 'Not available'}</span></div>
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Notice Period </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{ candidate.noticePeriod?? 'Not available'}</span></div>
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Product </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]   max-lg:text-end'>{candidate.product? candidate.product.length>40? candidate.product.slice(0, 40)+"...": Candidate.product: "Not available"}</span></div>
                 <div className='flex gap-4 max-lg:justify-between'><span className=' tracking-wider w-[180px] text-slate-600 font-semibold flex justify-between'>Degree </span> <span className='font-semibold tracking-wider text-slate-800 max-lg:text-[12px]  max-lg:text-end '>{candidate.education? candidate.education.map((edu, i)=>( <p key={i}>{edu.name}</p> )) :""}</span></div>
@@ -350,7 +352,7 @@ const ProfileCard = ({Candidate}) => {
                     placeholder='Suggest duplicate candidate or about what new changes should be...'
                     value={suggestionText}
                     onChange={(e) =>setsuggestionText(e.target.value)} 
-                    className='border border-slate-500 w-full max-h-[50px] min-h-8 px-2 py-0.5 focus:outline-none rounded'>
+                    className='border border-slate-500 w-full max-h-[50px] h-11 min-h-8 px-2 py-0.5 focus:outline-none rounded'>
                     </textarea>
                     <button onClick={()=>sendSuggestion(candidate._id)} className="bg-slate-500 text-white px-6 py-0.5 rounded cursor-pointer flex gap-2 items-center"
                     >
@@ -365,7 +367,7 @@ const ProfileCard = ({Candidate}) => {
                     <button onClick={()=>{handleSaveProfile(candidate._id)}} 
                     className='cursor-pointer text-xl'>{savedProfiles.length>0 && savedProfiles.some(item => item._id === candidate._id)? (<i className="ri-bookmark-fill"></i>) : (<i className="ri-bookmark-line"></i>)} 
                     </button>
-                    <button onClick={()=>{
+                    <button title='suggest something' onClick={()=>{
                         handleSuggetionBox()
                     }} className='cursor-pointer text-xl'><i className="ri-pen-nib-fill"></i></button>
                     <button onClick={()=>{
@@ -389,26 +391,9 @@ const ProfileCard = ({Candidate}) => {
             <span className={` ${SuccesMessage.length? "": "hidden"} absolute bottom-10 left-[40%] px-4 py-1 rounded-2xl text-[12px] text-white bg-green-700`}>{SuccesMessage}</span>
             <span className={` ${FailedMessage.length? "": "hidden"} absolute bottom-10 left-[40%] px-4 py-1 rounded-2xl text-[12px] text-white bg-orange-700`}>{FailedMessage}</span>
             <span className='cursor-pointer flex items-center justify-end w-full mt-2 h-[10px] text-slate-600'> <span className='text-[10px] font-light mr-1'>last update </span> <span className='text-[9px] font-light'> {candidate.updatedAt? getDuration(candidate.updatedAt) : "2 years"} </span></span>    
-            <div className='absolute top-20 left-40 z-100 border'>
-            </div>
+            
 
-            {/* <div className={`${isWhatsAppOpen? "absolute":"hidden"} z-10 bottom-8 right-4 rounded-md overflow-hidden w-[280px] h-[200px] bg-slate-300`}>
-                <div className='bg-emerald-500 px-4 py-2 text-white flex justify-between'>
-                    <div className='flex flex-col'>
-                    <span className='font-semibold'>WhatsApp</span> 
-                    <span className='text-[12px]'>{candidateWhatsAppName}</span>
-                    </div>
-                    <span onClick={()=>{
-                        setcandidateWhatsAppName('')
-                        setisWhatsAppOpen(false)}} 
-                        className='cursor-pointer'><i className="ri-close-fill"></i></span>
-                </div>
-                <textarea name="" value={inputValue} onChange={(e)=>handleChange(e)} placeholder='Type Message...' className=' pt-0.5 px-2 border-gray-500 text-slate-800 h-[100px] w-full focus:outline-none'></textarea>
-                <div className='px-2'>
-
-                <button onClick={()=>redirectToWhatsApp(candidate.mobileNo, WhatsAppMessage)} className='px-4 py-0.5 rounded bg-slate-600 w-full text-white'>Send</button>
-                </div>
-            </div>   */}
+            
     </div>
   )
 }
