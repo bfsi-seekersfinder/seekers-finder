@@ -110,8 +110,8 @@ const CandidateList = ({ sendValue}) => {
             <nav className="w-full h-14 shadow justify-end flex items-center px-12 ">
             <div className="flex gap-4">
             <span className="w-[300px] border border-gray-300 rounded px-2 flex items-center ">
-            <input type="text" onChange={(e)=>setquery(e.target.value)} placeholder="Find candidate..." className="w-full focus:outline-none"/>
-            <button  className="border-l border-gray-300 px-2 text-gray-500 font-bold cursor-pointer"><i className="ri-search-2-line"></i></button>
+            <input type="text" value={Query} onChange={(e)=>setquery(e.target.value)} placeholder="Search candidates" className="w-full focus:outline-none"/>
+            <button  className="border-l border-gray-300 px-2 text-gray-500 font-bold cursor-pointer">{Query.length<= 0? (<i className="ri-search-2-line"></i>) : (<i onClick={()=> setquery('')} className="ri-close-line"></i>)}</button>
             </span>
             <button onClick={()=>sendValue(1)} className="bg-slate-600 px-4 py-1 cursor-pointer rounded text-white">Create Candidate</button>
             </div>
@@ -139,7 +139,7 @@ const CandidateList = ({ sendValue}) => {
             <span onClick={()=> {
               showDeleteConfirm()
               setDeletecandidateId(candidate._id)
-            }} className='h-6 w-6 cursor-pointer flex items-center justify-center rounded-full hover:bg-gray-400 text-red-700' ><i className="ri-delete-bin-2-line"></i></span>
+            }} className='h-6 w-6 cursor-pointer flex items-center justify-center rounded-full hover:bg-gray-400 text-red-500' ><i className="ri-delete-bin-2-line"></i></span>
 
             </Link>
             </div>

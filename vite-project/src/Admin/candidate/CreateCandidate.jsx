@@ -3,6 +3,7 @@ import DateSelector from "../../../Global/DateSelector";
 import axios from "axios";
 import { Switch } from "@mui/material"
 import { PuffLoader } from "react-spinners";
+import { message } from "antd";
 
 const UserForm = () => {
   const url = import.meta.env.VITE_API_URI;
@@ -167,6 +168,7 @@ const UserForm = () => {
     }));
   };
 
+  // --------- create candidate submit function ------
   const handleUpload = async () => {
 
     if(!isCandidateUpdate){
@@ -177,12 +179,11 @@ const UserForm = () => {
           headers: { "Content-Type": "application/json" },
         })
   
-        setsuccessMessage(response.data.message)
-        setTimeout(()=>setsuccessMessage(''), 3000)
+        message.success(response.data.message)
         setFormData(initialData)
         
       } catch (error) {
-        console.log(error.message)
+        message.warning(error?.response?.data?.message || "something went wrong")
       }finally{
         setLoading(false)
       }
@@ -196,12 +197,12 @@ const UserForm = () => {
         headers: { "Content-Type": "application/json" },
       })
 
-      setsuccessMessage(response.data.message)
+      message.success(response.data.message)
       setTimeout(()=>setsuccessMessage(''), 3000)
       setFormData(initialData)
       
     } catch (error) {
-      console.log(error.message)
+      message.warning(error?.response?.data?.message || "something went wrong")
     }finally{
       setLoading(false)
     }
@@ -279,6 +280,7 @@ const UserForm = () => {
 
  setUG( UG[id.education.map((item) => item.name)] ? id.education.map((item) => item.name) : [])
  setPG( PG[id.education.map((item) => item.name)] ? id.education.map((item) => item.name) : [])
+ 
 setFormData({
   ...id
 })
@@ -299,13 +301,14 @@ setFormData({
     <>
     <div className="flex gap-4 ">
 
-    <nav className="h-14 shadow fixed w-full pr-[20%] bg-slate-100 justify-end items-center flex text-black">
+    <nav className="h-14 shadow fixed w-full pr-[20%] pl-5 bg-slate-100 justify-between items-center flex text-black">
+      <span className="text-emerald-500 font-semibold">{isCandidateUpdate? 'Update Candidate': 'Create Candidate'}</span>
       <div className="px-4 rounded-full border border-slate-300 text-slate-600 flex items-center">
-        <span className={`${isCandidateUpdate? "font-semibold text-emerald-600": ""}`}>Update Cadnidate <Switch onClick={()=>handleCandidateUpdate()} /> </span>
+        <span className={`${isCandidateUpdate? "font-semibold text-emerald-600": ""}`}>Update Candidate <Switch onClick={()=>handleCandidateUpdate()} /> </span>
       </div>
     </nav>
 
-    <form onSubmit={handleSubmit} className="p-4 max-w-lg pl-8 space-y-4 shadow pt-18 h-screen overflow-y-auto" style={{scrollbarWidth:"none"}}>
+    <form onSubmit={handleSubmit} className="p-4 bg-white max-w-lg pl-8 space-y-4 shadow pt-18 h-screen overflow-y-auto" style={{scrollbarWidth:"none"}}>
       <label htmlFor="">Full Name</label>
       <input type="text" name="fullName"   placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full p-2 border rounded border-slate-300"  />
       <label htmlFor="">Contact No</label>
@@ -318,9 +321,9 @@ setFormData({
           <input
           type="radio"
           name="gender"
-          value="male"
+          value="Male"
           onChange={handleInputChange}
-          checked={formData.gender === "male"}
+          checked={formData.gender === "Male"}
           />
           Male
         </label>
@@ -329,9 +332,9 @@ setFormData({
           <input
           type="radio"
           name="gender"
-          value="female"
+          value="Female"
           onChange={handleInputChange}
-          checked={formData.gender === "female"}
+          checked={formData.gender === "Female"}
           />
           Female
         </label>
@@ -343,9 +346,9 @@ setFormData({
           <input
           type="radio"
           name="maritalStatus"
-          value="married"
+          value="Married"
           onChange={handleInputChange}
-          checked={formData.maritalStatus === "married"}
+          checked={formData.maritalStatus === "Married"}
           />
           Married
           </label>
@@ -497,8 +500,8 @@ setFormData({
 
     <div className={`${isCandidateUpdate?" w-[60%] pt-16 max-lg:w-xl  px-8" : "hidden"}`}>
     <div className="flex flex-col gap-4">
-      <span className="text-slate-600 font-bold tracking-wider">Find candidate to update</span>
-      <input type="text" value={findCandidatedInput} onChange={(e) => setfindCandidatedInput(e.target.value)} placeholder="find candidate" className="border border-slate-300 rounded py-1 px-2 focus:outline-gray-400"/>
+      <span className="text-slate-500 mt-4 font-semibold tracking-wider">Search candidate to update</span>
+      {!isCandidateSelect && (<input type="text" value={findCandidatedInput} onChange={(e) => setfindCandidatedInput(e.target.value)} placeholder="Search candidate" className="border border-slate-300 shadow bg-white rounded py-2 px-2 focus:outline-gray-400"/>)}
     </div>
     <div className={`${isCandidateSelect? "hidden" : "flex flex-col gap-2 h-[75vh] overflow-y-auto pb-10 mt-4"}`} style={{scrollbarWidth:"none"}}>
     {
@@ -530,9 +533,9 @@ setFormData({
     {
       selectedCandidate && selectedCandidate.map((user)=>(
         <div key={user._id} className="flex flex-col gap-2 mt-4">
-      <div className="w-full border border-slate-300 cursor-pointer bg-gray-200 flex justify-between rounded px-2 py-1 items-center">
+      <div className="w-full border border-slate-300 cursor-pointer bg-white shadow flex justify-between rounded px-2 py-1 items-center">
         <div className="flex flex-col">
-        <span className="text-slate-600 font-semibold">{user.fullName}</span>
+        <span className="text-slate-600 font-semibold">{user.fullName}</span> 
         <span className="text-sm text-slate-600">{user.email}</span>
         </div>
         <div className="flex flex-col">

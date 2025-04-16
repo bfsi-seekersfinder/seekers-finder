@@ -541,9 +541,6 @@ return () => {
 }
 }, [navClose])
 
-// useEffect(()=>{
-//   setPage(1)
-// }, [FilterData])
 
 useEffect(()=>{
   if(allEmpty){
@@ -1036,7 +1033,7 @@ useEffect(()=>{
           ))
           ) : (
           <div className=" h-[70vh] w-full flex justify-center select-none items-center drop-shadow-xl">
-          <img src="../../public\images\nodatafound.png" alt="" />
+          <img src="/images/nodatafound.png" alt="" />
       </div>
       )}
 {/* <<----------------------------------------< Success messages & Failed message >---------------------------------------->> */}

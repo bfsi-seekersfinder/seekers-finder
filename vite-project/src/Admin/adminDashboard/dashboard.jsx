@@ -12,31 +12,33 @@ import { AdminContext } from "../../../Global/AdminUserContext";
 const AdminDashboard = () => {
 const url = import.meta.env.VITE_API_URI
 const [Step, setStep] = useState(0)
-const [Recruiter, setRecruiter] = useState()
-const [SearchRecruiter, setSearchRecruiter] = useState()
 const {admin} = useContext(AdminContext)
 const [Admin, setAdmin] = useState()
 const [popMessage, setpopMessage] = useState()
 const [isNotificationDelete, setisNotificationDelete] = useState(false)
 const [Candidates, setCandidates] = useState([])
+const [Recruiter, setRecruiter] = useState()
 const [limit, setLimit] = useState(25)
+const [Page, setPage] = useState(1)
 const [Loading, setLoading] = useState(false)
 const [isSidebar, setisSidebar] = useState(false)
-const [Page, setPage] = useState(1)
 const [isCandidateSkip, setisCandidateSkip] = useState(false)
 const [totalCandidates, settotalCandidates] = useState(admin?.totalUser)
 const [totalRecruiter, settotalRecruiter] = useState()
 const [toalInactivePlan, settoalInactivePlan] = useState()
+const [totalActiveUser, settotalActiveUser] = useState()
 
 
 const fetchRecruiters = async () => {
 try {
-  const { data } = await axios.get(`${url}/api/recruiter`, {
-  params: SearchRecruiter ? { SearchRecruiter } : {},
+  const { data } = await axios.get(`${url}/api/countuser`, {
+  
   });
   settotalRecruiter(data.totalRecruiter)
-  setRecruiter(data.recruiters);
-  settoalInactivePlan(data.totalActives)
+  settoalInactivePlan(data.totalInActive)
+  settotalActiveUser(data.totalActives)
+  settotalCandidates(data.totalUser)
+  setRecruiter(data.recruiters)
   setpopMessage(data.message)
   setTimeout(()=>setpopMessage(''), 2000)
 } catch (error) {
@@ -46,12 +48,9 @@ try {
 
 useEffect(() => {
     fetchRecruiters();
-  }, [SearchRecruiter]); 
-  
-useEffect(() => {
-    fetchRecruiters();
   }, []); 
-  
+
+
 
   const fetchAdmin = async () =>{
     try {
@@ -66,7 +65,6 @@ useEffect(() => {
     }
     
   }
-  
 
   useEffect(()=>{
     fetchAdmin()
@@ -112,10 +110,6 @@ const handleSetPage = (value) =>{
   setStep(value)
 }
 
-const handleSetSearchQuery = (query) =>{
-  setSearchRecruiter(query)
-}
-
 const handleLogoutAdmin = async () => {
   try {
     const admin = JSON.parse(sessionStorage.getItem("isAdmin"));
@@ -139,7 +133,7 @@ const handleLogoutAdmin = async () => {
         <div className={`${isSidebar?"max-lg:translate-x-0":" max-lg:translate-x-[-100%]"} z-50 min-w-[400px] max-2xl:min-w-[250px] transition-all ease-in-out duration-300 relative bg-gray-300 h-screen max-lg:absolute`}>
         <div className=" border border-slate-300 flex items-center gap-8 shadow px-4 py-2">
         <i onClick={handleSideBar} className="ri-side-bar-fill text-2xl text-emerald-900 "></i>
-        <button onClick={()=> setStep(0)}  className="text-gray-700 cursor-pointer py-2 text-2xl font-bold w-full">Talent<span className="text-orange-400">o</span></button>
+        <button onClick={()=> setStep(0)}  className="text-gray-700 cursor-pointer py-2 text-2xl font-bold w-full">Talent<span className="text-orange-400">O</span></button>
         </div>
         <div className="w-full flex flex-col gap-4 mt-10  text-slate-600 font-semibold tracking-widest text-2xl">
         </div>
@@ -176,17 +170,22 @@ const handleLogoutAdmin = async () => {
             <div className="flex gap-10 px-8 pt-8 flex-wrap">
             <div className="h-[100px] w-[200px] shadow rounded-xl flex flex-col gap-2 items-center justify-center bg-white">
               <span className="text-slate-600 font-bold text-2xl mt-2">{totalCandidates}</span>
-              <span className="font-semibold text-cyan-600 text-[14px]">Total Canidates</span>
+              <span className="font-semibold text-cyan-600 text-[14px]">Total Candidates</span>
             </div>
 
             <div className="h-[100px] w-[200px] shadow rounded-xl flex flex-col gap-2 items-center justify-center bg-white">
               <span className="text-slate-600 font-bold text-2xl mt-2">{totalRecruiter}</span>
-              <span className="font-semibold text-cyan-600 text-[14px]">Total Recruiter</span>
+              <span className="font-semibold text-cyan-600 text-[14px]">Total Recruiters</span>
+            </div>
+
+            <div className="h-[100px] w-[200px] shadow rounded-xl flex flex-col gap-2 items-center justify-center bg-white">
+              <span className="text-slate-600 font-bold text-2xl mt-2">{totalActiveUser}</span>
+              <span className="font-semibold text-cyan-600 text-[14px]">Active Recruiters</span>
             </div>
 
             <div className="h-[100px] w-[200px] shadow rounded-xl flex flex-col gap-2 items-center justify-center bg-white">
               <span className="text-slate-600 font-bold text-2xl mt-2">{toalInactivePlan}</span>
-              <span className="font-semibold text-cyan-600 text-[14px]">Active Recruiter</span>
+              <span className="font-semibold text-cyan-600 text-[14px]">Inactive Recruiters</span>
             </div>
             
             </div>
@@ -202,7 +201,7 @@ const handleLogoutAdmin = async () => {
             </div>
             ): Step === 3?(
             <div>
-            <RecruiterList Recruiter={Recruiter} pageValue={handleSetPage} setQuery={handleSetSearchQuery}/>
+            <RecruiterList setPageValue={handleSetPage} />
             <div className={`${popMessage?.length>0? "bottom-10 left-[40%] absolute px-4 rounded text-slate-700 bg-gray-300 py-0.5 flex items-center justify-center" : "hidden" }`}>{popMessage}</div>
             </div>
             ): Step === 4?(

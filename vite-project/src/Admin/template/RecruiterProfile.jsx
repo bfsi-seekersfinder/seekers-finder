@@ -10,10 +10,10 @@ const RecruiterProfile = ({user}) => {
     if (!user) return <div className="text-center text-red-500">Log in Again.</div>;
 
     return (
-        <div className="w-[500px] p-6 rounded-md">
+        <div className="w-[500px] bg-white shadow p-6 rounded-md">
             <div className="mb-4  flex justify-end gap-2">
                 <span className="border border-slate-300 px-4 rounded bg-gray-100 text-slate-600 text-sm flex items-center">{user.plan}</span>
-                <span className={` items-center px-4 rounded border text-slate-600 border-slate-300 py-0.5  text-sm`}> <span className={`${user.planActive?" text-red-500 ": 'text-emerald-500'}`}>{user.planActive? "Expired" : "Active"} </span>  </span>
+                <span className={` items-center px-4 rounded border text-slate-600 border-slate-300 py-0.5  text-sm`}> <span className={`${user.planActive?" text-emerald-500 ": 'text-red-500'}`}>{user.planActive? "Active" : "Expire"} </span> </span>
             </div>
 
             {/* User Header */}
@@ -29,7 +29,7 @@ const RecruiterProfile = ({user}) => {
             {/* Contact Information */}
             <div className="mt-4">
                 <h2 className="text-lg font-semibold mb-2 text-cyan-700">Contact Information</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                     <p className="flex items-center text-gray-700"><FaEnvelope className="mr-2" /> {user.email || "N/A"}</p>
                     <p className="flex items-center text-gray-700"><FaPhone className="mr-2" /> {user.contactNo || "N/A"}</p>
                 </div>

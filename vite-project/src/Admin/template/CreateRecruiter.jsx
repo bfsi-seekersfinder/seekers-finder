@@ -5,8 +5,7 @@ import { Switch } from "@mui/material"
 import { useNavigate } from 'react-router-dom'
 import { MoonLoader } from 'react-spinners'
 import DateSelector from '../../../Global/DateSelector'
-
-
+import { message } from 'antd'
 
 const CreateRecruiter = ({recruiter}) => {
     const url = import.meta.env.VITE_API_URI
@@ -220,14 +219,13 @@ const handleSubmit = async (e) => {
         });
       
         if (response.data.success) {
-        setSuccess(response.data.message);
-        setTimeout(() => setSuccess(""), 3000);
+        message.success(response.data.message);
         setInputData(initiaData);
         setisCorporate(false)
         }
     
         } catch (error) {
-        setFailed(error.response?.data?.message || "Something went wrong");
+        message.warning(error.response?.data?.message || "Something went wrong");
         setTimeout(() => setFailed(""), 3000);
         }finally{
             setLoading(false)
@@ -235,6 +233,7 @@ const handleSubmit = async (e) => {
 
     }else{
 
+        //<<----------------- handle updating recruiter data ----------------->>
         setLoading(true)
         try {
         const response = await axios.put(url+`/api/recruiters/update/${recruitrId}`, userFormValue, {
@@ -242,7 +241,7 @@ const handleSubmit = async (e) => {
         });
       
         if (response.data.success) {
-        setSuccess(response.data.message);
+        message.success(response.data.message);
         setTimeout(() => setSuccess(""), 3000);
         setInputData(initiaData);
         setSearchQuery('')
@@ -250,10 +249,12 @@ const handleSubmit = async (e) => {
         }
     
         } catch (error) {
-        setFailed(error.response?.data?.message || "Something went wrong");
+        message.warning(error.response?.data?.message || "Something went wrong");
         setTimeout(() => setFailed(""), 3000);
         }finally{
             setLoading(false)
+            handleRemoveSelectedRec()
+
         }
     }
 
@@ -287,7 +288,7 @@ return (
         type="text" 
         placeholder='find candidate'
         value={searchQuery}
-        onChange={(e)=>setSearchQuery(e.target.value)}
+        onChange={(e)=>setSearchQuery(e.target.value || '')}
         className={`${isFilterInput?'border border-slate-400 rounded px-4 py-1.5 w-[400px]' : 'hidden'}`}
         />
 

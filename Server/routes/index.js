@@ -201,9 +201,30 @@ router.get("/api/product", async (req, res) => {
     }
 });
 
-router.get('/api/recruiter',  async (req, res) => {
+router.get("/api/countuser" , async (req, res) => {
     try {
-        const { SearchRecruiter } = req.query;
+        const totalUser = await userModel.countDocuments({});
+        const totalRecruiter = await recruiterModule.countDocuments({});
+        const totalAliasUser = await aliasUserModel.countDocuments({});
+        const totalActives = await recruiterModule.find({planActive:true}).countDocuments({});
+        const totalInActive = await recruiterModule.find({planActive:false}).countDocuments({});
+        const recruiters = await recruiterModule.find({});
+        return res.json({ totalUser, totalRecruiter, totalAliasUser, totalActives, totalInActive, recruiters });
+    }
+    catch (error) {
+        console.error("Error:", error.message);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+
+});
+
+router.get('/api/recruiter/:limit/:skip',  async (req, res) => {
+    try {
+        const  SearchRecruiter  = req.query.setSearchRecruiter
+        const { limit, skip } = req.params;
+        const limitValue = Math.max(Number(limit) || 10, 0);
+        const skipValue = Math.max(Number(skip) || 0, 0);
+
         let query = {};
         if (SearchRecruiter) {
         query = {
@@ -216,7 +237,11 @@ router.get('/api/recruiter',  async (req, res) => {
             };
         }
         
-        const recruiters = await recruiterModule.find(query).sort({ createdAt: -1 });
+        const recruiters = await recruiterModule.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skipValue)
+        .limit(limitValue);
+
         const totalRecruiter = await recruiterModule.countDocuments()
         const activePlan = await recruiterModule.find({planActive:true})
         const totalActives = activePlan.length
