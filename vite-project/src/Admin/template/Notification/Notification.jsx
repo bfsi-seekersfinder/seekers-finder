@@ -1,8 +1,9 @@
 import React, {useState, useContext} from 'react'
 import getDuration from '../../../../Generators/getDuration'
 import axios from "axios";
+import { message } from 'antd';
 
-const Notification = ({notification, adminId, setChanges}) => {
+const Notification = ({notification, adminId, setChanges, setNotificationView}) => {
   const url = import.meta.env.VITE_API_URI
   const [isNotificationOpen, setisNotificationOpen] = useState(false)
   const [step, setstep] = useState(1)
@@ -24,11 +25,11 @@ const handleDeleteNotification = async (notificationId) => {
       const response = await axios.delete(`${url}/admin/api/delete/notification/${adminId}/${notificationId}`,{withCredentials:true, headers:{'Content-Type': 'application/json'} });
 
       if (response.data.success) {
-      alert("Notification deleted successfully!");
+      message.success("Notification deleted successfully!");
       setChanges(true)
           
       } else {
-      alert(response.data.message);
+      message.warning(response.data.message);
       }
 
     } catch (error) {
@@ -42,6 +43,8 @@ const handleMarkAsSeen = async (adminId, notificationId) => {
       const response = await axios.put(`${url}/admin/api/update/seen/${adminId}/${notificationId}`, {withCredentials:true, headers:{'Content-Type': 'application/json'} });
   } catch (error) {
       console.error("Error updating notification:", error.message);
+  }finally{
+    setNotificationView(true)
   }
 };
 
@@ -103,10 +106,10 @@ const handleMarkAsSeen = async (adminId, notificationId) => {
                       <div>
                         <div className='px-8 py-2 mb-2 text-slate-700 font-semibold border-b border-slate-300 flex items-center justify-between'>
                           <span >New Service request</span>
-                          <span className='text-cyan-600'>{getDuration(notificationDetails.createdAt)} <i className="ri-history-line"></i></span>
+                          <span className='text-cyan-600 text-[11px]'>{getDuration(notificationDetails.createdAt)} <i className="ri-history-line"></i></span>
                         </div>
                         <div className='flex flex-col px-8 gap-2 '>
-                          <span className='flex justify-between shadow px-4 py-1 rounded bg-gray-100'> Recruiter Name : <span className='text-slate-700 font-semibold'>{notificationDetails.details.recruiterName}</span> </span>
+                          <span className='flex justify-between shadow px-4 py-1 rounded bg-gray-100'>  Recruiter Name : <span className='text-slate-700 font-semibold'>{notificationDetails.details.recruiterName}</span> </span>
                           <span className='flex justify-between shadow px-4 py-1 rounded bg-gray-100'>  contact : <span className='text-slate-700 font-semibold'>{notificationDetails.details.contactNo}</span> </span>
                           <span className='flex justify-between shadow px-4 py-1 rounded bg-gray-100'>  Email : <span className='text-slate-700 font-semibold'>{notificationDetails.details.email}</span> </span>
                           <span className='flex justify-between shadow px-4 py-1 rounded bg-gray-100'>  Company : <span className='text-slate-700 font-semibold'>{notificationDetails.details.companyName}</span> </span>

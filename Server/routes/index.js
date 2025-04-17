@@ -849,6 +849,7 @@ router.post('/api/recruiter/save-history',  async (req, res) => {
 router.get('/api/recruiter/gethistory/:id',  async (req, res) => {
 try {
     const {id} = req.params;
+    console.log(id)
     let recruiter = await recruiterModule.findById(id).select('savedSearches');
 
     if(!recruiter){
@@ -857,6 +858,7 @@ try {
     if (!recruiter) {
     return res.status(404).json({ success: false, message: "Recruiter not found" });
     }
+    
 
     return res.json({ success: true, searchHistory: recruiter.savedSearches });
 } catch (error) {

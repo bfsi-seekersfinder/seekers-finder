@@ -8,6 +8,7 @@ import Navbar from "../searchcomponent/Nav";
 import InternetStatus from "../../Generators/InterNet";
 import { UserContext } from "../../Global/userContext";
 import ExpirePage from "../FailedPages/ExpirePage";
+import {message} from 'antd'
 
 
 const FilteredProfiles = () => {
@@ -55,7 +56,7 @@ const FilteredProfiles = () => {
 
     const handleSearch = () =>{
       if(allEmpty) {
-        setFailedMessage('select any One Field to search')
+        setFailedMessage('Select any One Field to search')
         setTimeout(()=>setFailedMessage(""), 3000)
         return;
       }
@@ -231,13 +232,12 @@ const handleSubmit=(e)=>{
 const resetSearch = () =>{
   setCandidate("")
   if(allEmpty){
-    setSuccessMessage('search already clear')
-    setTimeout(()=>setSuccessMessage(''), 3000)
+    message.success('Search already clear')
     return;
   }
   setFilterData(initialData)
   setisResponse(false)
-  setSuccessMessage("All search clear")
+  message.success("All search clear")
   setTimeout(()=>setSuccessMessage(''), 3000)
 }
 
@@ -255,21 +255,18 @@ const fetchCandidates = async () => {
         },
       });
       
-      setCandidate(data.newData);
+      setCandidate( data.newData);
       setCandidatelength(data.totalDocument)
-      loadedCandidate.current = data.newData
       setRemainingData(data.totalDocument - (page * limit))
-      
     } catch (err) {
-      setFailedMessage("Server problem !");
-      setTimeout(() => setFailedMessage(""), 3500);
+      message.warning("Server problem !");
     } finally {
       setLoader(false);
       setisFilterComplete(true)
     }
-  
-
-};
+    
+    
+  };
 
 useEffect(()=>{
   if(allEmpty) return;
@@ -299,24 +296,22 @@ useEffect(() => {
 
 //<< -----------< get history from server >--------------->>
 const handleShowHistorySearch = async (e) =>{
-  e.stopPropagation();
   setShowHistory((prev) => !prev);
   try {
     const id = user.id
-    const response = await axios.get(`${url}/api/recruiter/gethistory/${id}`,{
-})
+    const response = await axios.get(`${url}/api/recruiter/gethistory/${id}`)
     const getHistory = response.data.searchHistory
     setSerchHistory(getHistory)
   } catch (error) {
-    setFailedMessage(error.messsage)
-    setTimeout(()=>setFailedMessage(''), 3000)
+    message.error("No Search Found")
+    console.log(error.message)
+    // message.error(error.messsage)
   }
- 
 }
 
 const saveSearchHistory = async () => {
   if (allEmpty) {
-    setFailedMessage("No Searches Found");
+    message.warning("No Searches Found");
     setTimeout(() => setFailedMessage(""), 3500);
     return;
   }
@@ -336,21 +331,18 @@ const saveSearchHistory = async () => {
     });
 
     if (response.data.success) {
-      setSuccessMessage("Filters Saved Successfully!");
-      setTimeout(() => setSuccessMessage(""), 1000);
+      message.success("Filters Saved Successfully!");
     }
   } catch (error) {
-    setFailedMessage("Failed to save history");
+    message.warning("Failed to save history");
     console.log(error.message)
-    setTimeout(() => setFailedMessage(""), 3500);
   }
 };
 
 const handleApplyHistory = (id) => {
   const historyItemId = id;
   if (!historyItemId) {
-    setFailedMessage("cannot get history");
-    setTimeout(() => setFailedMessage(""), 3500);    
+    message.error("cannot get history");
     return;
   }
   const savedHistory = Array.isArray(SerchHistory) ? SerchHistory : [];
@@ -358,8 +350,7 @@ const handleApplyHistory = (id) => {
   const historyItem = savedHistory.find((item) => item._id === id);
 
   if (!historyItem) {
-    setFailedMessage("History not found");
-    setTimeout(() => setFailedMessage(""), 3500);
+    message.error("History not found");
     return;
   }
 
@@ -459,8 +450,7 @@ const handleApplyHistory = (id) => {
     newFilterData.datePosted = filters.datePosted;
   }
   setFilterData(newFilterData);
-  setSuccessMessage("Filter Aplied !")
-  setTimeout(()=>setSuccessMessage(""), 2000)
+  message.success("Filter Aplied !")
   setShowHistory(prev => !prev)
 };
 
@@ -473,10 +463,9 @@ const removeSingleHistory = async (id) =>{
       })
       
       setShowHistory(prev=>!prev)
-      setFailedMessage(response.data.message)
-      setTimeout(()=>setFailedMessage(""), 2000)
+      message.success('Search Deleted')
   } catch (error) {
-    console.log(error.message)
+    message.error(error.message)
   }
 
 }
@@ -491,13 +480,11 @@ const clearHistory = async () => {
 
     if (response.data.success) {
     setShowHistory(prev=>!prev)
-    setFailedMessage(response.data.message);
-    setTimeout(() => setFailedMessage(""), 3000);
+    message.success(response.data.message);
     }
   } catch (error) {
     console.error("Error clearing search history:", error.message);
-    setFailedMessage("Failed to clear search history");
-    setTimeout(() => setFailedMessage(""), 3000);
+    message.error("Failed to clear search history");
   }
   
 };
@@ -593,7 +580,7 @@ useEffect(()=>{
             <div className={` transition-all duration-700 max-lg:bg-white  flex flex-col gap-4 bg-gray-10 px-1.5 py-2 rounded-2xl borde  border-gray-200 border-t-0`}>
 
             <div className="select-none flex gap-6 px-1 items-center bg-white">
-              <button ref={buttonRef}  onClick={handleShowHistorySearch} className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded ">
+              <button ref={buttonRef}  onClick={()=>handleShowHistorySearch()} className="border text-white border-gray-100 py-1 px-6 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded ">
                 <i className="ri-history-line"></i> Recent Searches 
                 </button>
               <button onClick={isPopUp} disabled={!initialData}  className="border text-white border-gray-100 py-1 px-8 text-[13px] font-semibold tracking-wider  active:bg-gray-200 cursor-pointer flex items-center justify-center gap-1  bg-slate-500 rounded ">
@@ -604,11 +591,11 @@ useEffect(()=>{
 {/*<<------------------------------------< show history data form server Storage >-------------------------->> */}
               <div ref={wrapperRef}
               style={{scrollbarWidth:"thin"}} 
-              className={` ${SerchHistory.length>0? "border-r  border-slate-300": ""} overflow-y-auto overflow-x-hidden absolute top-18 max-lg:top-14 left-0 select-none text-[12px] w-[300px] h-[88vh] max-lg:fixed bg-white  px-2 py-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${!ShowHistory ? "w-[400px] border-r border-slate-300 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-[-100%] overflow-hidden"}`}>
+              className={` ${Array.isArray(SerchHistory) && SerchHistory.length>0? "border-r  border-slate-300": ""} overflow-y-auto overflow-x-hidden absolute top-18 max-lg:top-14 left-0 select-none text-[12px] w-[300px] h-[88vh] max-lg:fixed bg-white  px-2 py-1 flex flex-col gap-2 transition-all duration-300 ease-in-out ${!ShowHistory ? "w-[400px] border-r border-slate-300 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-[-100%] overflow-hidden"}`}>
               
               <div className="flex items-center justify-between  ">
               <h1 className="text-xl text-slate-600 font-semibold">Recent Searches</h1>
-              <p className="text-slate-600 "> saved searches {SerchHistory.length}</p>
+              <p className="text-slate-600 "> saved searches {Array.isArray(SerchHistory) && SerchHistory.length}</p>
               </div>
 
               <p className="text-gray-400 font-semibold mt-[-10px]">only last 10 searches will be show</p>
@@ -627,7 +614,7 @@ useEffect(()=>{
               <p className="  bg-slate-600 text-gray-200 w-full py-2 text-center rounded font-semibold tracking-widest">No Search is Here</p>
               )
               }
-              <div className={` ${SerchHistory.length > 0 ? "flex" : "hidden"} w-full flex justify-end mt-1`}><span onClick={clearHistory} className=" shadow border border-slate-300 bg-slate-200 text-gray-600 rounded-2xl px-4 py-0 text-[12px] cursor-pointer">clear</span></div>
+              <div className={` ${Array.isArray(SerchHistory) && SerchHistory.length > 0 ? "flex" : "hidden"} w-full flex justify-end mt-1`}><span onClick={clearHistory} className=" shadow border border-slate-300 bg-slate-200 text-gray-600 rounded-2xl px-4 py-0 text-[12px] cursor-pointer">clear</span></div>
               </div>
               </div>
 {/*<<-----------------------------------------< history name input >---------------------------------------->> */}
@@ -639,8 +626,7 @@ useEffect(()=>{
                 setHistoryName("")
                 isPopUp();
                 } else {
-                setFailedMessage("Failed to save, enter history name");
-                setTimeout(() => setFailedMessage(""), 2000);
+                message.error("Enter search name");
                 }
                 }}
                 className="rounded-xl bg-slate-500 text-white px-2 py-0.5 cursor-pointer flex items-center justify-center">save</button>

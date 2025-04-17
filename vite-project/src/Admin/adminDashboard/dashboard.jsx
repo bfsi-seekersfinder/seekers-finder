@@ -16,6 +16,7 @@ const {admin} = useContext(AdminContext)
 const [Admin, setAdmin] = useState()
 const [popMessage, setpopMessage] = useState()
 const [isNotificationDelete, setisNotificationDelete] = useState(false)
+const [isNotificationOpen, setisNotificationOpen] = useState(false)
 const [Candidates, setCandidates] = useState([])
 const [Recruiter, setRecruiter] = useState()
 const [limit, setLimit] = useState(25)
@@ -69,6 +70,15 @@ useEffect(() => {
   useEffect(()=>{
     fetchAdmin()
   }, [isNotificationDelete])
+
+  const handleSeenNotification = async (value) => {
+    setisNotificationOpen(value)
+
+    if(isNotificationOpen){
+      fetchAdmin()
+      setisNotificationOpen(false)
+    }
+  }
 
 useEffect(()=>{
   fetchAdmin()
@@ -215,7 +225,7 @@ const handleLogoutAdmin = async () => {
               <div className=" absolute  top-0 py-6 px-4">
                 <button onClick={()=>setStep(0)} className="flex items-center justify-center cursor-pointer font-semibold text-2xl hover:bg-slate-300 rounded-full px-4 py-1"><i className="ri-arrow-left-line"></i></button>
               </div>
-              <Notification notification={Admin?.notification} adminId={Admin?._id} setChanges={setisNotificationDelete}/>
+              <Notification notification={Admin?.notification} adminId={Admin?._id} setChanges={setisNotificationDelete} setNotificationView={handleSeenNotification} />
               </>
             ):(
               <p>page 7</p>
