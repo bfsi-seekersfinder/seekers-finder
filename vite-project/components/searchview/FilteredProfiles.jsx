@@ -56,8 +56,7 @@ const FilteredProfiles = () => {
 
     const handleSearch = () =>{
       if(allEmpty) {
-        setFailedMessage('Select any One Field to search')
-        setTimeout(()=>setFailedMessage(""), 3000)
+        message.error('Select any One Field to search')
         return;
       }
       
@@ -299,7 +298,7 @@ const handleShowHistorySearch = async (e) =>{
   setShowHistory((prev) => !prev);
   try {
     const id = user.id
-    const response = await axios.get(`${url}/api/recruiter/gethistory/${id}`)
+    const response = await axios.get(`${url}/api/recruiter/get/history/${id}`)
     const getHistory = response.data.searchHistory
     setSerchHistory(getHistory)
   } catch (error) {
@@ -576,7 +575,7 @@ useEffect(()=>{
       </div>
 
 {/* <---------------------------------------------------< Filter search page card is here >-----------------------------> */}
-        <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border shadow-lg max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[300px]`}  style={{scrollbarWidth:"thin", scrollBehavior:"smooth"}}>
+        <div ref={sidebarRef} className={` ${navClose ? 'max-lg:translate-x-[-100%] opacity-0' : "max-lg:translate-x-0"}  opacity-100 max-lg:z-50  max-lg:absolute transition-all max-lg:border shadow-lg max-lg:border-slate-400 max-lg:h-full duration-500 ease-in-out pt-4 max-lg:w-[400px] max-lg:left-0 max-lg:top-0 max-lg:py-0 mr-4 h-[90vh] overflow-y-scroll min-w-[400px]`}  style={{scrollbarWidth:"thin", scrollBehavior:"smooth"}}>
             <div className={` transition-all duration-700 max-lg:bg-white  flex flex-col gap-4 bg-gray-10 px-1.5 py-2 rounded-2xl borde  border-gray-200 border-t-0`}>
 
             <div className="select-none flex gap-6 px-1 items-center bg-white">

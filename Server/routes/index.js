@@ -867,6 +867,26 @@ try {
 }
 });
 
+router.get('/api/recruiter/get/history/:id',  async (req, res) => {
+try {
+    const {id} = req.params;
+    let recruiter = await recruiterModule.findById(id).select('savedSearches');
+
+    if(!recruiter){
+        recruiter = await aliasUserModel.findById(id).select('savedSearches')
+    }
+    if (!recruiter) {
+    return res.status(404).json({ success: false, message: "Recruiter not found" });
+    }
+    
+
+    return res.json({ success: true, searchHistory: recruiter.savedSearches });
+} catch (error) {
+    console.error("Error fetching search history:", error);
+    return res.status(500).json({ success: false, message: "Internal Server Error" });
+}
+});
+
 router.post("/api/recruiter/history/delete/:id/:recruiterId", async (req, res)=>{
 try {
 const {id, recruiterId} = req.params
