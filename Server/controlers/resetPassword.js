@@ -12,7 +12,7 @@ const resetPassword = async (req, res) => {
 
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
-        const mail = 'Your TalentX Password is Reset Succesfully'
+        const mail = 'Your TalentO Password is Reset Succesfully'
        await sendOTPEmail(email, mail)
 
         return res.json({ message: "Password  reset successful" });

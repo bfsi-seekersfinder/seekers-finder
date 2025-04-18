@@ -18,10 +18,10 @@ import { generateOTP } from "../generator/otpGen.js";
         user.otpExpiry = otpExpiry;
         await user.save();
 
-        const otpMessage = `Your Talentx Password Reset OTP is ${otp}. This OTP is valid for 5 min, Don't share with anyone`
+        const otpMessage = `Your OTP is ${otp} for Reseting Passowrd. This OTP is valid for 5 min, Don't share with Unknown Persons `
         await sendOTPEmail(email, otpMessage);
 
-        return res.json({ message: "OTP sent to email", success:true });
+        return res.json({ message: `OTP sent to ${email}`, success:true });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error: error.message });
     }

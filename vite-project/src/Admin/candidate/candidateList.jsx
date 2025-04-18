@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { BarLoader } from 'react-spinners'
 import { Modal, message } from 'antd';
+import CandidateProfile from './candidateProfile';
 
 
 const CandidateList = ({ sendValue}) => {
@@ -16,6 +17,8 @@ const CandidateList = ({ sendValue}) => {
     const [totalCandidates, settotalCandidates] = useState()
     const [Loading, setLoading] = useState(false)
     const [DeletecandidateId, setDeletecandidateId] = useState(null)
+    const [isProfileOpen, setisProfileOpen] = useState(false)
+    const [selectedCandidate, setselectedCandidate] = useState(null)
 
     const handleFetchUsers = async () => {
       try {
@@ -84,7 +87,6 @@ const CandidateList = ({ sendValue}) => {
       }
     }
 
-
     const showDeleteConfirm = (onConfirm) => {
       Modal.confirm({
         title: 'Are you sure you want to delete this Candidate?',
@@ -101,12 +103,22 @@ const CandidateList = ({ sendValue}) => {
       });
     };
 
+    const handleProfile = (user) =>{
+      console.log(user)
+      setselectedCandidate(user)
+      setisProfileOpen(true)
+    }
+
+    const handleCloseProfile=(value)=>{
+      setisProfileOpen(value)
+    }
+
 
 
 
   return (
     <div>
-         <div>
+        <div>
             <nav className="w-full h-14 shadow justify-end flex items-center px-12 ">
             <div className="flex gap-4">
             <span className="w-[300px] border border-gray-300 rounded px-2 flex items-center ">
@@ -116,7 +128,8 @@ const CandidateList = ({ sendValue}) => {
             <button onClick={()=>sendValue(1)} className="bg-slate-600 px-4 py-1 cursor-pointer rounded text-white">Create Candidate</button>
             </div>
             </nav>
-            <div className="flex flex-col px-12 py-6 gap-2 ">
+            
+            {!isProfileOpen? (  <div className="flex flex-col px-12 py-6 gap-2 ">
             <div className="bg-slate-600 text-gray-100 py-1 px-4 rounded flex justify-between border border-slate-400">
             <span className=" border-slate-300 flex justify-center w-[250px] px-1 ">Candidate Name</span>
             <span className="border-l border-gray-300 flex justify-center w-[200px] px-1 ">Designation</span>
@@ -135,7 +148,7 @@ const CandidateList = ({ sendValue}) => {
             <span className=" flex  items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider  text-slate-700">{candidate.workExperience? candidate.workExperience[0]?.name: ''} </span>
             <span className=" flex  items-center  border-l border-gray-300 w-[200px] px-2 tracking-wider text-slate-700">{candidate.mobileNo}</span>
             <Link to="" className='flex border-l border-gray-300 px-3 items-center gap-2'>
-            <span className=" flex items-center justify-center  px-1 tracking-wider text-emerald-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
+            <span onClick={()=>handleProfile(candidate)} className=" flex items-center justify-center  px-1 tracking-wider text-emerald-700 text-[18px] cursor-pointer"><i className="ri-settings-2-line"></i></span>
             <span onClick={()=> {
               showDeleteConfirm()
               setDeletecandidateId(candidate._id)
@@ -153,6 +166,11 @@ const CandidateList = ({ sendValue}) => {
             </div>
 
             </div>
+            ):(
+              <div className='flex justify-center items-center'>
+                <CandidateProfile close={handleCloseProfile} candidate={selectedCandidate}/>
+              </div>
+            )}
 
             <div className={`${popMessage?.length>0? "bottom-10 left-[40%] absolute px-4 rounded text-slate-700 bg-gray-300 py-0.5 flex items-center justify-center" : "hidden" }`}>{popMessage}</div>
             </div>

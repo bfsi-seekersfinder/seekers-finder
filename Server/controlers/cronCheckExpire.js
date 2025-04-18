@@ -26,10 +26,11 @@ const checkAndUpdateExpiredUsers = async () => {
     
 };
 
+
+
 checkAndUpdateExpiredUsers();
 
 cron.schedule("0 0 * * *", () => {
-    console.log("Running expire check...");
     checkAndUpdateExpiredUsers();
 });
 
